@@ -254,7 +254,7 @@ function listFiles(dir: string, options: fg.Options = {}) {
   const source = FILE_EXTENSIONS.map(ext => `${fg.convertPathToPattern(`${dir}`)}/**/*.${ext}`);
   const files = fg.sync(source, {
     cwd: cwd ? fg.convertPathToPattern(cwd) : undefined,
-    ignore: ignore.map(fg.convertPathToPattern),
+    ignore,
     deep,
     ...others,
     onlyFiles: true,
