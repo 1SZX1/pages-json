@@ -42,7 +42,7 @@ export default defineConfig({
 }
 ```
 
-### vite 详细配置
+### vite 详细配置说明
 
 ```ts
 export interface UserConfig {
@@ -99,11 +99,11 @@ export interface UserConfig {
 }
 ```
 
-### 全局 `pages.json.(ts|mts|cts|js|cjs|mjs)` 配置
+### 动态 pages 配置文件 `pages.json.(ts|mts|cts|js|cjs|mjs)`
 
-动态配置文件，和 `pages.json` 同级目录。
+动态 pages 配置文件，须放置 `pages.json` 同级目录。
 
-将与 `definePage` 合并，生成最终的 `pages.json`
+最终将与 `definePage` 宏生成的内容合并，生成最终的 `pages.json`
 
 ```ts
 import { UniPagesJson } from '@uni-ku/define-page';
@@ -193,28 +193,25 @@ definePage(() => {
 });
 ```
 
-引入外部函数、变量 (***注意：仅支持引入纯 JavaScript 或仅 TypeScript 的类型声明。***)
+引入外部函数、变量。 需要注意的是，仅支持引入：
+1. 纯 JavaScript 代码 （如 node_modules 中的第三方库）
+2. TypeScript 类型声明 （因为会被自动忽略）
 ```ts
-import { parse as yamlParser } from 'yaml';
+import { parse as parseYML } from 'yaml';
 
 definePage(() => {
   const yml = `
 style:
   navigationBarTitleText: "yaml test"
 `;
-  return yamlParser(yml);
+  return parseYML(yml);
 });
 ```
 
-### 获取当前上下文的数据
 
-```ts
-import { ctx } from '@uni-ku/define-page';
+> <del> ### 获取当前上下文的数据 </del>
 
-console.log(ctx.files);
-console.log(ctx.pages);
-console.log(ctx.subPackages);
-```
+详见 [#6](https://github.com/uni-ku/define-page/issues/6)，暂未明 ctx 有何作用。 使用 `virtualModule` 会导致变量得不到释放，占用内存。
 
 ## 感谢
 - [vite-plugin-uni-pages](https://github.com/uni-helper/vite-plugin-uni-pages)
