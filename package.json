@@ -57,7 +57,7 @@
     "@antfu/utils": "^0.7.7",
     "@babel/generator": "^7.23.6",
     "@babel/types": "^7.24.0",
-    "@vue/compiler-sfc": "^3.4.21",
+    "@vue/compiler-sfc": "3.5.13",
     "ast-kit": "^0.12.1",
     "chokidar": "^3.6.0",
     "debug": "^4.3.4",
