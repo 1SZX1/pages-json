@@ -131,7 +131,7 @@ export default UniPagesJson({
 
 ### vue SFC文件内 `definePage` 宏使用方式
 
-更多使用方式请参考 [playground/pages/define-page](../playground/src/pages/define-page/)
+更多使用方式请参考 [playground/pages/define-page](./playground/src/pages/define-page/)
 
 **注意：**
 - 以下代码需要写在 `script setup` 内
@@ -207,7 +207,6 @@ style:
   return parseYML(yml);
 });
 ```
-
 
 > <del> ### 获取当前上下文的数据 </del>
 
