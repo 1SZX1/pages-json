@@ -1,4 +1,4 @@
-import type { Plugin } from 'vite';
+import type { PluginOption } from 'vite';
 import type { UserConfig } from '../config';
 import { spawn } from 'node:child_process';
 import process from 'node:process';
@@ -25,7 +25,7 @@ async function restart() {
   });
 }
 
-export function viteUniPagesJson(userConfig: UserConfig = {}): Plugin {
+export function viteUniPagesJson(userConfig: UserConfig = {}): PluginOption {
   ctx.init(userConfig);
 
   checkPagesJsonFile();
