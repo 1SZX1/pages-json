@@ -1,3 +1,5 @@
+> define-page 已合并到 [vite-plugin-uni-pages](https://github.com/uni-helper/vite-plugin-uni-pages), 请直接使用 [vite-plugin-uni-pages](https://github.com/uni-helper/vite-plugin-uni-pages)
+
 # @uni-ku/define-page
 
 `definePage` 宏，用于动态生成 `pages.json`。
