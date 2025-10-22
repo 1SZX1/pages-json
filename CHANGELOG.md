@@ -1,4 +1,4 @@
-# @uni-ku/define-page
+# @uni-ku/pages-json
 
 ## 0.0.10
 

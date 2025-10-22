@@ -31,7 +31,7 @@ export function viteUniPagesJson(userConfig: UserConfig = {}): PluginOption {
   checkPagesJsonFile();
 
   return {
-    name: '@uni-ku/define-page',
+    name: '@uni-ku/pages-json',
     enforce: 'pre',
     async configResolved(viteConf) {
       if (!userConfig.root) {

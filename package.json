@@ -1,16 +1,16 @@
 {
-  "name": "@uni-ku/define-page",
+  "name": "@uni-ku/pages-json",
   "type": "module",
   "version": "0.1.8",
   "description": "Define uniapp pages.json dynamically.",
   "author": "Edwin Xu <edwinhuish@gmail.com>",
   "license": "MIT",
-  "homepage": "https://github.com/uni-ku/define-page",
+  "homepage": "https://github.com/uni-ku/pages-json",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/uni-ku/define-page.git"
+    "url": "git+https://github.com/uni-ku/pages-json.git"
   },
-  "bugs": "https://github.com/uni-ku/define-page/issues",
+  "bugs": "https://github.com/uni-ku/pages-json/issues",
   "keywords": [
     "uniapp",
     "uni-app",

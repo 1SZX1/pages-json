@@ -1,6 +1,4 @@
-> define-page 已合并到 [vite-plugin-uni-pages](https://github.com/uni-helper/vite-plugin-uni-pages), 请直接使用 [vite-plugin-uni-pages](https://github.com/uni-helper/vite-plugin-uni-pages)
-
-# @uni-ku/define-page
+# @uni-ku/pages-json
 
 `definePage` 宏，用于动态生成 `pages.json`。
 
@@ -12,7 +10,7 @@
 ## 安装
 
 ```shell
-pnpm i -D @uni-ku/define-page
+pnpm i -D @uni-ku/pages-json
 ```
 
 ## 配置
@@ -20,7 +18,7 @@ pnpm i -D @uni-ku/define-page
 ### vite 配置
 ```ts
 import uni from '@dcloudio/vite-plugin-uni';
-import { viteUniPagesJson } from '@uni-ku/define-page';
+import { viteUniPagesJson } from '@uni-ku/pages-json';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
@@ -39,7 +37,7 @@ export default defineConfig({
 ```json
 {
   "compilerOptions": {
-    "types": ["@uni-ku/define-page"]
+    "types": ["@uni-ku/pages-json"]
   }
 }
 ```
@@ -108,7 +106,7 @@ export interface UserConfig {
 最终将与 `definePage` 宏生成的内容合并，生成最终的 `pages.json`
 
 ```ts
-import { UniPagesJson } from '@uni-ku/define-page';
+import { UniPagesJson } from '@uni-ku/pages-json';
 
 export default UniPagesJson({
   globalStyle: {
@@ -133,7 +131,7 @@ export default UniPagesJson({
 
 ### vue SFC文件内 `definePage` 宏使用方式
 
-更多使用方式请参考 [playground/pages/define-page](./playground/src/pages/define-page/)
+更多使用方式请参考 [playground/pages/pages-json](./playground/src/pages/pages-json/)
 
 **注意：**
 - 以下代码需要写在 `script setup` 内
@@ -212,7 +210,7 @@ style:
 
 > <del> ### 获取当前上下文的数据 </del>
 
-详见 [#6](https://github.com/uni-ku/define-page/issues/6)，暂未明 ctx 有何作用。 使用 `virtualModule` 会导致变量得不到释放，占用内存。
+详见 [#6](https://github.com/uni-ku/pages-json/issues/6)，暂未明 ctx 有何作用。 使用 `virtualModule` 会导致变量得不到释放，占用内存。
 
 ## 感谢
 - [vite-plugin-uni-pages](https://github.com/uni-helper/vite-plugin-uni-pages)

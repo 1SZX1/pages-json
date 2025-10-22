@@ -1,5 +1,5 @@
 import uni from '@dcloudio/vite-plugin-uni';
-import { viteUniPagesJson } from '@uni-ku/define-page';
+import { viteUniPagesJson } from '@uni-ku/pages-json';
 import { defineConfig } from 'vite';
 
 // https://vitejs.dev/config/

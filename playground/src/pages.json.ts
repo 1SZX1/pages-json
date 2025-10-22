@@ -1,4 +1,4 @@
-import { UniPagesJson } from '@uni-ku/define-page';
+import { UniPagesJson } from '@uni-ku/pages-json';
 
 export default UniPagesJson({
   globalStyle: {

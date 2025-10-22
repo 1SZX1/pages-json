@@ -237,7 +237,7 @@ async function executeTypeScriptCode(code: string, filename: string): Promise<an
   try {
     script.runInNewContext(vmContext);
   } catch (error: any) {
-    throw new Error(`[@uni-ku/define-page] ${filename} ${error.message}`);
+    throw new Error(`[@uni-ku/pages-json] ${filename} ${error.message}`);
   }
 
   // 获取导出的值
