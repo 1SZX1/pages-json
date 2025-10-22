@@ -1,11 +1,11 @@
-import type { PagesJson } from './types';
+import type * as PagesJSON from './types';
 import fs from 'node:fs';
 import { loadConfig } from 'unconfig';
 import { getConfig } from './config';
 import { PAGES_CONFIG_EXT, PAGES_CONFIG_FILE } from './constant';
 import { debug } from './utils/debug';
 
-export function UniPagesJson(userConfig: Partial<PagesJson>) {
+export function UniPagesJson(userConfig: Partial<PagesJSON.PagesJson>) {
   return userConfig;
 }
 
@@ -25,7 +25,7 @@ export function checkPagesJsonFile() {
 }
 
 function emptyPagesJson() {
-  const options: PagesJson = {
+  const options: PagesJSON.PagesJson = {
     pages: [],
     globalStyle: {
       navigationBar: {},
@@ -34,7 +34,7 @@ function emptyPagesJson() {
   return options;
 }
 
-let pagesConfig: PagesJson | undefined;
+let pagesConfig: PagesJSON.PagesJson | undefined;
 let pagesConfigFiles: string[] = [];
 export async function getPagesConfig() {
   if (!pagesConfig) {
@@ -62,7 +62,7 @@ export async function loadPagesConfig(forceUpdate = false) {
 
   const config = getConfig();
 
-  const res = await loadConfig<PagesJson>({
+  const res = await loadConfig<PagesJSON.PagesJson>({
     cwd: config.basePath,
     sources: {
       files: PAGES_CONFIG_FILE,

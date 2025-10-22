@@ -1,6 +1,5 @@
 import type { UserConfig } from './config';
-import type { PagesJson, PagesJsonPage, PagesJsonSubPackage, TabBarItem, TabBarItemList } from './types';
-import type { TabBar } from './uniapp/tabBar';
+import type * as PagesJSON from './types';
 import fs from 'node:fs';
 import path from 'node:path';
 import fg from 'fast-glob';
@@ -121,7 +120,7 @@ export class Context {
     return true;
   }
 
-  private async mergePagesOptions(pagesJSON: PagesJson) {
+  private async mergePagesOptions(pagesJSON: PagesJSON. PagesJson) {
     const options = await this.getPagesOptions();
 
     const { pages } = pagesJSON;
@@ -129,7 +128,7 @@ export class Context {
     pagesJSON.pages = uniquePagesOptions([...(pages || []), ...options]);
   }
 
-  private async mergeSubPackagesOptions(pagesJSON: PagesJson) {
+  private async mergeSubPackagesOptions(pagesJSON: PagesJSON. PagesJson) {
     const options = await this.getSubPackagesOptions();
 
     let { subPackages } = pagesJSON;
@@ -147,10 +146,10 @@ export class Context {
     pagesJSON.subPackages = [...subPackages, ...options];
   }
 
-  private async mergeTabbarOptions(pagesJSON: PagesJson) {
+  private async mergeTabbarOptions(pagesJSON: PagesJSON. PagesJson) {
     const options = await this.getTabbarOptions();
 
-    const emptyTabbar = { list: [] } as unknown as TabBar;
+    const emptyTabbar = { list: [] } as unknown as PagesJSON.TabBar;
 
     const { tabBar = emptyTabbar } = pagesJSON;
 
@@ -174,13 +173,13 @@ export class Context {
       return deepMerge(tb, found);
     });
 
-    tabBar.list = [...list, ...options].slice(0, 5) as TabBarItemList;
+    tabBar.list = [...list, ...options].slice(0, 5) as PagesJSON.TabBar['list'];
 
     pagesJSON.tabBar = tabBar;
   }
 
   async getPagesOptions() {
-    const options: PagesJsonPage[] = [];
+    const options: PagesJSON.Page[] = [];
 
     const pages = [...this.pages.values()];
 
@@ -196,10 +195,10 @@ export class Context {
   }
 
   async getSubPackagesOptions() {
-    const packages = new Map<string, PagesJsonSubPackage>();
+    const packages = new Map<string, PagesJSON.SubPackage>();
 
     for (const [root, map] of this.subPackages) {
-      const options: PagesJsonPage[] = [];
+      const options: PagesJSON.Page[] = [];
 
       for (const [_, page] of map) {
         const opt = await page.getPageOptions();
@@ -216,7 +215,7 @@ export class Context {
   }
 
   async getTabbarOptions() {
-    const options = new Map<string, TabBarItem & { index: number }>();
+    const options = new Map<string, PagesJSON.TabBarItem & { index: number }>();
 
     for (const [_, page] of this.pages) {
       const opt = await page.getTabbarOptions();
@@ -229,7 +228,7 @@ export class Context {
       options.set(opt.pagePath, deepMerge(cached, opt));
     }
 
-    const tabbars: TabBarItem[] = Array.from(options, ([_, opt]) => opt)
+    const tabbars: PagesJSON.TabBarItem[] = Array.from(options, ([_, opt]) => opt)
       .sort((a, b) => a.index - b.index)
       .map((item) => {
         const { index: _, ...opt } = item;
@@ -266,11 +265,11 @@ function listFiles(dir: string, options: fg.Options = {}) {
   return files;
 }
 
-function uniquePagesOptions(options: PagesJsonPage[], merge = true): PagesJsonPage[] {
-  const store = new Map<string, PagesJsonPage>();
+function uniquePagesOptions(options: PagesJSON.Page[], merge = true): PagesJSON.Page[] {
+  const store = new Map<string, PagesJSON.Page>();
 
   for (const opt of options) {
-    const cached = store.get(opt.path) || {} as PagesJsonPage;
+    const cached = store.get(opt.path) || {} as PagesJSON.Page;
     if (merge) {
       store.set(opt.path, deepMerge(cached, opt));
     } else {

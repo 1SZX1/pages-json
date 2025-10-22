@@ -43,11 +43,11 @@
     "index.d.ts"
   ],
   "scripts": {
-    "stub": "unbuild --stub",
+    "stub": "tsup --watch",
     "dev": "pnpm stub",
     "dev:h5": "cross-env NODE_ENV=development pnpm build && pnpm --filter=./playground dev:h5",
     "dev:mp-weixin": "cross-env NODE_ENV=development pnpm build && pnpm --filter=./playground dev:mp-weixin",
-    "build": "unbuild",
+    "build": "tsup",
     "build:h5": "pnpm build && pnpm --filter=./playground build:h5",
     "build:mp-weixin": "pnpm build && pnpm --filter=./playground build:mp-weixin",
     "prepublishOnly": "pnpm build",
@@ -90,7 +90,7 @@
     "lint-staged": "^15.5.2",
     "magic-string": "^0.30.8",
     "rimraf": "^5.0.10",
-    "unbuild": "^3.6.1",
+    "tsup": "^8.5.0",
     "unconfig": "^0.3.11",
     "unplugin": "^1.16.1",
     "vite": "^5.4.19",

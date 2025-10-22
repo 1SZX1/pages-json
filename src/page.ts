@@ -1,11 +1,12 @@
 import type { File } from './file';
-import type { MaybePromiseCallable, PagesJsonPage, TabBarItem } from './types';
+import type * as PagesJSON from './types';
+import type { MaybePromiseCallable } from './utils';
 import path from 'node:path';
 import { slash } from '@antfu/utils';
 import { DEFINE_PAGE } from './constant';
 import { debug } from './utils';
 
-export interface DefineTabbarOptions extends Partial<TabBarItem> {
+export interface DefineTabbarOptions extends Partial<PagesJSON.TabBarItem> {
   /**
    * 配置tabbar路径
    * @deprecated 无效，将会根据文件路径自动生成
@@ -20,7 +21,7 @@ export interface DefineTabbarOptions extends Partial<TabBarItem> {
 
 export type PageType = 'home' | 'normal';
 
-export interface DefinePageOptions extends Partial<PagesJsonPage> {
+export interface DefinePageOptions extends Partial<PagesJSON.Page> {
   /**
    * 配置页面路径
    * @deprecated 无效，将会根据文件路径自动生成
@@ -73,7 +74,7 @@ export class Page {
 
     const { path: _, tabbar: __, type: pageType, ...others } = this.options!;
 
-    const options: PagesJsonPage = {
+    const options: PagesJSON.Page = {
       path: this.uri,
       ...others,
     };
@@ -96,7 +97,7 @@ export class Page {
 
     const { pagePath: _, index = 0, ...others } = tabbar;
 
-    const options: TabBarItem & { index: number } = {
+    const options: PagesJSON.TabBarItem & { index: number } = {
       index,
       pagePath: this.uri,
       ...others,
