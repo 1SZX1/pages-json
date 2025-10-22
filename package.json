@@ -43,15 +43,19 @@
     "index.d.ts"
   ],
   "scripts": {
-    "clean": "rimraf dist",
-    "build": "unbuild",
     "stub": "unbuild --stub",
-    "debug": "cross-env NODE_ENV=development unbuild && cd playground && pnpm dev:h5",
-    "watch": "tsup --watch",
+    "dev": "pnpm stub",
+    "dev:h5": "cross-env NODE_ENV=development pnpm build && pnpm --filter=./playground dev:h5",
+    "dev:mp-weixin": "cross-env NODE_ENV=development pnpm build && pnpm --filter=./playground dev:mp-weixin",
+    "build": "unbuild",
+    "build:h5": "pnpm build && pnpm --filter=./playground build:h5",
+    "build:mp-weixin": "pnpm build && pnpm --filter=./playground build:mp-weixin",
+    "prepublishOnly": "pnpm build",
     "typecheck": "tsc -p . --noEmit",
     "lint": "eslint .",
     "lint:fix": "pnpm lint --fix",
-    "test": "vitest"
+    "test": "vitest",
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@antfu/utils": "^0.7.10",
