@@ -25,7 +25,7 @@ async function restart() {
   });
 }
 
-export function viteUniPagesJson(userConfig: UserConfig = {}): PluginOption {
+export default function uniPagesJson(userConfig: UserConfig = {}): PluginOption {
   ctx.init(userConfig);
 
   checkPagesJsonFile();

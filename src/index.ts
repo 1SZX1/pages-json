@@ -1,5 +1,10 @@
-export * from './config';
-export * from './constant';
-export * from './context';
-export * from './page';
-export * from './pagesJson';
+import type { DefinePageOptions, DefineTabbarOptions } from './page';
+import { definePage } from './page';
+import { definePagesJson } from './pagesJson';
+
+export {
+  definePage,
+  DefinePageOptions,
+  definePagesJson,
+  DefineTabbarOptions,
+};

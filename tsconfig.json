@@ -3,12 +3,19 @@
     "target": "es2018",
     "lib": ["esnext"],
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@uni-ku/pages-json/types": ["./types/index.d.ts"],
+      "@uni-ku/pages-json/types/*": ["./types/*"]
+    },
     "resolveJsonModule": true,
     "strict": true,
     "strictNullChecks": true,
     "esModuleInterop": true,
     "skipDefaultLibCheck": true,
-    "skipLibCheck": true
-  }
+    "skipLibCheck": false
+  },
+  "exclude": [
+    "**/node_modules/**"
+  ]
 }

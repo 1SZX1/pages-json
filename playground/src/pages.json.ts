@@ -1,6 +1,6 @@
-import { UniPagesJson } from '@uni-ku/pages-json';
+import { definePagesJson } from '@uni-ku/pages-json';
 
-export default UniPagesJson({
+export default definePagesJson({
   globalStyle: {
     navigationBarTextStyle: 'black',
     navigationBarTitleText: 'uni-app',

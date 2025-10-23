@@ -1,11 +1,11 @@
-import type * as PagesJSON from './types';
+import type * as PagesJSON from '@uni-ku/pages-json/types';
 import fs from 'node:fs';
 import { loadConfig } from 'unconfig';
 import { getConfig } from './config';
 import { PAGES_CONFIG_EXT, PAGES_CONFIG_FILE } from './constant';
 import { debug } from './utils/debug';
 
-export function UniPagesJson(userConfig: Partial<PagesJSON.PagesJson>) {
+export function definePagesJson(userConfig: Partial<PagesJSON.PagesJson>) {
   return userConfig;
 }
 

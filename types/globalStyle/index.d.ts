@@ -1,14 +1,14 @@
-import type { AnimationType, HEXColor, ThemeVar } from '../common'
-import type { AppPlus } from './appPlus'
-import type { H5 } from './h5'
-import type { MpAlipay } from './mpAlipay'
-import type { MpBaidu } from './mpBaidu'
-import type { MpJd } from './mpJd'
-import type { MpKuaishou } from './mpKuaishou'
-import type { MpLark } from './mpLark'
-import type { MpQq } from './mpQq'
-import type { MpToutiao } from './mpToutiao'
-import type { MpWeixin } from './mpWeixin'
+import type { AnimationType, HEXColor, ThemeVar } from '../common';
+import type { AppPlus } from './app-plus';
+import type { H5 } from './h5';
+import type { MpAlipay } from './mp-aliipay';
+import type { MpBaidu } from './mp-baidu';
+import type { MpJd } from './mp-jd';
+import type { MpKuaishou } from './mp-kuaishou';
+import type { MpLark } from './mp-lark';
+import type { MpQq } from './mp-qq';
+import type { MpToutiao } from './mp-toutiao';
+import type { MpWeixin } from './mp-weixin';
 
 export interface GlobalStyle {
   /**
@@ -18,7 +18,7 @@ export interface GlobalStyle {
    *
    * @format color
    */
-  'navigationBarBackgroundColor'?: HEXColor | ThemeVar
+  navigationBarBackgroundColor?: HEXColor | ThemeVar;
 
   /**
    * 导航栏标题颜色及状态栏前景颜色，仅支持 "black" / "white"
@@ -27,22 +27,22 @@ export interface GlobalStyle {
    *
    * @desc 支付宝小程序不支持，请使用 my.setNavigationBar
    */
-  'navigationBarTextStyle'?: 'black' | 'white' | ThemeVar
+  navigationBarTextStyle?: 'black' | 'white' | ThemeVar;
 
   /**
    * 导航栏标题文字内容
    */
-  'navigationBarTitleText'?: string
+  navigationBarTitleText?: string;
 
   /**
    * 导航栏阴影
    */
-  'navigationBarShadow'?: {
+  navigationBarShadow?: {
     /**
      * 阴影颜色
      */
-    colorType?: 'grey' | 'blue' | 'green' | 'orange' | 'red' | 'yellow'
-  }
+    colorType?: 'grey' | 'blue' | 'green' | 'orange' | 'red' | 'yellow';
+  };
 
   /**
    * 导航栏样式，仅支持 "default" / "custom"
@@ -53,7 +53,7 @@ export interface GlobalStyle {
    *
    * @desc 微信小程序 7.0+、百度小程序、H5、App（2.0.3+）
    */
-  'navigationStyle'?: 'default' | 'custom'
+  navigationStyle?: 'default' | 'custom';
 
   /**
    * 下拉显示出来的窗口的背景色，支持 HEX 颜色
@@ -64,7 +64,7 @@ export interface GlobalStyle {
    *
    * @format color
    */
-  'backgroundColor'?: HEXColor | ThemeVar
+  backgroundColor?: HEXColor | ThemeVar;
 
   /**
    * 下拉 loading 的样式，仅支持 "dark" / "light"
@@ -73,21 +73,21 @@ export interface GlobalStyle {
    *
    * @desc 微信小程序
    */
-  'backgroundTextStyle'?: 'dark' | 'light' | ThemeVar
+  backgroundTextStyle?: 'dark' | 'light' | ThemeVar;
 
   /**
    * 是否开启下拉刷新，详见 [页面生命周期](https://uniapp.dcloud.net.cn/tutorial/page.html#lifecycle)
    *
    * @default false
    */
-  'enablePullDownRefresh'?: boolean
+  enablePullDownRefresh?: boolean;
 
   /**
    * 页面上拉触底事件触发时距页面底部距离，单位为 px，详见 [页面生命周期](https://uniapp.dcloud.net.cn/tutorial/page.html#lifecycle)
    *
    * @default 50
    */
-  'onReachBottomDistance'?: number
+  onReachBottomDistance?: number;
 
   /**
    * 顶部窗口的背景色（bounce回弹区域）
@@ -98,7 +98,7 @@ export interface GlobalStyle {
    *
    * @format color
    */
-  'backgroundColorTop'?: HEXColor | ThemeVar
+  backgroundColorTop?: HEXColor | ThemeVar;
 
   /**
    * 底部窗口的背景色（bounce回弹区域）
@@ -109,7 +109,7 @@ export interface GlobalStyle {
    *
    * @format color
    */
-  'backgroundColorBottom'?: HEXColor | ThemeVar
+  backgroundColorBottom?: HEXColor | ThemeVar;
 
   /**
    * 导航栏图片地址（替换当前文字标题）
@@ -118,7 +118,7 @@ export interface GlobalStyle {
    *
    * @desc 支付宝小程序、H5、APP
    */
-  'titleImage'?: string
+  titleImage?: string;
 
   /**
    * 导航栏整体（前景、背景）透明设置，仅支持 "always" / "auto" / "none
@@ -133,7 +133,7 @@ export interface GlobalStyle {
    *
    * @desc 支付宝小程序、H5、APP
    */
-  'transparentTitle'?: 'always' | 'auto' | 'none'
+  transparentTitle?: 'always' | 'auto' | 'none';
 
   /**
    * 导航栏点击穿透
@@ -142,7 +142,7 @@ export interface GlobalStyle {
    *
    * @desc 支付宝小程序、H5
    */
-  'titlePenetrate'?: 'YES' | 'NO'
+  titlePenetrate?: 'YES' | 'NO';
 
   /**
    * 横屏配置，屏幕旋转设置，仅支持 "auto" / "portrait" / "landscape"，详见 [响应显示区域变化](https://developers.weixin.qq.com/miniprogram/dev/framework/view/resizable.html)
@@ -157,7 +157,7 @@ export interface GlobalStyle {
    *
    * @desc App 2.4.7+、微信小程序、QQ小程序
    */
-  'pageOrientation'?: string
+  pageOrientation?: string;
 
   /**
    * 窗口显示的动画效果，详见 [窗口动画](https://uniapp.dcloud.net.cn/api/router#animation)
@@ -166,7 +166,7 @@ export interface GlobalStyle {
    *
    * @desc App
    */
-  'animationType'?: AnimationType
+  animationType?: AnimationType;
 
   /**
    * 窗口显示动画的持续时间，单位为 ms
@@ -175,7 +175,7 @@ export interface GlobalStyle {
    *
    * @desc App
    */
-  'animationDuration'?: number
+  animationDuration?: number;
 
   /**
    * 设置编译到 App 平台的特定样式，配置项参考 [app-plus](https://uniapp.dcloud.net.cn/collocation/pages#app-plus)
@@ -184,7 +184,7 @@ export interface GlobalStyle {
    *
    * @desc App
    */
-  'app-plus'?: AppPlus
+  'app-plus'?: AppPlus;
 
   /**
    * 设置编译到 H5 平台的特定样式，配置项参考 [H5](https://uniapp.dcloud.net.cn/collocation/pages#h5)
@@ -193,7 +193,7 @@ export interface GlobalStyle {
    *
    * @desc H5
    */
-  'h5'?: H5
+  h5?: H5;
 
   /**
    * 设置编译到 mp-alipay 平台的特定样式，配置项参考 [MP-ALIPAY](https://uniapp.dcloud.net.cn/collocation/pages#mp-alipay) 和 <https://opendocs.alipay.com/mini/framework/app-json#window>
@@ -202,7 +202,7 @@ export interface GlobalStyle {
    *
    * @desc 支付宝小程序
    */
-  'mp-alipay'?: MpAlipay
+  'mp-alipay'?: MpAlipay;
 
   /**
    * 设置编译到 mp-weixin 平台的特定样式，配置项参考 [MP-WEIXIN](https://uniapp.dcloud.net.cn/collocation/pages#mp-weixin) 和 <https://developers.weixin.qq.com/miniprogram/dev/reference/configuration/app.html#window>
@@ -211,7 +211,7 @@ export interface GlobalStyle {
    *
    * @desc 微信小程序
    */
-  'mp-weixin'?: MpWeixin
+  'mp-weixin'?: MpWeixin;
 
   /**
    * 设置编译到 mp-baidu 平台的特定样式，配置项参考 [MP-BAIDU](https://uniapp.dcloud.net.cn/collocation/pages.html#mp-baidu) 和 <https://smartprogram.baidu.com/docs/develop/framework/process/#window>
@@ -220,7 +220,7 @@ export interface GlobalStyle {
    *
    * @desc 百度小程序
    */
-  'mp-baidu'?: MpBaidu
+  'mp-baidu'?: MpBaidu;
 
   /**
    * 设置编译到 mp-toutiao 平台的特定样式，配置项参考 <https://developer.open-douyin.com/docs/resource/zh-CN/mini-app/develop/framework/general-configuration#window>
@@ -229,7 +229,7 @@ export interface GlobalStyle {
    *
    * @desc 抖音小程序
    */
-  'mp-toutiao'?: MpToutiao
+  'mp-toutiao'?: MpToutiao;
 
   /**
    * 设置编译到 mp-lark 平台的特定样式
@@ -238,7 +238,7 @@ export interface GlobalStyle {
    *
    * @desc 飞书小程序
    */
-  'mp-lark'?: MpLark
+  'mp-lark'?: MpLark;
 
   /**
    * 设置编译到 mp-qq 平台的特定样式
@@ -247,7 +247,7 @@ export interface GlobalStyle {
    *
    * @desc QQ 小程序
    */
-  'mp-qq'?: MpQq
+  'mp-qq'?: MpQq;
 
   /**
    * 设置编译到 mp-kuaishou 平台的特定样式
@@ -256,7 +256,7 @@ export interface GlobalStyle {
    *
    * @desc 快手小程序
    */
-  'mp-kuaishou'?: MpKuaishou
+  'mp-kuaishou'?: MpKuaishou;
 
   /**
    * 设置编译到 mp-jd 平台的特定样式
@@ -265,21 +265,21 @@ export interface GlobalStyle {
    *
    * @desc 京东小程序
    */
-  'mp-jd'?: MpJd
+  'mp-jd'?: MpJd;
 
   /**
    * 引用小程序组件，详见 [小程序组件](https://uniapp.dcloud.net.cn/tutorial/miniprogram-subject.html#%E5%B0%8F%E7%A8%8B%E5%BA%8F%E8%87%AA%E5%AE%9A%E4%B9%89%E7%BB%84%E4%BB%B6%E6%94%AF%E6%8C%81)
    *
    * @desc App、微信小程序、支付宝小程序、百度小程序、京东小程序
    */
-  'usingComponents'?: Record<string, string>
+  usingComponents?: Record<string, string>;
 
   /**
    * 同层渲染，webrtc（实时音视频）无法正常时尝试配置为 "seperated" 强制关掉同层渲染
    *
    * @desc 微信小程序
    */
-  'renderingMode'?: string
+  renderingMode?: string;
 
   /**
    * 当存在 leftWindow 时，默认是否显示 leftWindow，详见 [topWindow](https://uniapp.dcloud.net.cn/collocation/pages.html#topwindow)
@@ -288,7 +288,7 @@ export interface GlobalStyle {
    *
    * @desc H5
    */
-  'leftWindow'?: boolean
+  leftWindow?: boolean;
 
   /**
    * 当存在 topWindow 时，默认是否显示 topWindow，详见 [topWindow](https://uniapp.dcloud.net.cn/collocation/pages.html#topwindow)
@@ -297,7 +297,7 @@ export interface GlobalStyle {
    *
    * @desc H5
    */
-  'topWindow'?: boolean
+  topWindow?: boolean;
 
   /**
    * 当存在 rightWindow 时，默认是否显示 rightWindow，详见 [topWindow](https://uniapp.dcloud.net.cn/collocation/pages.html#topwindow)
@@ -306,7 +306,7 @@ export interface GlobalStyle {
    *
    * @desc H5
    */
-  'rightWindow'?: boolean
+  rightWindow?: boolean;
 
   /**
    * rpx 计算所支持的最大设备宽度，单位为 px
@@ -315,7 +315,7 @@ export interface GlobalStyle {
    *
    * @desc App（vue2 且不含 nvue）、H5（2.8.12+）
    */
-  'rpxCalcMaxDeviceWidth'?: number
+  rpxCalcMaxDeviceWidth?: number;
 
   /**
    * rpx 计算使用的基准设备宽度，设备实际宽度超出 rpx 计算所支持的最大设备宽度时将按基准宽度计算，单位为 px
@@ -324,7 +324,7 @@ export interface GlobalStyle {
    *
    * @desc App（vue2 且不含 nvue）、H5（2.8.12+）
    */
-  'rpxCalcBaseDeviceWidth'?: number
+  rpxCalcBaseDeviceWidth?: number;
 
   /**
    * rpx 计算特殊处理的值，始终按实际的设备宽度计算，单位为 rpx
@@ -333,7 +333,7 @@ export interface GlobalStyle {
    *
    * @desc App（vue2 且不含 nvue）、H5（2.8.12+）
    */
-  'rpxCalcIncludeWidth'?: number
+  rpxCalcIncludeWidth?: number;
 
   /**
    * 是否使用动态 rpx，屏幕大小变化会重新渲染 rpx
@@ -342,7 +342,7 @@ export interface GlobalStyle {
    *
    * @desc App-nvue（vue3 固定值为 true） 3.2.13+
    */
-  'dynamicRpx'?: boolean
+  dynamicRpx?: boolean;
 
   /**
    * 当浏览器可见区域宽度大于 maxWidth 时两侧留白，当小于等于 maxWidth 时页面铺满，单位为 px
@@ -355,7 +355,7 @@ export interface GlobalStyle {
    *
    * @desc H5（2.9.9+）
    */
-  'maxWidth'?: number
+  maxWidth?: number;
 
-  [x: string]: any
+  [x: string]: any;
 }

@@ -18,13 +18,13 @@ pnpm i -D @uni-ku/pages-json
 ### vite 配置
 ```ts
 import uni from '@dcloudio/vite-plugin-uni';
-import { viteUniPagesJson } from '@uni-ku/pages-json';
+import pagesJson from '@uni-ku/pages-json/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [
-    viteUniPagesJson(), // 详细配置请看下面的详细描述
-    uni(), // 添加在 viteUniPagesJson() 之后
+    pagesJson(), // 详细配置请看下面的详细描述
+    uni(), // 添加在 pagesJson() 之后
     // 其他plugins
   ],
 });
@@ -37,7 +37,7 @@ export default defineConfig({
 ```json
 {
   "compilerOptions": {
-    "types": ["@uni-ku/pages-json"]
+    "types": ["@uni-ku/pages-json/client"]
   }
 }
 ```
@@ -106,9 +106,9 @@ export interface UserConfig {
 最终将与 `definePage` 宏生成的内容合并，生成最终的 `pages.json`
 
 ```ts
-import { UniPagesJson } from '@uni-ku/pages-json';
+import { definePagesJson } from '@uni-ku/pages-json';
 
-export default UniPagesJson({
+export default definePagesJson({
   globalStyle: {
     navigationBarTextStyle: 'black',
     navigationBarTitleText: 'uni-app',

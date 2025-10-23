@@ -1,5 +1,5 @@
+import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { UserConfig } from './config';
-import type * as PagesJSON from './types';
 import fs from 'node:fs';
 import path from 'node:path';
 import fg from 'fast-glob';

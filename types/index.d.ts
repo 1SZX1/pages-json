@@ -1,21 +1,21 @@
-import type { Condition } from './condition'
-import type { EasyCom } from './easycom'
-import type { GlobalStyle } from './globalStyle'
-import type { Pages } from './pages'
-import type { SubPackages } from './subPackages'
-import type { TabBar } from './tabBar'
-import type { TheWindow } from './theWindow'
-import type { UniIdRouter } from './uniIdRouter'
+import type { Condition } from './condition';
+import type { EasyCom } from './easycom';
+import type { GlobalStyle } from './globalStyle';
+import type { Pages } from './pages';
+import type { SubPackages } from './subPackages';
+import type { TabBar } from './tabBar';
+import type { TheWindow } from './theWindow';
+import type { UniIdRouter } from './uniIdRouter';
 
-export * from './common'
-export * from './condition'
-export * from './easycom'
-export * from './globalStyle'
-export * from './pages'
-export * from './subPackages'
-export * from './tabBar'
-export * from './theWindow'
-export * from './uniIdRouter'
+export type * from './common';
+export type * from './condition';
+export type * from './easycom';
+export type * from './globalStyle';
+export type * from './pages';
+export type * from './subPackages';
+export type * from './tabBar';
+export type * from './theWindow';
+export type * from './uniIdRouter';
 
 /**
  * 对 uni-app 进行全局配置，决定页面文件的路径、窗口样式、原生的导航栏、底部的原生 tabBar 等，类似微信小程序中 app.json 的页面管理部分
@@ -26,36 +26,36 @@ export interface PagesJson {
   /**
    * 设置默认页面的窗口表现
    */
-  globalStyle?: GlobalStyle
+  globalStyle?: GlobalStyle;
 
   /**
    * 设置页面路径及窗口表现
    */
-  pages?: Pages
+  pages?: Pages;
 
   /**
    * 组件自动引入规则
    *
    * @desc 2.5.5+
    */
-  easycom?: EasyCom
+  easycom?: EasyCom;
 
   /**
    * 设置底部 tab 的表现
    */
-  tabBar?: TabBar
+  tabBar?: TabBar;
 
   /**
    * 启动模式配置，仅开发期间生效
    */
-  condition?: Condition
+  condition?: Condition;
 
   /**
    * 分包加载配置
    *
    * @desc H5 不支持
    */
-  subPackages?: SubPackages
+  subPackages?: SubPackages;
 
   /**
    * 分包预下载规则
@@ -72,7 +72,7 @@ export interface PagesJson {
        *
        * __APP__ 表示主包
        */
-      packages: string[]
+      packages: string[];
 
       /**
        * 在指定网络下预下载
@@ -83,9 +83,9 @@ export interface PagesJson {
        *
        * @default "wifi"
        */
-      network?: 'all' | 'wifi'
-    }
-  }
+      network?: 'all' | 'wifi';
+    };
+  };
 
   /**
    * `Worker` 代码放置的目录
@@ -96,7 +96,7 @@ export interface PagesJson {
     /**
      * `Worker` 代码放置的目录
      */
-    path: string
+    path: string;
 
     /**
      * 是否打包为分包
@@ -105,43 +105,43 @@ export interface PagesJson {
      *
      * @default false
      */
-    isSubpackage?: boolean
-  }
+    isSubpackage?: boolean;
+  };
 
   /**
    * 大屏左侧窗口
    *
    * @desc H5
    */
-  leftWindow?: TheWindow
+  leftWindow?: TheWindow;
 
   /**
    * 大屏顶部窗口
    *
    * @desc H5
    */
-  topWindow?: TheWindow
+  topWindow?: TheWindow;
 
   /**
    * 大屏右侧窗口
    *
    * @desc H5
    */
-  rightWindow?: TheWindow
+  rightWindow?: TheWindow;
 
   /**
    * 自动跳转相关配置，新增于 HBuilderX 3.5.0
    *
    * @desc uni-app 3.5.0+、uni-app-x 3.99+
    */
-  uniIdRouter?: UniIdRouter
+  uniIdRouter?: UniIdRouter;
 
   /**
    * 默认启动首页，新增于 HBuilderX 3.7.0
    *
    * @desc 微信小程序、支付宝小程序
    */
-  entryPagePath?: string
+  entryPagePath?: string;
 
-  [x: string]: any
+  [x: string]: any;
 }

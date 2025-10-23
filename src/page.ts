@@ -1,5 +1,5 @@
+import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { File } from './file';
-import type * as PagesJSON from './types';
 import type { MaybePromiseCallable } from './utils';
 import path from 'node:path';
 import { slash } from '@antfu/utils';

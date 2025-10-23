@@ -1,4 +1,4 @@
-import type { PagesJson } from './types';
+import type { PagesJson } from '@uni-ku/pages-json/types';
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile as writeFile_ } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
