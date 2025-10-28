@@ -37,7 +37,7 @@ export default defineConfig({
 ```json
 {
   "compilerOptions": {
-    "types": ["@uni-ku/pages-json/client"]
+    "types": ["@uni-ku/pages-json"]
   }
 }
 ```
@@ -95,15 +95,15 @@ export interface UserConfig {
    * 显示调试
    * @default false
    */
-  debug?: boolean | DebugType;
+  debug?: boolean | 'info' | 'error' | 'debug' | 'warn';
 }
 ```
 
 ### 动态 pages 配置文件 `pages.json.(ts|mts|cts|js|cjs|mjs)`
 
-动态 pages 配置文件，须放置 `pages.json` 同级目录。
+动态 pages 配置文件，可放置在项目 `根目录` 或 `src 目录`。
 
-最终将与 `definePage` 宏生成的内容合并，生成最终的 `pages.json`
+将与 `definePage` 宏生成的内容合并，生成最终的 `pages.json`
 
 ```ts
 import { definePagesJson } from '@uni-ku/pages-json';
@@ -117,12 +117,12 @@ export default definePagesJson({
   },
   pages: [
     // pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
-    // {
-    //   path: 'pages/index/index',
-    //   style: {
-    //     navigationBarTitleText: 'uni-app',
-    //   },
-    // },
+    {
+      path: 'pages/index/index',
+      style: {
+        navigationBarTitleText: 'uni-app',
+      },
+    },
   ],
 });
 ```
@@ -134,13 +134,14 @@ export default definePagesJson({
 更多使用方式请参考 [playground/pages/pages-json](./playground/src/pages/pages-json/)
 
 **注意：**
-- 以下代码需要写在 `script setup` 内
+- 以下代码需要写在 `script setup` 或 `script` 内
 - `definePage` 宏和当前 SFC 不同域，且先于 SFC 生成，SFC 内部变量无法使用。
-- 页面 path url 将会自动根据文件路径生成，如无须配置其他项目，`definePage`可省略
-- 同一个 `script setup` 内仅可使用一个 `definePage`
+- 页面 path url 将会自动根据文件路径生成，如无须配置其他项目，`definePage` 可省略
+- 同一个页面内仅可使用一个 `definePage`
 
-JSON 对象
-```ts
+#### 对象形式
+```vue
+<script setup lang="ts">
 definePage({
   style: {
     navigationBarTitleText: 'hello world',
@@ -149,10 +150,12 @@ definePage({
     'auth',
   ],
 });
+</script>
 ```
 
-函数
-```ts
+#### 函数形式
+```vue
+<script setup lang="ts">
 import type { HelloWorld } from './utils';
 
 definePage(() => {
@@ -170,33 +173,40 @@ definePage(() => {
     ],
   };
 });
+</script>
 ```
 
-嵌套函数
-```ts
-definePage(() => {
-  function getTitle(): string {
-    const hello = 'hello';
-    const world = 'world';
-
-    return [hello, world].join(' ');
+#### 异步数据获取
+```vue
+<script setup lang="ts">
+definePage(async () => {
+  function fetchTitle(): Promise<string> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve('hello world from async');
+      }, 100);
+    });
   }
+
+  const title = await fetchTitle();
 
   return {
     style: {
-      navigationBarTitleText: getTitle(),
+      navigationBarTitleText: title,
     },
     middlewares: [
       'auth',
     ],
   };
 });
+</script>
 ```
-
-引入外部函数、变量。 需要注意的是，仅支持引入：
-1. 纯 JavaScript 代码 （如 node_modules 中的第三方库）
-2. TypeScript 类型声明 （因为会被自动忽略）
-```ts
+#### 引入外部函数、变量
+> **注意，仅支持引入：**
+> 1. 纯 JavaScript 代码 （如 node_modules 中的第三方库）
+> 2. TypeScript 类型声明 （因为会被自动忽略）
+```vue
+<script setup lang="ts">
 import { parse as parseYML } from 'yaml';
 
 definePage(() => {
@@ -206,11 +216,64 @@ style:
 `;
   return parseYML(yml);
 });
+</script>
 ```
 
-> <del> ### 获取当前上下文的数据 </del>
+#### 条件编译
+> **注意：不能使用第三方库判断环境，因为第三方库初始化时，变量值已经固定，后期环境变量修改无法跟着变更**
+```vue
+<script setup lang="ts">
+definePage(({ platform }) => {
+  // 使用注入的 platform 变量
+  const title = platform === 'h5' ? 'H5 环境' : '非 H5 环境';
+  // 使用 process.env.UNI_PLATFORM
+  const bgColor = process.env.UNI_PLATFORM === 'h5' ? 'white' : 'black';
+  return {
+    style: {
+      navigationBarTitleText: title,
+      backgroundColor: bgColor,
+    },
+  };
+});
+</script>
+```
 
-详见 [#6](https://github.com/uni-ku/pages-json/issues/6)，暂未明 ctx 有何作用。 使用 `virtualModule` 会导致变量得不到释放，占用内存。
+#### 选项式 API
+```vue
+<script>
+definePage({
+  style: {
+    navigationBarTitleText: 'Option API 内使用 definePage',
+  },
+  middlewares: [
+    'auth',
+  ],
+});
 
-## 感谢
-- [vite-plugin-uni-pages](https://github.com/uni-helper/vite-plugin-uni-pages)
+export default {
+  data() {
+    return {
+      count: 0
+    };
+  }
+};
+</script>
+```
+
+### 获取当前上下文的数据
+
+由于 `pages.json` 内包含条件编译，以及有重复 key，无法通过 `import` 引入当前环境的完整 json。
+可通过虚拟模块引入：
+```ts
+import pagesJson from 'virtual:@uni-ku/pages-json';
+
+console.log(pagesJson);
+```
+
+### 获取 uniapp pages.json 的类型提示
+```ts
+import type { Page, SubPackage } from '@uni-ku/pages-json/types';
+```
+
+### TODO:
+ - 支持动态 pages 配置文件 `pages.json.(ts|mts|cts|js|cjs|mjs)` 的条件编译

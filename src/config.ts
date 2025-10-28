@@ -1,109 +1,75 @@
-import type { DebugType } from './utils';
-import path from 'node:path';
 import process from 'node:process';
-import { DTS_FILE_NAME, OUTPUT_NAME } from './constant';
-import { enableDebug } from './utils';
+import { enableDebug } from './utils/debug';
 
 export interface UserConfig {
 
   /**
-   * Project's root path
-   * @default resolves to the `root` value from Vite config.
+   * 项目根目录
+   * @default vite 的 `root` 属性
    */
   root?: string;
 
   /**
-   * pages.json dir
+   * pages.json 的相对目录
    * @default "src"
    */
-  basePath?: string;
+  src?: string;
 
   /**
-   * Generate TypeScript declaration for pages path
-   * Accept path related to project root
-   * null to disable it
-   * @default basePath
+   * 为页面路径生成 TypeScript 声明
+   * 接受相对项目根目录的路径
+   * false 则取消生成
+   * @default "pages.d.ts"
    */
-  dts?: string | null;
+  dts?: string | boolean;
 
   /**
-   * Paths to the directory to search for page components.
+   * pages的相对路径
    * @default 'src/pages'
    */
-  pages?: string;
+  pageDir?: string;
 
   /**
-   * all root directories loaded by subPackages
+   * subPackages的相对路径
    * @default []
    */
-  subPackages?: string[];
+  subPackageDirs?: string[];
 
   /**
-   * exclude page
+   * 排除条件，应用于 pages 和 subPackages 的文件
    * @default ['node_modules', '.git', '** /__*__/ **']
    */
-  exclude?: string[];
+  excludes?: string[];
 
   /**
-   * Scan files deep
-   * @default 3
-   */
-  fileDeep?: number;
-
-  /**
-   * enable debug log
+   * 显示调试
    * @default false
    */
-  debug?: boolean | DebugType;
+  debug?: boolean | 'info' | 'error' | 'debug' | 'warn';
 }
 
-export interface ResolvedConfig extends Required<UserConfig> {
-  pagesJsonFile: string;
-}
-
-let resolvedConfig: ResolvedConfig | undefined;
+export interface ResolvedConfig extends Required<UserConfig> {}
 
 export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
   const {
     root = process.cwd(),
-    basePath = 'src',
-    dts,
-    pages = 'src/pages',
-    subPackages = [],
-    exclude = ['node_modules', '.git', '**/__*__/**'],
-    fileDeep = 3,
+    src = 'src',
+    dts = true,
+    pageDir = 'src/pages',
+    subPackageDirs = [],
+    excludes = ['node_modules', '.git', '**/__*__/**'],
     debug = false,
   } = useConfig;
 
   enableDebug(debug);
 
-  resolvedConfig = {
+  return {
     root,
-    get dts() {
-      return dts == null
-        ? path.resolve(this.basePath, DTS_FILE_NAME)
-        : path.isAbsolute(dts) ? dts : path.resolve(this.basePath, dts);
-    },
-    pages,
-    subPackages,
-    get basePath() {
-      return path.resolve(this.root, basePath);
-    },
-    exclude,
-    fileDeep,
+    dts: dts === true ? 'pages.d.ts' : dts,
+    pageDir,
+    subPackageDirs,
+    src,
+    excludes,
     debug,
-    get pagesJsonFile() {
-      return path.join(this.basePath, OUTPUT_NAME);
-    },
   };
-
-  return resolvedConfig!;
-}
-
-export function getConfig() {
-  if (!resolvedConfig) {
-    return resolveConfig({});
-  }
-
-  return resolvedConfig;
 }

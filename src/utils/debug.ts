@@ -3,15 +3,10 @@ import Debug from 'debug';
 const PREFIX = 'pages-json:';
 
 const DEBUG_TYPES = [
-  'loadPagesConfig',
-  'updatePagesJSON',
-  'scanFiles',
-  'exec',
-  'watcher',
+  'info',
   'error',
-  'getMacroResult',
-  'parseScriptSetup',
-  'mergePagesOptions',
+  'debug',
+  'warn',
 ] as const;
 
 export type DebugType = typeof DEBUG_TYPES[number];

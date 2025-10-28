@@ -15,4 +15,15 @@ export default definePagesJson({
       },
     },
   ],
+  subPackages: [
+    {
+      root: 'pages-sub',
+      plugins: {
+        'uni-id-pages': {
+          version: '1.0.0',
+          provider: 'https://service-1.pages.dev',
+        },
+      },
+    },
+  ],
 });

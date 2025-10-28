@@ -13,9 +13,14 @@
     "strictNullChecks": true,
     "esModuleInterop": true,
     "skipDefaultLibCheck": true,
-    "skipLibCheck": false
+    "skipLibCheck": true
   },
+  "include": [
+    "src/**/*",
+    "types/**/*"
+  ],
   "exclude": [
-    "**/node_modules/**"
+    "node_modules",
+    "dist"
   ]
 }

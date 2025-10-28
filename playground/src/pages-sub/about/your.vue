@@ -1,4 +1,8 @@
-<script></script>
+<script>
+definePage({
+
+});
+</script>
 
 <template>
   <div>

@@ -1,11 +1,8 @@
 import antfu from '@antfu/eslint-config';
+import gitignore from 'eslint-config-flat-gitignore';
 
 export default antfu(
-  {
-    ignores: [
-      '**/shims-uni-app.d.ts',
-    ],
-  },
+  gitignore(),
   {
     // style
     rules: {
@@ -21,6 +18,7 @@ export default antfu(
       'style/brace-style': ['warn', '1tbs'],
       'style/padded-blocks': 'off',
       'no-console': 'off',
+      'prefer-const': 'off',
       'unused-imports/no-unused-vars': [
         'error',
         {

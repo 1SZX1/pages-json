@@ -21,4 +21,4 @@ dist
 *.sw?
 
 src/pages.json
-src/pages.d.ts
+pages.d.ts

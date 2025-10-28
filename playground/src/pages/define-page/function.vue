@@ -1,20 +1,14 @@
 <script lang="ts" setup>
-import type { HelloWorld } from './utils';
+definePage(({ t, platform }) => {
 
-definePage(() => {
-  const words: HelloWorld = {
-    hello: 'hello',
-    world: 'world',
-  };
-
-  return {
+  return t({
     style: {
-      navigationBarTitleText: [words.hello, words.world].join(' '),
+      navigationBarTitleText: `hello ${platform}`,
     },
     middlewares: [
       'auth',
     ],
-  };
+  });
 });
 </script>
 

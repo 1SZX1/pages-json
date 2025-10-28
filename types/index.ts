@@ -1,8 +1,8 @@
 import type { Condition } from './condition';
 import type { EasyCom } from './easycom';
 import type { GlobalStyle } from './globalStyle';
-import type { Pages } from './pages';
-import type { SubPackages } from './subPackages';
+import type { Page } from './pages';
+import type { SubPackage } from './subPackages';
 import type { TabBar } from './tabBar';
 import type { TheWindow } from './theWindow';
 import type { UniIdRouter } from './uniIdRouter';
@@ -31,7 +31,7 @@ export interface PagesJson {
   /**
    * 设置页面路径及窗口表现
    */
-  pages?: Pages;
+  pages?: Page[];
 
   /**
    * 组件自动引入规则
@@ -55,7 +55,7 @@ export interface PagesJson {
    *
    * @desc H5 不支持
    */
-  subPackages?: SubPackages;
+  subPackages?: SubPackage[];
 
   /**
    * 分包预下载规则

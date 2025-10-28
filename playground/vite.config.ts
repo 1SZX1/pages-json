@@ -6,8 +6,8 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [
     uniPagesJson({
-      pages: 'src/pages',
-      subPackages: ['src/pages-sub'],
+      pageDir: 'src/pages',
+      subPackageDirs: ['src/pages-sub'],
       debug: true,
     }),
     uni(),

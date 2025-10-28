@@ -1,17 +1,17 @@
 import type { PagesJson } from '@uni-ku/pages-json/types';
-import { existsSync } from 'node:fs';
-import { mkdir, readFile, writeFile as writeFile_ } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import fs from 'node:fs';
+import { join } from 'node:path';
 import { slash } from '@antfu/utils';
+import { checkFile } from './utils/file';
 
-export function getDeclaration(pagesJSON: PagesJson) {
-  const subPagesPaths = (pagesJSON.subPackages || []).map((sub) => {
+function generateDeclaration(pagesJson: PagesJson) {
+  const subPagesPaths = (pagesJson.subPackages || []).map((sub) => {
     return (sub.pages || []).map(v => (`"/${slash(join(sub.root!, v.path))}"`));
   }).flat();
-  const tabPaths = (pagesJSON.tabBar?.list || []).map((v) => {
+  const tabPaths = (pagesJson.tabBar?.list || []).map((v) => {
     return `"/${v!.pagePath}"`;
   });
-  const allPagesPath = [...(pagesJSON.pages || []).filter(page => !tabPaths.includes(page.path)).map(v => `"/${v.path}"`), ...subPagesPaths];
+  const allPagesPath = [...(pagesJson.pages || []).filter(page => !tabPaths.includes(page.path)).map(v => `"/${v.path}"`), ...subPagesPaths];
   const code = `/* eslint-disable */
 /* prettier-ignore */
 // @ts-nocheck
@@ -38,20 +38,21 @@ declare interface Uni {
   return code;
 }
 
-async function writeFile(filePath: string, content: string) {
-  await mkdir(dirname(filePath), { recursive: true });
-  return await writeFile_(filePath, content, 'utf-8');
-}
+export async function writeDeclaration(pagesJson: PagesJson, filepath: string) {
 
-export async function writeDeclaration(pagesJSON: PagesJson, filepath: string) {
-  const originalContent = existsSync(filepath) ? await readFile(filepath, 'utf-8') : '';
+  const ok = await checkFile ({ path: filepath, newContent: '', modeFlag: fs.constants.W_OK | fs.constants.R_OK });
+  if (!ok) {
+    return;
+  }
 
-  const code = getDeclaration(pagesJSON);
+  const originalContent = await fs.promises.readFile(filepath, 'utf-8').catch(() => '');
+
+  const code = generateDeclaration(pagesJson);
   if (!code) {
     return;
   }
 
   if (code !== originalContent) {
-    await writeFile(filepath, code);
+    await fs.promises.writeFile(filepath, code);
   }
 }

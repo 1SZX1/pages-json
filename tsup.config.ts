@@ -5,16 +5,38 @@ const isDev = process.env.NODE_ENV === 'development';
 
 export default defineConfig([
   {
-    entry: [
-      'src/vite/index.ts',
-      'src/index.ts',
-    ],
-    format: ['cjs', 'esm'],
-    dts: {
-      resolve: true,
+    entry: {
+      index: 'src/index.ts',
+      vite: 'src/vite.ts',
     },
+    format: ['cjs', 'esm'],
+    dts: true,
     clean: true,
     sourcemap: isDev,
     external: ['vite', '@uni-ku/pages-json/types'],
   },
+  {
+    entry: [
+      'types/**/*.ts',
+    ],
+    outDir: 'dist/types',
+    format: ['esm'],
+    dts: {
+      resolve: true,
+      only: true,
+    },
+    clean: true,
+  },
+  // {
+  //   entry: [
+  //     'client',
+  //   ],
+  //   outDir: 'dist',
+  //   format: 'esm',
+  //   dts: {
+  //     resolve: true,
+  //     only: true,
+  //   },
+  //   // clean: true,
+  // },
 ]);

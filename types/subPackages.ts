@@ -1,30 +1,28 @@
-import type { Pages } from './pages'
+import type { Page } from './pages';
 
 export interface SubPackage {
   /**
    * 子包的根目录
    */
-  root: string
+  root: string;
 
   /**
    * 子包由哪些页面组成，参数同 pages
    */
-  pages: Pages
+  pages: Page[];
 
   /**
    * 分包插件
    */
   plugins?: {
     [pluginName: string]: {
-      version: string
+      version: string;
 
-      provider: string
+      provider: string;
 
-      export?: string
+      export?: string;
 
-      [key: string]: any
-    }
-  }
+      [key: string]: any;
+    };
+  };
 }
-
-export type SubPackages = SubPackage[]
