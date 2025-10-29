@@ -226,7 +226,7 @@ jobs:
         run: pnpm build
 
       - name: 发布到 NPM
-        run: pnpm publish
+        run: pnpm publish --access=public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
