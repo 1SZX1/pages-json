@@ -273,48 +273,53 @@ export class Context {
   }
 
   private async generatePagesJson(platforms: Map<BuiltInPlatform, number> = new Map()): Promise<PagesJSON.PagesJson> {
-    const json = (await this.dynamicPagesJson.getJson() || {});
+    let { pages, subPackages, tabBar, ...v1rest } = (await this.dynamicPagesJson.getJson() || {});
     for (const [platform] of platforms) {
-      const { pages, subPackages, tabBar, ...rest } = (await this.dynamicPagesJson.getJson({ platform }) || {});
-      mergePlatformObject(currentPlatform, json, platform, rest);
+      const { pages: v2pages, subPackages: v2subPackages, tabBar: v2tabBar, ...v2rest } = (await this.dynamicPagesJson.getJson({ platform }) || {});
+      mergePlatformObject(currentPlatform, v1rest, platform, v2rest);
 
       // 合并 pages
-      if (pages && pages.length > 0) {
-        json.pages = json.pages || [];
-        mergePlatformArray(currentPlatform, json.pages, platform, pages, v => v.path);
+      if (v2pages && v2pages.length > 0) {
+        pages = pages || [];
+        mergePlatformArray(currentPlatform, pages, platform, v2pages, v => v.path);
       }
 
       // 合并 subPackages
-      for (const subPackage of (subPackages || [])) {
-        json.subPackages = json.subPackages || [];
+      for (const v2sub of (v2subPackages || [])) {
+        subPackages = subPackages || [];
 
-        const subIdx = json.subPackages.findIndex(p => p.root === subPackage.root);
+        const subIdx = subPackages.findIndex(p => p.root === v2sub.root);
         if (subIdx > -1) { // 存在则合并
-          const { pages, ...rest } = subPackage;
+          const { pages, ...rest } = v2sub;
           if (pages && pages.length > 0) {
-            json.subPackages[subIdx].pages = json.subPackages[subIdx].pages || [];
-            mergePlatformArray(currentPlatform, json.subPackages[subIdx].pages, platform, pages, v => v.path);
+            subPackages[subIdx].pages = subPackages[subIdx].pages || [];
+            mergePlatformArray(currentPlatform, subPackages[subIdx].pages, platform, pages, v => v.path);
           }
-          Object.assign(json.subPackages[subIdx], rest);
+          Object.assign(subPackages[subIdx], rest);
         } else { // 不存在则添加
-          json.subPackages.push(subPackage);
+          subPackages.push(v2sub);
         }
 
       }
 
       // 合并 tabBar
-      if (tabBar) {
-        json.tabBar = json.tabBar || {};
-        const { list, ...rest } = tabBar;
+      if (v2tabBar) {
+        tabBar = tabBar || {};
+        const { list, ...rest } = v2tabBar;
         if (list && list.length > 0) {
-          json.tabBar.list = json.tabBar.list || [];
-          mergePlatformArray(currentPlatform, json.tabBar.list, platform, list, v => v.pagePath);
+          tabBar.list = tabBar.list || [];
+          mergePlatformArray(currentPlatform, tabBar.list, platform, list, v => v.pagePath);
         }
-        Object.assign(json.tabBar, rest);
+        Object.assign(tabBar, rest);
       }
     }
 
-    return json;
+    return {
+      ...v1rest,
+      pages,
+      subPackages,
+      tabBar,
+    };
   }
 
   private async generatePages(pagesJson: PagesJSON.PagesJson, platforms: Map<BuiltInPlatform, number> = new Map()): Promise<void> {
