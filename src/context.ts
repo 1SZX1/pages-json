@@ -2,7 +2,6 @@ import type { BuiltInPlatform } from '@uni-helper/uni-env';
 import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { CommentToken } from 'comment-json';
 import type { ResolvedConfig } from './config';
-import type { DeepPartial } from './types';
 import fs from 'node:fs';
 import path from 'node:path';
 import { platform as currentPlatform } from '@uni-helper/uni-env';
@@ -10,12 +9,12 @@ import { parse as cjParse, stringify as cjStringify } from 'comment-json';
 import fg from 'fast-glob';
 import { writeDeclaration } from './declaration';
 import { getPageType, getTabbarIndex, PageFile } from './pageFile';
+import { DynamicPagesJson } from './pagesJson';
 import { debug } from './utils/debug';
 import { checkFileSync, writeFileWithLock } from './utils/file';
 import { deepAssign } from './utils/object';
-import { parseCode } from './utils/parser';
 
-interface JsonFileInfo {
+interface StaticJsonFileInfo {
   platforms: Map<BuiltInPlatform, number>;
   indent: string;
   eof: string;
@@ -35,30 +34,22 @@ export class Context {
   public readonly cfg: ResolvedConfig;
 
   /**
-   * 页面文件的扩展名
-   */
-  public readonly pageFileExts = ['.vue', '.nvue', '.uvue'];
-  /**
    * 静态 pages.json 的文件路径
    */
-  public readonly pagesJsonPath: string;
+  public readonly staticJsonFilePath: string;
+  private staticJsonFileInfo?: StaticJsonFileInfo;
   /**
    * 全局动态 pages.json 可用的文件后缀
    */
-  public readonly globalPagesJsonExts = ['.ts', '.mts', '.cts', '.js', '.cjs', '.mjs'];
-  /**
-   * 全局动态 pages.json 可用的绝对文件路径
-   */
-  public readonly globalPagesJsonFilePaths: string[];
+  public dynamicPagesJson: DynamicPagesJson;
 
   private lastPagesJson = '';
-  private jsonFileInfo?: JsonFileInfo;
 
   constructor(config: ResolvedConfig) {
     this.cfg = config;
 
-    this.pagesJsonPath = path.join(this.cfg.src, 'pages.json');
-    this.globalPagesJsonFilePaths = this.getGlobalPagesJsonFilePaths('pages.json');
+    this.staticJsonFilePath = path.join(this.cfg.src, 'pages.json');
+    this.dynamicPagesJson = new DynamicPagesJson(this);
   }
 
   /**
@@ -69,8 +60,25 @@ export class Context {
     const files = new Map<string, PageFile>();
     const pages = new Map<string, PageFile>();
 
+    const listFiles = (dir: string, options: fg.Options = {}) => {
+      const { cwd, ignore = [], ...others } = options;
+      // fast-glob also use '/' for windows
+      const source = PageFile.exts.map(ext => `${fg.convertPathToPattern(dir)}/**/*${ext}`);
+      const files = fg.sync(source, {
+        cwd: cwd ? fg.convertPathToPattern(cwd) : undefined,
+        ignore,
+        ...others,
+        onlyFiles: true,
+        dot: true,
+        unique: true,
+        absolute: true,
+      });
+
+      return files;
+    };
+
     // pages
-    this.listFiles(this.cfg.pageDir, {
+    listFiles(this.cfg.pageDir, {
       cwd: this.cfg.root,
       ignore: this.cfg.excludes,
     }).forEach((f) => {
@@ -88,7 +96,7 @@ export class Context {
 
       const root = path.basename(dir);
 
-      this.listFiles(dir, {
+      listFiles(dir, {
         cwd: this.cfg.root,
         ignore: this.cfg.excludes,
       }).forEach((f) => {
@@ -113,37 +121,78 @@ export class Context {
    * @param filepath 指定更新的文件，空则更新所有文件
    */
   public async updatePagesJSON(filepath?: string): Promise<boolean> {
-    if (filepath) {
-      const file = this.getPageFile(filepath);
-      if (file) {
-        await file.read();
-        if (!file.hasChanged()) {
-          debug.info(`文件 ${filepath} 的 page meta 无改动，跳过更新。`);
+
+    const needUpdate = async (filepath?: string): Promise<boolean> => {
+
+      if (!filepath) { // 未指定文件，则更新所有文件
+        await this.scanFiles();
+        return true;
+      }
+
+      const abspath = path.isAbsolute(filepath)
+        ? filepath
+        : path.join(this.cfg.root, filepath);
+
+      // 检测是否合格的动态 pages 文件
+      if (!DynamicPagesJson.isValid(abspath, this.cfg.root, this.cfg.src)) {
+        if (abspath !== this.dynamicPagesJson.path) {
+          this.dynamicPagesJson.path = abspath;
+        }
+        await this.dynamicPagesJson.read();
+
+        if (!this.dynamicPagesJson.hasChanged()) {
+          debug.info(`文件 ${filepath} 的 pages json 无改动，跳过更新。`);
           return false;
+        } else {
+          return true;
         }
       }
+
+      // 检测是否合格的 page 文件
+      if (PageFile.isValid(abspath)) {
+        const pageFile = this.files.get(abspath);
+        if (pageFile) { // 文件存在
+          await pageFile.read();
+          if (!pageFile.hasChanged()) {
+            debug.info(`文件 ${filepath} 的 page meta 无改动，跳过更新。`);
+            return false;
+          }
+          return true;
+        } else { // 文件不存在，扫描全局文件
+          await this.scanFiles();
+          return true;
+        }
+      }
+
+      // 既不是 Dynamic Pages Json 又不是 page 文件
+      debug.info(`文件 ${filepath} 不是 pages.json 相关文件，跳过更新。`);
+      return false;
+    };
+
+    if (!(await needUpdate(filepath))) {
+      return false;
     }
 
-    this.checkPagesJsonFileSync();
-    await this.detectPagesJsonFile(true);
+    this.checkStaticJsonFileSync();
+    const { platforms } = await this.detectStaticJsonFile(true);
 
-    const pagesJson = (await this.getGlobalPagesJson() || {});
+    const json = await this.generatePagesJson(platforms);
 
-    await this.scanFiles();
-
-    const { platforms } = this.jsonFileInfo!;
-
-    await this.generatePages(pagesJson, platforms);
-    await this.generateSubPackages(pagesJson, platforms);
-    await this.generateTabbar(pagesJson, platforms);
-
-    this.sortPagesJson(pagesJson);
-
-    if (this.cfg.dts) {
-      await writeDeclaration(pagesJson, this.cfg.dts as string);
+    if (this.files.size === 0) {
+      await this.scanFiles(); // 避免每次都扫描全局
     }
 
-    return this.writePagesJson(pagesJson);
+    await this.generatePages(json, platforms);
+    await this.generateSubPackages(json, platforms);
+    await this.generateTabbar(json, platforms);
+
+    const result = await this.writePagesJson(json);
+
+    if (result && this.cfg.dts) {
+      await writeDeclaration(json, this.cfg.dts as string);
+    }
+
+    return result;
   }
 
   /**
@@ -152,31 +201,22 @@ export class Context {
    */
   public async virtualModule() {
 
-    const pagesJson = (await this.getGlobalPagesJson() || {});
+    const pagesJson = await this.generatePagesJson();
 
     await this.generatePages(pagesJson);
     await this.generateSubPackages(pagesJson);
     await this.generateTabbar(pagesJson);
 
-    this.sortPagesJson(pagesJson);
-
     return `export default ${JSON.stringify(pagesJson, null, 2)}\n`;
   }
 
-  /**
-   * 检查是否合格的页面文件
-   */
-  public isValidPageFile(filepath: string): boolean {
-    return this.pageFileExts.some(ext => filepath.endsWith(ext));
+  public isValidFile(filepath: string): boolean {
+    return PageFile.isValid(filepath) && DynamicPagesJson.isValid(filepath, this.cfg.root, this.cfg.src);
   }
 
-  public isValidGlobalPagesJsonFile(filepath: string): boolean {
-    return this.globalPagesJsonFilePaths.includes(filepath);
-  }
-
-  public checkPagesJsonFileSync(): boolean {
+  public checkStaticJsonFileSync(): boolean {
     return checkFileSync({
-      path: this.pagesJsonPath,
+      path: this.staticJsonFilePath,
       newContent: JSON.stringify({ pages: [{ path: '' }] }, null, 4),
       modeFlag: fs.constants.R_OK | fs.constants.W_OK,
     });
@@ -185,9 +225,9 @@ export class Context {
   /**
    * 检测静态 pages.json 文件
    */
-  private async detectPagesJsonFile(forceUpdate = false): Promise<JsonFileInfo> {
-    if (!forceUpdate && this.jsonFileInfo) {
-      return this.jsonFileInfo;
+  private async detectStaticJsonFile(forceUpdate = false): Promise<StaticJsonFileInfo> {
+    if (!forceUpdate && this.staticJsonFileInfo) {
+      return this.staticJsonFileInfo;
     }
 
     const detect = async () => {
@@ -198,7 +238,7 @@ export class Context {
         data: {} as PagesJSON.PagesJson,
       };
 
-      const content = await fs.promises.readFile(this.pagesJsonPath, { encoding: 'utf-8' }).catch(() => '');
+      const content = await fs.promises.readFile(this.staticJsonFilePath, { encoding: 'utf-8' }).catch(() => '');
       if (!content) {
         return res;
       }
@@ -241,36 +281,61 @@ export class Context {
       }
     };
 
-    this.jsonFileInfo = await detect();
+    this.staticJsonFileInfo = await detect();
 
-    return this.jsonFileInfo;
+    return this.staticJsonFileInfo;
   }
 
-  private sortPagesJson(pagesJson: PagesJSON.PagesJson) {
-    // 排序：pages 中 home 页面在开头
-    if (pagesJson.pages) {
-      pagesJson.pages.sort((a, b) => {
-        if (getPageType(a) === 'home') {
-          if (getPageType(b) === 'home') {
-            return 0;
-          } else {
-            return -1;
+  private async generatePagesJson(platforms: Map<BuiltInPlatform, number> = new Map()): Promise<PagesJSON.PagesJson> {
+    const json = (await this.dynamicPagesJson.getJson() || {});
+    for (const [platform] of platforms) {
+      const { pages, subPackages, tabBar, ...rest } = (await this.dynamicPagesJson.getJson({ platform }) || {});
+      mergePlatformObject(currentPlatform, json, platform, rest);
+
+      // 合并 pages
+      if (pages && pages.length > 0) {
+        json.pages = json.pages || [];
+        mergePlatformArray(currentPlatform, json.pages, platform, pages, v => v.path);
+      }
+
+      // 合并 subPackages
+      for (const subPackage of (subPackages || [])) {
+        json.subPackages = json.subPackages || [];
+
+        const subIdx = json.subPackages.findIndex(p => p.root === subPackage.root);
+        if (subIdx > -1) { // 存在则合并
+          const { pages, ...rest } = subPackage;
+          if (pages && pages.length > 0) {
+            json.subPackages[subIdx].pages = json.subPackages[subIdx].pages || [];
+            mergePlatformArray(currentPlatform, json.subPackages[subIdx].pages, platform, pages, v => v.path);
           }
-        } else if (getPageType(b) === 'home') {
-          return 1;
-        } else {
-          return 0;
+          Object.assign(json.subPackages[subIdx], rest);
+        } else { // 不存在则添加
+          json.subPackages.push(subPackage);
         }
-      });
+
+      }
+
+      // 合并 tabBar
+      if (tabBar) {
+        json.tabBar = json.tabBar || {};
+        const { list, ...rest } = tabBar;
+        if (list && list.length > 0) {
+          json.tabBar.list = json.tabBar.list || [];
+          mergePlatformArray(currentPlatform, json.tabBar.list, platform, list, v => v.pagePath);
+        }
+        Object.assign(json.tabBar, rest);
+      }
     }
 
-    // 排序：tabbar 配置项按照顺序排列
-    if (pagesJson.tabBar && pagesJson.tabBar.list) {
-      pagesJson.tabBar.list.sort((a, b) => getTabbarIndex(a) - getTabbarIndex(b));
-    }
+    return json;
   }
 
   private async generatePages(pagesJson: PagesJSON.PagesJson, platforms: Map<BuiltInPlatform, number> = new Map()): Promise<void> {
+
+    if (this.pages.size === 0) {
+      return;
+    }
 
     pagesJson.pages = pagesJson.pages || [];
 
@@ -278,7 +343,7 @@ export class Context {
       const page = await pf.getPage();
       for (const [platform] of platforms) {
         const platformPage = await pf.getPage({ platform });
-        mergePlatformItems(currentPlatform, page, platform, platformPage);
+        mergePlatformObject(currentPlatform, page, platform, platformPage);
       }
 
       const idx = pagesJson.pages.findIndex(p => p.path === page.path);
@@ -287,43 +352,59 @@ export class Context {
       } else {
         pagesJson.pages.push(page);
       }
-
     }
 
+    // 排序
+    pagesJson.pages.sort((a, b) => {
+      if (getPageType(a) === 'home') {
+        if (getPageType(b) === 'home') {
+          return 0;
+        } else {
+          return -1;
+        }
+      } else if (getPageType(b) === 'home') {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
   }
 
   private async generateSubPackages(pagesJson: PagesJSON.PagesJson, platforms: Map<BuiltInPlatform, number> = new Map()): Promise<void> {
 
-    if (this.subPackages.size > 0) {
-      // subPackages 大于 0 才进行，避免错误创建空的 subPackages
-      pagesJson.subPackages = pagesJson.subPackages || [];
-      for (const [root, subPackage] of this.subPackages) {
-        for (const [_, pf] of subPackage) {
-          const page = await pf.getPage();
-          for (const [platform] of platforms) {
-            const platformPage = await pf.getPage({ platform });
-            mergePlatformItems(currentPlatform, page, platform, platformPage);
-          }
+    if (this.subPackages.size === 0) {
+      return;
+    }
 
-          const idx = pagesJson.subPackages.findIndex(p => p.root === root);
-          if (idx !== -1) {
-            pagesJson.subPackages[idx].pages = pagesJson.subPackages[idx].pages || [];
-            const pidx = pagesJson.subPackages[idx].pages.findIndex(p => p.path === page.path);
-            if (pidx !== -1) {
-              deepAssign(pagesJson.subPackages[idx].pages[pidx], page);
-            } else {
-              pagesJson.subPackages[idx].pages.push(page);
-            }
+    // subPackages 大于 0 才进行，避免错误创建空的 subPackages
+    pagesJson.subPackages = pagesJson.subPackages || [];
+    for (const [root, subPackage] of this.subPackages) {
+      for (const [_, pf] of subPackage) {
+        const page = await pf.getPage();
+        for (const [platform] of platforms) {
+          const platformPage = await pf.getPage({ platform });
+          mergePlatformObject(currentPlatform, page, platform, platformPage);
+        }
 
+        const idx = pagesJson.subPackages.findIndex(p => p.root === root);
+        if (idx !== -1) {
+          pagesJson.subPackages[idx].pages = pagesJson.subPackages[idx].pages || [];
+          const pidx = pagesJson.subPackages[idx].pages.findIndex(p => p.path === page.path);
+          if (pidx !== -1) {
+            deepAssign(pagesJson.subPackages[idx].pages[pidx], page);
           } else {
-            pagesJson.subPackages.push({
-              root,
-              pages: [page],
-            });
+            pagesJson.subPackages[idx].pages.push(page);
           }
+
+        } else {
+          pagesJson.subPackages.push({
+            root,
+            pages: [page],
+          });
         }
       }
     }
+
   }
 
   private async generateTabbar(pagesJson: PagesJSON.PagesJson, platforms: Map<BuiltInPlatform, number> = new Map()): Promise<void> {
@@ -347,7 +428,7 @@ export class Context {
 
           const [[pf1, v1], ...rest] = items.entries();
           for (const [pf2, v2] of rest) {
-            mergePlatformItems(pf1, v1, pf2, v2);
+            mergePlatformObject(pf1, v1, pf2, v2);
           }
 
           const idx = pagesJson.tabBar.list.findIndex(item => item.pagePath === v1.pagePath);
@@ -360,10 +441,15 @@ export class Context {
       }
     }
 
+    // 排序：tabbar 配置项按照顺序排列
+    if (pagesJson.tabBar && pagesJson.tabBar.list) {
+      pagesJson.tabBar.list.sort((a, b) => getTabbarIndex(a) - getTabbarIndex(b));
+    }
+
   }
 
   private async writePagesJson(pagesJson: PagesJSON.PagesJson): Promise<boolean> {
-    const { indent, eof, platforms } = this.jsonFileInfo!;
+    const { indent, eof, platforms } = this.staticJsonFileInfo!;
     const merged = new Map<BuiltInPlatform, number>(platforms.entries()).set(currentPlatform, Date.now());
     const sorted = Array.from(merged.entries()).sort(([p1], [p2]) => p1.localeCompare(p2));
     const comment = `// GENERATED BY @uni-ku/pages-json, PLATFORM: ${sorted.map(([p]) => `${p}`).join(' || ')} \n`;
@@ -380,98 +466,56 @@ export class Context {
     const commentTS = `// GENERATED BY @uni-ku/pages-json, PLATFORM: ${sorted.map(([p, t]) => `${p}@${t}`).join(' || ')} \n`;
     const final = clearKeySuffix(commentTS + raw);
 
-    await writeFileWithLock(this.pagesJsonPath, final);
+    await writeFileWithLock(this.staticJsonFilePath, final);
 
     this.lastPagesJson = rawComment;
 
     return true;
   }
 
-  private getGlobalPagesJsonFilePaths(basename: string): string[] {
-    const src = path.resolve(this.cfg.root, this.cfg.src);
-
-    const paths: string[] = [];
-
-    for (const dir of [this.cfg.root, src]) {
-      for (const ext of this.globalPagesJsonExts) {
-        paths.push(path.join(dir, `${basename}${ext}`));
-      }
-    }
-    return paths;
-  }
-
-  /**
-   * 从项目根目录 “root" 和基本目录 “baseDir” 获取全局动态 pages.json 的绝对路径
-   */
-  private getGlobalPagesJsonPath(): string | undefined {
-
-    for (const filepath of this.globalPagesJsonFilePaths) {
-      try {
-        const stat = fs.statSync(filepath);
-        if (stat && stat.isFile()) {
-          return filepath;
-        }
-      } catch {
-        continue;
-      }
-    }
-  }
-
-  private async getGlobalPagesJson(): Promise<PagesJSON.PagesJson | undefined> {
-
-    const file = this.getGlobalPagesJsonPath();
-    if (!file) {
-      return;
-    }
-
-    const content = await fs.promises.readFile(file, { encoding: 'utf-8' }).catch(() => '');
-    if (!content) {
-      return;
-    }
-
-    const parsed = await parseCode({ code: content, filename: file });
-    if (!parsed) {
-      return;
-    }
-
-    const globalPagesJson = typeof parsed === 'function'
-      ? await parsed({ t: (p: DeepPartial<PagesJSON.PagesJson>) => p })
-      : parsed;
-
-    return globalPagesJson;
-  }
-
-  private getPageFile(filepath: string): PageFile | undefined {
-
-    const abspath = path.isAbsolute(filepath)
-      ? filepath
-      : path.join(this.cfg.root, filepath);
-
-    return this.files.get(abspath);
-  }
-
-  private listFiles(dir: string, options: fg.Options = {}) {
-    const { cwd, ignore = [], ...others } = options;
-    // fast-glob also use '/' for windows
-    const source = this.pageFileExts.map(ext => `${fg.convertPathToPattern(dir)}/**/*${ext}`);
-    const files = fg.sync(source, {
-      cwd: cwd ? fg.convertPathToPattern(cwd) : undefined,
-      ignore,
-      ...others,
-      onlyFiles: true,
-      dot: true,
-      unique: true,
-      absolute: true,
-    });
-
-    return files;
-  }
-
 }
 
-function mergePlatformItems<T extends object>(pf1: BuiltInPlatform, v1: T, pf2: BuiltInPlatform, v2: T): void {
+/**
+ * 合并两个不同平台的数组
+ *
+ * @param pf1 平台名称 1
+ * @param v1  值 1
+ * @param pf2 平台名称 2
+ * @param v2  值 2
+ * @param getKey 获取元素的 key
+ * @returns 是否有变化。
+ */
+function mergePlatformArray<T extends object>(pf1: BuiltInPlatform, v1: T[], pf2: BuiltInPlatform, v2: T[], getKey: (v: T) => string): boolean {
+  let merged = false;
+  for (const v2item of v2) {
+    const v2key = getKey(v2item);
+    const v1idx = v1.findIndex(v => getKey(v) === v2key);
+    if (v1idx > -1) {
+      mergePlatformObject(pf1, v1[v1idx], pf2, v2item);
+    } else {
+      v1.push(v2item);
+    }
+
+    merged = true;
+  }
+
+  return merged;
+}
+
+/**
+ * 合并两个不同平台的对象
+ *
+ * @param pf1 平台名称 1
+ * @param v1  值 1
+ * @param pf2 平台名称 2
+ * @param v2  值 2
+ * @returns 是否有变化。（相等返回 false，不相等进行合并，返回 true）
+ */
+function mergePlatformObject<T extends object>(pf1: BuiltInPlatform, v1: T, pf2: BuiltInPlatform, v2: T): boolean {
 
   const v1keys = new Set(Object.keys(v1));
+
+  let merged = false;
 
   for (const key in v2) {
     const v1Child = v1[key] ?? undefined;
@@ -487,13 +531,22 @@ function mergePlatformItems<T extends object>(pf1: BuiltInPlatform, v1: T, pf2: 
       wrapIfdef(v1, p2pk, pf2);
     }
 
-    if (typeof v2Child === 'object' && v2Child !== null) {
-      mergePlatformItems(pf1, v1Child!, pf2, v2Child);
+    if (v1Child === v2Child) {
       continue;
     }
 
-    if (v1Child === v2Child) {
-      continue;
+    if (Array.isArray(v2Child)) {
+      const c1 = JSON.stringify(v1Child);
+      const c2 = JSON.stringify(v2Child);
+      if (c1 === c2) {
+        continue;
+      }
+    } else if (typeof v2Child === 'object' && v2Child !== null) {
+
+      if (mergePlatformObject(pf1, v1Child!, pf2, v2Child)) { // 递归合并
+        merged = true; // 合并成功
+        continue; // 下一个循环
+      }
     }
 
     delete v1[key];
@@ -501,15 +554,17 @@ function mergePlatformItems<T extends object>(pf1: BuiltInPlatform, v1: T, pf2: 
     wrapIfdef(v1, p1pk, pf1);
     (v1 as any)[p2pk] = v2Child;
     wrapIfdef(v1, p2pk, pf2);
+
+    merged = true; // 标识已合并
   }
 
-  for (const key of v1keys) {
-    if (key.includes('#ifdef')) {
+  for (const key of v1keys) { // 处理 v2 不存在的 key
+    if (key.includes('#ifdef')) { // 如果已经是格式化后的 key，跳过
       continue;
     }
 
     const v1Child = (v1 as any)[key];
-    if (v1Child === undefined) {
+    if (v1Child === undefined) { // 如果值为 undefined，跳过
       continue;
     }
 
@@ -517,11 +572,18 @@ function mergePlatformItems<T extends object>(pf1: BuiltInPlatform, v1: T, pf2: 
     delete (v1 as any)[key];
     (v1 as any)[p1pk] = v1Child;
     wrapIfdef(v1, p1pk, pf1);
+
+    merged = true; // 标识已合并
   }
+
+  return merged;
 }
 
-function clearKeySuffix(raw: string): string {
-  return raw.replace(/"([^"]+)#ifdef_.*?"/g, '"$1"');
+/**
+ * 清理 key 后缀
+ */
+function clearKeySuffix(rawJson: string): string {
+  return rawJson.replace(/"([^"]+)#ifdef_.*?"/g, '"$1"');
 }
 
 function wrapIfdef(obj: any, key: string, platform: string): void {
@@ -549,7 +611,9 @@ function wrapIfdef(obj: any, key: string, platform: string): void {
   });
 }
 
-// 替换现有的 detectIndent 函数
+/**
+ * 检测缩进
+ */
 function detectIndent(code: string): number {
   const lines = code.split(/\r?\n/);
   const indentSizes: number[] = [];

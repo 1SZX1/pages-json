@@ -27,16 +27,4 @@ export default defineConfig([
     },
     clean: true,
   },
-  // {
-  //   entry: [
-  //     'client',
-  //   ],
-  //   outDir: 'dist',
-  //   format: 'esm',
-  //   dts: {
-  //     resolve: true,
-  //     only: true,
-  //   },
-  //   // clean: true,
-  // },
 ]);

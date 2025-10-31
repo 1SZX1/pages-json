@@ -12,9 +12,12 @@ function definePage(arg: UserPageMeta | ((arg: DefinePageFuncArgs) => UserPageMe
 
 interface DefinePagesJsonFuncArgs {
   t: (p: DeepPartial<PagesJSON.PagesJson>) => DeepPartial<PagesJSON.PagesJson>;
+  platform: BuiltInPlatform;
 }
 
-function definePagesJson<C extends DeepPartial<PagesJSON.PagesJson> | ((a: DefinePagesJsonFuncArgs) => DeepPartial<PagesJSON.PagesJson> | Promise<DeepPartial<PagesJSON.PagesJson>>)>(userConfig: C): C {
+ type DefinePagesJsonArg = DeepPartial<PagesJSON.PagesJson> | ((a: DefinePagesJsonFuncArgs) => DeepPartial<PagesJSON.PagesJson> | Promise<DeepPartial<PagesJSON.PagesJson>>);
+
+function definePagesJson(userConfig: DefinePagesJsonArg): DefinePagesJsonArg {
   return userConfig;
 }
 
@@ -27,6 +30,7 @@ declare global {
 
 export type {
   DefinePageFuncArgs,
+  DefinePagesJsonArg,
   DefinePagesJsonFuncArgs,
   UserPageMeta,
   UserTabBarItem,

@@ -74,8 +74,8 @@ export class PageFile {
 
   private changed = true;
 
-  /** raw copy of page meta */
-  private code: string = '';
+  /** 上次的 definePage 参数的代码 */
+  private lastCode: string = '';
 
   /** platform => page meta */
   private metas: Map<BuiltInPlatform, UserPageMeta> = new Map();
@@ -103,7 +103,7 @@ export class PageFile {
     if (forceRead || !this.content) {
       await this.read();
     }
-    if (forceRead || !this.metas.has(platform)) {
+    if (!this.metas.has(platform)) {
       await this.parsePageMeta({ platform });
     }
 
@@ -120,7 +120,7 @@ export class PageFile {
     if (forceRead || !this.content) {
       await this.read();
     }
-    if (forceRead || !this.metas.has(platform)) {
+    if (!this.metas.has(platform)) {
       await this.parsePageMeta({ platform });
     }
 
@@ -225,17 +225,16 @@ export class PageFile {
       preparedCode,
     };
 
-    this.changed = this.code !== code;
-
+    this.changed = this.lastCode !== code;
     if (this.changed) {
       // 如果有更改，则清空 metas
       this.metas.clear();
     }
 
-    this.code = code;
+    this.lastCode = code;
   }
 
-  public async parsePageMeta({ platform = currentPlatform }: { platform?: BuiltInPlatform }): Promise<UserPageMeta | undefined> {
+  public async parsePageMeta({ platform = currentPlatform }: { platform?: BuiltInPlatform } = {}): Promise<UserPageMeta | undefined> {
 
     if (!this.macro) {
       this.metas.delete(platform);
@@ -271,6 +270,14 @@ export class PageFile {
     return this.macro;
   }
 
+  /**
+   * 页面文件的扩展名
+   */
+  public static readonly exts = ['.vue', '.nvue', '.uvue'];
+
+  public static isValid(filepath: string): boolean {
+    return PageFile.exts.some(ext => filepath.endsWith(ext));
+  }
 }
 
 export function getPageType(page: PagesJSON.Page): 'page' | 'home' {

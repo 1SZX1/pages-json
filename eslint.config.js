@@ -18,7 +18,6 @@ export default antfu(
       'style/brace-style': ['warn', '1tbs'],
       'style/padded-blocks': 'off',
       'no-console': 'off',
-      'prefer-const': 'off',
       'unused-imports/no-unused-vars': [
         'error',
         {
@@ -35,19 +34,11 @@ export default antfu(
     },
   },
   {
-    files: [
-      'packages/playground/**/*.vue',
-      'packages/playground/**/*.ts',
-    ],
-    rules: {
-      'no-console': 'off',
-    },
-  },
-  {
     files: ['**/manifest.json', '**/pages.json'],
     rules: {
       indent: ['error', 4],
       'jsonc/indent': ['error', 4],
+      'jsonc/no-dupe-keys': 'off',
     },
   },
 );

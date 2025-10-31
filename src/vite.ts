@@ -6,6 +6,8 @@ import chokidar from 'chokidar';
 import MagicString from 'magic-string';
 import { resolveConfig, type UserConfig } from './config';
 import { Context } from './context';
+import { PageFile } from './pageFile';
+import { DynamicPagesJson } from './pagesJson';
 import { debug } from './utils/debug';
 
 const MODULE_ID_VIRTUAL = 'virtual:@uni-ku/pages-json' as const;
@@ -18,7 +20,7 @@ export default function pagesJson(userConfig: UserConfig = {}): PluginOption {
   const cfg = resolveConfig(userConfig);
   const ctx = new Context(cfg);
 
-  ctx.checkPagesJsonFileSync();
+  ctx.checkStaticJsonFileSync();
 
   return {
     name: '@uni-ku/pages-json',
@@ -37,7 +39,7 @@ export default function pagesJson(userConfig: UserConfig = {}): PluginOption {
             ctx.cfg.pageDir,
             ...ctx.cfg.subPackageDirs,
           ]),
-          ...ctx.globalPagesJsonFilePaths,
+          ...DynamicPagesJson.possibleFilePaths(ctx.cfg.root, ctx.cfg.src),
         ]));
       }
     },
@@ -105,12 +107,12 @@ async function setupWatcher(ctx: Context, watcher: FSWatcher) {
       ctx.cfg.pageDir,
       ...ctx.cfg.subPackageDirs,
     ]),
-    ...ctx.globalPagesJsonFilePaths,
+    ...DynamicPagesJson.possibleFilePaths(ctx.cfg.root, ctx.cfg.src),
   ];
 
   const excludes: AnymatchMatcher = [
     ...ctx.cfg.excludes,
-    file => !ctx.isValidPageFile(file) && !ctx.isValidGlobalPagesJsonFile(file),
+    file => !PageFile.isValid(file) && !DynamicPagesJson.isValid(file, ctx.cfg.root, ctx.cfg.src),
   ];
 
   watcher.on('add', async (file) => {
@@ -122,7 +124,7 @@ async function setupWatcher(ctx: Context, watcher: FSWatcher) {
     }
 
     debug.debug(`新增文件: ${file}`);
-    await ctx.updatePagesJSON();
+    await ctx.updatePagesJSON(file);
   });
 
   watcher.on('change', async (file) => {
