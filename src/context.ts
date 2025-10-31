@@ -60,23 +60,6 @@ export class Context {
     const files = new Map<string, PageFile>();
     const pages = new Map<string, PageFile>();
 
-    const listFiles = (dir: string, options: fg.Options = {}) => {
-      const { cwd, ignore = [], ...others } = options;
-      // fast-glob also use '/' for windows
-      const source = PageFile.exts.map(ext => `${fg.convertPathToPattern(dir)}/**/*${ext}`);
-      const files = fg.sync(source, {
-        cwd: cwd ? fg.convertPathToPattern(cwd) : undefined,
-        ignore,
-        ...others,
-        onlyFiles: true,
-        dot: true,
-        unique: true,
-        absolute: true,
-      });
-
-      return files;
-    };
-
     // pages
     listFiles(this.cfg.pageDir, {
       cwd: this.cfg.root,
@@ -264,6 +247,9 @@ export class Context {
             }
           }
         }
+
+        // TODO: 删除
+        res.platforms.set('mp-weixin', Date.now());
 
         res.indent = ' '.repeat(detectIndent(content));
 
@@ -474,6 +460,22 @@ export class Context {
   }
 
 }
+
+function listFiles(dir: string, options: fg.Options = {}) {
+  const { cwd, ignore = [], ...others } = options;
+  // fast-glob also use '/' for windows
+  const source = PageFile.exts.map(ext => `${fg.convertPathToPattern(dir)}/**/*${ext}`);
+  const files = fg.sync(source, {
+    cwd: cwd ? fg.convertPathToPattern(cwd) : undefined,
+    ignore,
+    onlyFiles: true,
+    unique: true,
+    absolute: true,
+    ...others,
+  });
+
+  return files;
+};
 
 /**
  * 合并两个不同平台的数组
