@@ -487,10 +487,8 @@ function listFiles(dir: string, options: fg.Options = {}) {
  * @param pf2 平台名称 2
  * @param v2  值 2
  * @param getKey 获取元素的 key
- * @returns 是否有变化。
  */
-function mergePlatformArray<T extends object>(pf1: BuiltInPlatform, v1: T[], pf2: BuiltInPlatform, v2: T[], getKey: (v: T) => string): boolean {
-  let merged = false;
+function mergePlatformArray<T extends object>(pf1: BuiltInPlatform, v1: T[], pf2: BuiltInPlatform, v2: T[], getKey: (v: T) => string) {
   for (const v2item of v2) {
     const v2key = getKey(v2item);
     const v1idx = v1.findIndex(v => getKey(v) === v2key);
@@ -499,11 +497,7 @@ function mergePlatformArray<T extends object>(pf1: BuiltInPlatform, v1: T[], pf2
     } else {
       v1.push(v2item);
     }
-
-    merged = true;
   }
-
-  return merged;
 }
 
 /**
@@ -513,13 +507,10 @@ function mergePlatformArray<T extends object>(pf1: BuiltInPlatform, v1: T[], pf2
  * @param v1  值 1
  * @param pf2 平台名称 2
  * @param v2  值 2
- * @returns 是否有变化。（相等返回 false，不相等进行合并，返回 true）
  */
-function mergePlatformObject<T extends object>(pf1: BuiltInPlatform, v1: T, pf2: BuiltInPlatform, v2: T): boolean {
+function mergePlatformObject<T extends object>(pf1: BuiltInPlatform, v1: T, pf2: BuiltInPlatform, v2: T) {
 
   const v1keys = new Set(Object.keys(v1));
-
-  let merged = false;
 
   for (const key in v2) {
     const v1Child = v1[key] ?? undefined;
@@ -546,11 +537,8 @@ function mergePlatformObject<T extends object>(pf1: BuiltInPlatform, v1: T, pf2:
         continue;
       }
     } else if (typeof v2Child === 'object' && v2Child !== null) {
-
-      if (mergePlatformObject(pf1, v1Child!, pf2, v2Child)) { // 递归合并
-        merged = true; // 合并成功
-        continue; // 下一个循环
-      }
+      mergePlatformObject(pf1, v1Child!, pf2, v2Child); // 递归合并
+      continue; // 下一个循环
     }
 
     delete v1[key];
@@ -559,7 +547,6 @@ function mergePlatformObject<T extends object>(pf1: BuiltInPlatform, v1: T, pf2:
     (v1 as any)[p2pk] = v2Child;
     wrapIfdef(v1, p2pk, pf2);
 
-    merged = true; // 标识已合并
   }
 
   for (const key of v1keys) { // 处理 v2 不存在的 key
@@ -576,11 +563,7 @@ function mergePlatformObject<T extends object>(pf1: BuiltInPlatform, v1: T, pf2:
     delete (v1 as any)[key];
     (v1 as any)[p1pk] = v1Child;
     wrapIfdef(v1, p1pk, pf1);
-
-    merged = true; // 标识已合并
   }
-
-  return merged;
 }
 
 /**
