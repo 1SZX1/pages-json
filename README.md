@@ -2,6 +2,7 @@
 
 `definePage` 宏，用于动态生成 `pages.json`。
 
+- 支持条件编译
 - 支持类型提示、约束
 - 支持 json
 - 支持函数和异步函数
@@ -123,13 +124,13 @@ export default definePagesJson({
 
 ## Vue SFC文件的 `definePage` 宏使用方式
 
-更多使用方式请参考 [playground/pages/pages-json](./playground/src/pages/pages-json/)
+更多使用方式请参考 [playground/pages/define-page](./playground/src/pages/define-page/)
 
-**注意：**
-- 以下代码需要写在 `script setup` 或 `script` 内
-- `definePage` 宏和当前 SFC 不同域，且先于 SFC 生成，SFC 内部变量无法使用。
-- 页面 path url 将会自动根据文件路径生成，如无须配置其他项目，`definePage` 可省略
-- 同一个页面内仅可使用一个 `definePage`
+> **注意：**
+> 1. 以下代码需要写在 `script setup` 或 `script` 内
+> 2. `definePage` 宏和当前 SFC 不同域，且先于 SFC 生成，SFC 内部变量无法使用。
+> 3. 页面 path url 将会自动根据文件路径生成，如无须配置其他项目，`definePage` 可省略
+> 4. 同一个页面内仅可使用一个 `definePage`
 
 ### 对象形式
 ```vue
