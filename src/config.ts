@@ -10,7 +10,7 @@ export interface UserConfig {
   root?: string;
 
   /**
-   * pages.json 的相对目录
+   * 源码目录，pages.json 放置的目录
    * @default "src"
    */
   src?: string;

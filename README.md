@@ -54,42 +54,36 @@ export interface UserConfig {
   root?: string;
 
   /**
-   * pages.json 的相对目录
+   * 源码目录，pages.json 放置的目录
    * @default "src"
    */
-  basePath?: string;
+  src?: string;
 
   /**
    * 为页面路径生成 TypeScript 声明
    * 接受相对项目根目录的路径
-   * null 则取消生成
-   * @default basePath
+   * false 则取消生成
+   * @default "pages.d.ts"
    */
-  dts?: string | null;
+  dts?: string | boolean;
 
   /**
    * pages的相对路径
    * @default 'src/pages'
    */
-  pages?: string;
+  pageDir?: string;
 
   /**
    * subPackages的相对路径
    * @default []
    */
-  subPackages?: string[];
+  subPackageDirs?: string[];
 
   /**
    * 排除条件，应用于 pages 和 subPackages 的文件
    * @default ['node_modules', '.git', '** /__*__/ **']
    */
-  exclude?: string[];
-
-  /**
-   * pages和subPages的文件扫描深度
-   * @default 3
-   */
-  fileDeep?: number;
+  excludes?: string[];
 
   /**
    * 显示调试
@@ -127,9 +121,7 @@ export default definePagesJson({
 });
 ```
 
-## 使用
-
-### vue SFC文件内 `definePage` 宏使用方式
+## Vue SFC文件的 `definePage` 宏使用方式
 
 更多使用方式请参考 [playground/pages/pages-json](./playground/src/pages/pages-json/)
 
@@ -139,7 +131,7 @@ export default definePagesJson({
 - 页面 path url 将会自动根据文件路径生成，如无须配置其他项目，`definePage` 可省略
 - 同一个页面内仅可使用一个 `definePage`
 
-#### 对象形式
+### 对象形式
 ```vue
 <script setup lang="ts">
 definePage({
@@ -153,7 +145,7 @@ definePage({
 </script>
 ```
 
-#### 函数形式
+### 函数形式
 ```vue
 <script setup lang="ts">
 import type { HelloWorld } from './utils';
@@ -176,7 +168,7 @@ definePage(() => {
 </script>
 ```
 
-#### 异步数据获取
+### 异步数据获取
 ```vue
 <script setup lang="ts">
 definePage(async () => {
@@ -201,7 +193,7 @@ definePage(async () => {
 });
 </script>
 ```
-#### 引入外部函数、变量
+### 引入外部函数、变量
 > **注意，仅支持引入：**
 > 1. 纯 JavaScript 代码 （如 node_modules 中的第三方库）
 > 2. TypeScript 类型声明 （因为会被自动忽略）
@@ -219,7 +211,7 @@ style:
 </script>
 ```
 
-#### 条件编译
+### 条件编译
 > **注意：使用第三方库判断环境可能会判断错误。**
 > **因为部分第三方库初始化时，变量值已经固定，后期环境变量修改无法跟着变更**
 ```vue
@@ -239,7 +231,7 @@ definePage(({ platform }) => {
 </script>
 ```
 
-#### 选项式 API
+### 选项式 API
 ```vue
 <script>
 definePage({
@@ -261,7 +253,7 @@ export default {
 </script>
 ```
 
-### 获取当前上下文的数据
+## 获取当前上下文的数据
 
 由于 `pages.json` 内包含条件编译，以及有重复 key，无法通过 `import` 引入当前环境的完整 json。
 可通过虚拟模块引入：
@@ -271,10 +263,7 @@ import pagesJson from 'virtual:@uni-ku/pages-json';
 console.log(pagesJson);
 ```
 
-### 获取 uniapp pages.json 的类型提示
+## 获取 uniapp pages.json 的类型提示
 ```ts
 import type { Page, SubPackage } from '@uni-ku/pages-json/types';
 ```
-
-### TODO:
- - 支持动态 pages 配置文件 `pages.json.(ts|mts|cts|js|cjs|mjs)` 的条件编译
