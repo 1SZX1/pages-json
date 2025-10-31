@@ -1,15 +1,15 @@
-import type { GlobalStyle } from './globalStyle'
+import type { GlobalStyle } from './globalStyle';
 
 export interface TheWindow {
   /**
    * 配置页面路径
    */
-  path: string
+  path: string;
 
   /**
    * 配置页面窗口表现，配置项参考 [pageStyle](https://uniapp.dcloud.net.cn/collocation/pages#style)
    */
-  style?: GlobalStyle
+  style?: GlobalStyle;
 
   /**
    * 配置显示该窗口的规则，配置项参考 [matchMedia](https://uniapp.dcloud.net.cn/collocation/pages#matchmedia)
@@ -20,6 +20,6 @@ export interface TheWindow {
      *
      * @default 768
      */
-    minWidth?: number
-  }
+    minWidth?: number;
+  };
 }

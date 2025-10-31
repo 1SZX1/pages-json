@@ -1,44 +1,44 @@
-import type { HEXColor, ThemeVar } from './common'
+import type { HEXColor, ThemeVar } from './common';
 
 export interface TabBarIconFont {
   /**
    * 字库 Unicode 码
    */
-  text?: string
+  text?: string;
 
   /**
    * 选中后字库 Unicode 码
    */
-  selectedText?: string
+  selectedText?: string;
 
   /**
    * 字体图标字号，单位为 px
    */
-  fontSize?: string
+  fontSize?: string;
 
   /**
    * 字体图标颜色
    */
-  color?: HEXColor
+  color?: HEXColor;
 
   /**
    * 字体图标选中颜色
    */
-  selectedColor?: HEXColor
+  selectedColor?: HEXColor;
 
-  [x: string]: any
+  [x: string]: any;
 }
 
 export interface TabBarItem {
   /**
    * 页面路径，必须在 pages 中先定义
    */
-  pagePath: string
+  pagePath: string;
 
   /**
    * tab 上按钮文字，在 App 和 H5 平台为非必填，例如中间可放一个没有文字的 + 号图标
    */
-  text?: string
+  text?: string;
 
   /**
    * 图片路径，icon 大小限制为 40 kb，建议尺寸为 81px * 81px
@@ -47,7 +47,7 @@ export interface TabBarItem {
    *
    * 不支持网络图片，不支持字体图标
    */
-  iconPath?: string | ThemeVar
+  iconPath?: string | ThemeVar;
 
   /**
    * 选中时的图片路径，icon 大小限制为 40 kb，建议尺寸为 81px * 81px
@@ -56,23 +56,23 @@ export interface TabBarItem {
    *
    * 不支持网络图片，不支持字体图标
    */
-  selectedIconPath?: string | ThemeVar
+  selectedIconPath?: string | ThemeVar;
 
   /**
    * 该项是否显示，默认显示
    *
    * @desc App (3.2.10+)、H5 (3.2.10+)
    */
-  visible?: boolean
+  visible?: boolean;
 
   /**
    * 字体图标，优先级高于 iconPath
    *
    * @desc App（3.4.4+）、H5 (3.5.3+)
    */
-  iconfont?: TabBarIconFont
+  iconfont?: TabBarIconFont;
 
-  [x: string]: any
+  [x: string]: any;
 }
 
 export interface TabBarMidButton {
@@ -81,45 +81,45 @@ export interface TabBarMidButton {
    *
    * @default "80px"
    */
-  width?: string
+  width?: string;
 
   /**
    * 中间按钮的高度，可以大于 tabBar 高度，达到中间凸起的效果
    *
    * @default "50px"
    */
-  height?: string
+  height?: string;
 
   /**
    * 中间按钮的文字
    */
-  text?: string
+  text?: string;
 
   /**
    * 中间按钮的图片路径
    */
-  iconPath?: string
+  iconPath?: string;
 
   /**
    * 图片宽度（高度等比例缩放）
    *
    * @default "24px"
    */
-  iconWidth?: string
+  iconWidth?: string;
 
   /**
    * 中间按钮的背景图片路径
    */
-  backgroundImage?: string
+  backgroundImage?: string;
 
   /**
    * 字体图标，优先级高于 iconPath
    *
    * @desc App (3.4.4+)
    */
-  iconfont?: TabBarIconFont
+  iconfont?: TabBarIconFont;
 
-  [x: string]: any
+  [x: string]: any;
 }
 
 export interface TabBar {
@@ -128,21 +128,21 @@ export interface TabBar {
    *
    * @format color
    */
-  color?: HEXColor | ThemeVar
+  color?: HEXColor | ThemeVar;
 
   /**
    * tab 上的文字选中时的颜色
    *
    * @format color
    */
-  selectedColor?: HEXColor | ThemeVar
+  selectedColor?: HEXColor | ThemeVar;
 
   /**
    * tab 的背景色
    *
    * @format color
    */
-  backgroundColor?: HEXColor | ThemeVar
+  backgroundColor?: HEXColor | ThemeVar;
 
   /**
    * tabBar 上边框的颜色
@@ -153,7 +153,7 @@ export interface TabBar {
    *
    * @format color
    */
-  borderStyle?: 'black' | 'white' | HEXColor | ThemeVar
+  borderStyle?: 'black' | 'white' | HEXColor | ThemeVar;
 
   /**
    * iOS 高斯模糊效果，参考 [使用说明](https://ask.dcloud.net.cn/article/36617)
@@ -162,14 +162,14 @@ export interface TabBar {
    *
    * @desc App 2.4.0+、H5 3.0.0+（只有最新版浏览器才支持）
    */
-  blurEffect?: 'dark' | 'extralight' | 'light' | 'none'
+  blurEffect?: 'dark' | 'extralight' | 'light' | 'none';
 
   /**
    * tab 列表，最少 2个，最多 5 个，app 端没有该限制
    *
    * @type {TabBarItem[]}
    */
-  list?: TabBarItem[]
+  list?: TabBarItem[];
 
   /**
    * tab 位置
@@ -178,7 +178,7 @@ export interface TabBar {
    *
    * @desc "top" 仅微信小程序支持
    */
-  position?: 'bottom' | 'top'
+  position?: 'bottom' | 'top';
 
   /**
    * 文字默认大小
@@ -187,7 +187,7 @@ export interface TabBar {
    *
    * @desc App 2.3.4+、H5 3.0.0+
    */
-  fontSize?: string
+  fontSize?: string;
 
   /**
    * 图标默认宽度（高度等比例缩放）
@@ -196,7 +196,7 @@ export interface TabBar {
    *
    * @desc App 2.3.4+、H5 3.0.0+
    */
-  iconWidth?: string
+  iconWidth?: string;
 
   /**
    * 图标和文字的间距
@@ -205,7 +205,7 @@ export interface TabBar {
    *
    * @desc App 2.3.4+、H5 3.0.0+
    */
-  spacing?: string
+  spacing?: string;
 
   /**
    * tabBar 默认高度
@@ -214,26 +214,26 @@ export interface TabBar {
    *
    * @desc App 2.3.4+、H5 3.0.0+
    */
-  height?: string
+  height?: string;
 
   /**
    * 中间按钮 仅在 list 项为偶数时有效
    *
    * @desc App 2.3.4+、H5 3.0.0+
    */
-  midButton?: TabBarMidButton
+  midButton?: TabBarMidButton;
 
   /**
    * list 设置 iconfont 属性时，需要指定字体文件路径
    *
    * @desc App 3.4.4+、H5 3.5.3+
    */
-  iconfontSrc?: string
+  iconfontSrc?: string;
 
   /**
    * 设置背景图片，优先级高于 backgroundColor
    */
-  backgroundImage?: string
+  backgroundImage?: string;
 
   /**
    * 设置标题栏的背景图平铺方式
@@ -248,14 +248,14 @@ export interface TabBar {
    *
    * @default "no-repeat"
    */
-  backgroundRepeat?: 'no-repeat' | 'repeat' | 'repeat-x' | 'repeat-y'
+  backgroundRepeat?: 'no-repeat' | 'repeat' | 'repeat-x' | 'repeat-y';
 
   /**
    * tabBar上红点颜色
    *
    * @format color
    */
-  redDotColor?: string
+  redDotColor?: string;
 
-  [x: string]: any
+  [x: string]: any;
 }

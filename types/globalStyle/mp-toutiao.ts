@@ -1,4 +1,4 @@
-import type { HEXColor, ThemeVar } from '../common'
+import type { HEXColor, ThemeVar } from '../common';
 
 /**
  * 设置编译到 mp-toutiao 平台的特定样式，配置项参考 <https://developer.open-douyin.com/docs/resource/zh-CN/mini-app/develop/framework/general-configuration#window>
@@ -15,19 +15,19 @@ export interface MpToutiao {
    *
    * @format color
    */
-  navigationBarBackgroundColor?: HEXColor | ThemeVar
+  navigationBarBackgroundColor?: HEXColor | ThemeVar;
 
   /**
    * 导航栏标题颜色，同时影响标题颜色、右胶囊颜色、左返回箭头颜色
    *
    * @default "white"
    */
-  navigationBarTextStyle?: 'black' | 'white' | ThemeVar
+  navigationBarTextStyle?: 'black' | 'white' | ThemeVar;
 
   /**
    * 导航栏标题文字内容
    */
-  navigationBarTitleText?: string
+  navigationBarTitleText?: string;
 
   /**
    * 导航栏样式
@@ -38,49 +38,49 @@ export interface MpToutiao {
    *
    * @default "default"
    */
-  navigationStyle?: 'default' | 'custom'
+  navigationStyle?: 'default' | 'custom';
 
   /**
    * 窗口的背景色，支持 HEX 颜色
    *
    * @default "#FFFFFF"
    */
-  backgroundColor?: HEXColor | ThemeVar
+  backgroundColor?: HEXColor | ThemeVar;
 
   /**
    * 下拉 loading 的样式，仅支持 "dark" / "light"
    *
    * @default "dark"
    */
-  backgroundTextStyle?: 'dark' | 'light' | ThemeVar
+  backgroundTextStyle?: 'dark' | 'light' | ThemeVar;
 
   /**
    * 顶部窗口的背景色，仅 iOS 支持
    *
    * @default 同 backgroundColor
    */
-  backgroundColorTop?: HEXColor | ThemeVar
+  backgroundColorTop?: HEXColor | ThemeVar;
 
   /**
    * 底部窗口的背景色，仅 iOS 支持
    *
    * @default 同 backgroundColor
    */
-  backgroundColorBottom?: HEXColor | ThemeVar
+  backgroundColorBottom?: HEXColor | ThemeVar;
 
   /**
    * 是否开启全局的下拉刷新
    *
    * @default false
    */
-  enablePullDownRefresh?: boolean
+  enablePullDownRefresh?: boolean;
 
   /**
    * 页面上拉触底事件触发时距页面底部距离，单位为 px
    *
    * @default 50
    */
-  onReachBottomDistance?: number
+  onReachBottomDistance?: number;
 
   /**
    * 仅在 navigationStyle 为 "default" 时生效，用来控制导航栏透明设置
@@ -93,7 +93,7 @@ export interface MpToutiao {
    *
    * @default "none"
    */
-  transparentTitle?: 'always' | 'auto' | 'none'
+  transparentTitle?: 'always' | 'auto' | 'none';
 
   /**
    * 框架骨架屏配置，仅支持配置 config 属性，优先级高于 app.json，详见 [小程序框架骨架屏](https://developer.open-douyin.com/docs/resource/zh-CN/mini-app/develop/guide/experience-optimization/list/skeleton)
@@ -110,14 +110,14 @@ export interface MpToutiao {
        *
        * @default 2000
        */
-      timeout?: number
+      timeout?: number;
 
       /**
        * 骨架屏显示时的动画
        *
        * @default 'spin'
        */
-      loading?: 'spin' | 'chiaroscuro' | 'shine'
+      loading?: 'spin' | 'chiaroscuro' | 'shine';
 
       /**
        * 骨架页面中图片块配置
@@ -134,7 +134,7 @@ export interface MpToutiao {
          *
          * @default "rect"
          */
-        shape?: 'circle' | 'rect'
+        shape?: 'circle' | 'rect';
 
         /**
          * 骨架页面中图片块颜色，支持 HEX 颜色
@@ -143,10 +143,10 @@ export interface MpToutiao {
          *
          * @format color
          */
-        color?: HEXColor
+        color?: HEXColor;
 
-        [x: string]: any
-      }
+        [x: string]: any;
+      };
 
       /**
        * 骨架页面中被视为按钮块的配置
@@ -161,10 +161,10 @@ export interface MpToutiao {
          *
          * @format color
          */
-        color?: HEXColor
+        color?: HEXColor;
 
-        [x: string]: any
-      }
+        [x: string]: any;
+      };
 
       /**
        * 骨架屏背景色，支持 HEX 颜色
@@ -173,7 +173,7 @@ export interface MpToutiao {
        *
        * @format color
        */
-      backgroundColor?: HEXColor
+      backgroundColor?: HEXColor;
 
       /**
        * 默认为使用绝对定位占满全屏
@@ -182,32 +182,32 @@ export interface MpToutiao {
        *
        * @default "fullscreen"
        */
-      mode?: 'fullscreen' | 'auto'
+      mode?: 'fullscreen' | 'auto';
 
       /**
        * CSS单位，元素绝对定位都使用 "vw" 与 "vh"
        *
        * @default "vw"
        */
-      cssUnit?: 'px' | 'rem' | 'vw' | 'vh' | 'vmin' | 'vmax'
+      cssUnit?: 'px' | 'rem' | 'vw' | 'vh' | 'vmin' | 'vmax';
 
       /**
        * 生成骨架屏页面中 css 值保留的小数点位数，默认为 4
        *
        * @default 4
        */
-      decimal?: number
+      decimal?: number;
 
-      [x: string]: any
-    }
+      [x: string]: any;
+    };
 
     /**
      * 页面路径同骨架屏文件的对应关系
      */
-    page?: Record<string, string>
+    page?: Record<string, string>;
 
-    [x: string]: any
-  }
+    [x: string]: any;
+  };
 
-  [x: string]: any
+  [x: string]: any;
 }

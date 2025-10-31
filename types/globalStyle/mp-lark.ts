@@ -1,4 +1,4 @@
-import type { HEXColor, ThemeVar } from '../common'
+import type { HEXColor, ThemeVar } from '../common';
 
 /**
  * 设置编译到 mp-lark 平台的特定样式，配置项参考 <https://open.feishu.cn/document/client-docs/gadget/introduction/global-settings#a172b7dd>
@@ -17,7 +17,7 @@ export interface MpLark {
    *
    * @format color
    */
-  navigationBarBackgroundColor?: HEXColor | ThemeVar
+  navigationBarBackgroundColor?: HEXColor | ThemeVar;
 
   /**
    * 导航栏标题、状态栏颜色
@@ -26,14 +26,14 @@ export interface MpLark {
    *
    * @default "white"
    */
-  navigationBarTextStyle?: 'black' | 'white' | ThemeVar
+  navigationBarTextStyle?: 'black' | 'white' | ThemeVar;
 
   /**
    * 导航栏标题文字内容
    *
    * @desc iOS, Android, PC
    */
-  navigationBarTitleText?: string
+  navigationBarTitleText?: string;
 
   /**
    * 导航栏透明设置
@@ -48,7 +48,7 @@ export interface MpLark {
    *
    * @default "none"
    */
-  transparentTitle?: 'always' | 'auto' | 'none'
+  transparentTitle?: 'always' | 'auto' | 'none';
 
   /**
    * 导航栏样式
@@ -61,7 +61,7 @@ export interface MpLark {
    *
    * @default "default"
    */
-  navigationStyle?: 'default' | 'custom'
+  navigationStyle?: 'default' | 'custom';
 
   /**
    * 窗口的背景色，支持 HEX 颜色
@@ -70,7 +70,7 @@ export interface MpLark {
    *
    * @default "#FFFFFF"
    */
-  backgroundColor?: HEXColor | ThemeVar
+  backgroundColor?: HEXColor | ThemeVar;
 
   /**
    * 下拉 loading 的样式，仅支持 "dark" / "light"
@@ -79,7 +79,7 @@ export interface MpLark {
    *
    * @default "dark"
    */
-  backgroundTextStyle?: 'dark' | 'light' | ThemeVar
+  backgroundTextStyle?: 'dark' | 'light' | ThemeVar;
 
   /**
    * 顶部窗口的背景色
@@ -88,7 +88,7 @@ export interface MpLark {
    *
    * @default "#FFFFFF"
    */
-  backgroundColorTop?: HEXColor | ThemeVar
+  backgroundColorTop?: HEXColor | ThemeVar;
 
   /**
    * 底部窗口的背景色
@@ -97,7 +97,7 @@ export interface MpLark {
    *
    * @default "#FFFFFF"
    */
-  backgroundColorBottom?: HEXColor | ThemeVar
+  backgroundColorBottom?: HEXColor | ThemeVar;
 
   /**
    * 是否开启全局的下拉刷新
@@ -106,7 +106,7 @@ export interface MpLark {
    *
    * @default false
    */
-  enablePullDownRefresh?: boolean
+  enablePullDownRefresh?: boolean;
 
   /**
    * 页面上拉触底事件触发时距页面底部距离，单位为 px
@@ -115,12 +115,12 @@ export interface MpLark {
    *
    * @default 50
    */
-  onReachBottomDistance?: number
+  onReachBottomDistance?: number;
 
   /**
    * PCMode 模式下特定的窗口配置，支持的属性与通用 window 配置属性一致，仅当在 ext 内配置了 defaultPages.PCMode 时生效
    */
-  PCMode?: Omit<MpLark, 'PCMode'>
+  PCMode?: Omit<MpLark, 'PCMode'>;
 
-  [x: string]: any
+  [x: string]: any;
 }

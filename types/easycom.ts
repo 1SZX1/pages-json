@@ -4,7 +4,7 @@ export interface EasyCom {
    *
    * @default true
    */
-  autoscan?: boolean
+  autoscan?: boolean;
 
   /**
    * 以正则方式自定义组件匹配规则
@@ -18,5 +18,5 @@ export interface EasyCom {
    * }
 }
    */
-  custom?: Record<string, string>
+  custom?: Record<string, string>;
 }

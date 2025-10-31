@@ -1,4 +1,4 @@
-import type { AnimationType, HEXColor, PercentageSize, PxSize, RGBAColor, TitleNViewButton } from '../common'
+import type { AnimationType, HEXColor, PercentageSize, PxSize, RGBAColor, TitleNViewButton } from '../common';
 
 export interface AppPlus {
   /**
@@ -12,7 +12,7 @@ export interface AppPlus {
    *
    * @format color
    */
-  background?: HEXColor
+  background?: HEXColor;
 
   /**
    * 导航栏，详见 [导航栏](https://uniapp.dcloud.net.cn/collocation/pages#app-titlenview)
@@ -27,14 +27,14 @@ export interface AppPlus {
      *
      * @format color
      */
-    backgroundColor?: HEXColor | RGBAColor
+    backgroundColor?: HEXColor | RGBAColor;
 
     /**
      * 自定义按钮，详见 [自定义按钮](https://uniapp.dcloud.net.cn/collocation/pages#app-titlenview-buttons)
      *
      * @desc 纯 nvue 即 render:native 时暂不支持
      */
-    buttons?: TitleNViewButton[]
+    buttons?: TitleNViewButton[];
 
     /**
      * 标题文字颜色，支持 HEX 颜色
@@ -43,7 +43,7 @@ export interface AppPlus {
      *
      * @format color
      */
-    titleColor?: HEXColor
+    titleColor?: HEXColor;
 
     /**
      * 标题文字超出显示区域时处理方式
@@ -54,17 +54,17 @@ export interface AppPlus {
      *
      * @default "ellipsis"
      */
-    titleOverflow?: 'ellipsis' | 'clip'
+    titleOverflow?: 'ellipsis' | 'clip';
 
     /**
      * 标题文字内容
      */
-    titleText?: string
+    titleText?: string;
 
     /**
      * 标题文字大小
      */
-    titleSize?: string
+    titleSize?: string;
 
     /**
      * 导航栏样式
@@ -77,7 +77,7 @@ export interface AppPlus {
      *
      * @default "default"
      */
-    type?: 'default' | 'transparent' | 'float'
+    type?: 'default' | 'transparent' | 'float';
 
     /**
      * 原生 View 增强，详见 [5+ View 控件](http://www.html5plus.org/doc/zh_cn/nativeobj.html#plus.nativeObj.ViewDrawTagStyles)
@@ -88,7 +88,7 @@ export interface AppPlus {
        *
        * 可通过 view 对象的 drawBitmap / drawRect / drawText / clearRect 方法进行更新
        */
-      id?: string
+      id?: string;
 
       /**
        * 绘制操作类型
@@ -103,7 +103,7 @@ export interface AppPlus {
        *
        * "input" 绘制输入框内容，此时 id、position、inputStyles 属性值有效
        */
-      tag?: 'img' | 'rect' | 'font' | 'richtext' | 'input'
+      tag?: 'img' | 'rect' | 'font' | 'richtext' | 'input';
 
       /**
        * 矩形区域颜色，支持 HEX 和 RGBA 颜色
@@ -116,7 +116,7 @@ export interface AppPlus {
        *
        * @format color
        */
-      color?: HEXColor | RGBAColor
+      color?: HEXColor | RGBAColor;
 
       /**
        * 绘制输入框的样式
@@ -141,21 +141,21 @@ export interface AppPlus {
          *
          * @default "text"
          */
-        type?: 'email' | 'number' | 'search' | 'tel' | 'text' | 'url'
+        type?: 'email' | 'number' | 'search' | 'tel' | 'text' | 'url';
 
         /**
          * 输入框的提示文本
          *
          * 当用户未输入内容时显示在编辑框中（灰色文字）。
          */
-        placeholder?: string
+        placeholder?: string;
 
         /**
          * 输入框的字体大小，单位为 px
          *
          * @default "16px"
          */
-        fontSize?: PxSize
+        fontSize?: PxSize;
 
         /**
          * 输入框的边框颜色，支持 HEX 颜色
@@ -164,24 +164,24 @@ export interface AppPlus {
          *
          * @format color
          */
-        borderColor?: HEXColor
+        borderColor?: HEXColor;
 
         /**
          * 输入框的边框圆角半径，单位为 px
          *
          * @default "0px"
          */
-        borderRadius?: PxSize
+        borderRadius?: PxSize;
 
         /**
          * 输入框的边框宽度，单位为 px
          *
          * @default "1px"
          */
-        borderWidth?: PxSize
+        borderWidth?: PxSize;
 
-        [x: string]: any
-      }
+        [x: string]: any;
+      };
 
       /**
        * 绘制内容区域，相对于 View 控件的区域信息
@@ -200,28 +200,28 @@ export interface AppPlus {
          *
          * @default "0px"
          */
-        top?: PxSize | PercentageSize | 'auto'
+        top?: PxSize | PercentageSize | 'auto';
 
         /**
          * 区域顶部相对于作用对象或容器向右的偏移量，支持单位为 px 的逻辑像素值、百分比（相对于作用对象或容器的高度）或 "auto"
          *
          * @default "0px"
          */
-        left?: PxSize | PercentageSize | 'auto'
+        left?: PxSize | PercentageSize | 'auto';
 
         /**
          * 区域宽度，相对于作用对象或容器的宽度，支持单位为 px 的逻辑像素值或百分比
          *
          * @default "100%"
          */
-        width?: PxSize | PercentageSize
+        width?: PxSize | PercentageSize;
 
         /**
          * 区域高度，相对于作用对象或容器的高度，支持单位为 px 的逻辑像素值或百分比
          *
          * @default "100%"
          */
-        height?: PxSize | PercentageSize
+        height?: PxSize | PercentageSize;
 
         /**
          * 区域顶部相对于作用对象或容器向上的偏移量，支持单位为 px 的逻辑像素值、百分比（相对于作用对象或容器的高度）或 "auto"
@@ -232,7 +232,7 @@ export interface AppPlus {
          *
          * 当未设置 height 值时，可通过 top 和 bottom 属性值来确定区域的高度
          */
-        bottom?: PxSize | PercentageSize | 'auto'
+        bottom?: PxSize | PercentageSize | 'auto';
 
         /**
          * 区域顶部相对于作用对象或容器向左的偏移量，支持单位为 px 的逻辑像素值、百分比（相对于作用对象或容器的高度）或 "auto"
@@ -243,10 +243,10 @@ export interface AppPlus {
          *
          * 当未设置 width 值时，可通过 left 和 right 属性值来确定区域的宽度
          */
-        right?: PxSize | PercentageSize | 'auto'
+        right?: PxSize | PercentageSize | 'auto';
 
-        [x: string]: any
-      }
+        [x: string]: any;
+      };
 
       /**
        * 绘制区域的样式
@@ -261,14 +261,14 @@ export interface AppPlus {
          *
          * @format color
          */
-        color?: HEXColor | RGBAColor
+        color?: HEXColor | RGBAColor;
 
         /**
          * 矩形区域的圆角半径，单位为 px
          *
          * @default "0px"
          */
-        radius?: PxSize
+        radius?: PxSize;
 
         /**
          * 矩形边框颜色，绘制矩形边框的颜色，支持 HEX 和 RGBA 颜色
@@ -277,17 +277,17 @@ export interface AppPlus {
          *
          * @format color
          */
-        borderColor?: HEXColor | RGBAColor
+        borderColor?: HEXColor | RGBAColor;
 
         /**
          * 矩形边框宽度，单位为 px
          *
          * @default "0px"
          */
-        borderWidth?: PxSize
+        borderWidth?: PxSize;
 
-        [x: string]: any
-      }
+        [x: string]: any;
+      };
 
       /**
        * 绘制的图片资源
@@ -296,7 +296,7 @@ export interface AppPlus {
        *
        * src 路径支持 gif 图片，设置的图片路径文件使用 ".gif" 后缀时则认为是 gif 图片，如"_www/loading.gif"
        */
-      src?: string
+      src?: string;
 
       /**
        * 图片源的绘制区域
@@ -311,28 +311,28 @@ export interface AppPlus {
          *
          * @default "0px"
          */
-        top?: PxSize | PercentageSize | 'auto'
+        top?: PxSize | PercentageSize | 'auto';
 
         /**
          * 区域顶部相对于作用对象或容器向右的偏移量，支持单位为 px 的逻辑像素值、百分比（相对于作用对象或容器的高度）或 "auto"
          *
          * @default "0px"
          */
-        left?: PxSize | PercentageSize | 'auto'
+        left?: PxSize | PercentageSize | 'auto';
 
         /**
          * 区域宽度，相对于作用对象或容器的宽度，支持单位为 px 的逻辑像素值或百分比
          *
          * @default "100%"
          */
-        width?: PxSize | PercentageSize
+        width?: PxSize | PercentageSize;
 
         /**
          * 区域高度，相对于作用对象或容器的高度，支持单位为 px 的逻辑像素值或百分比
          *
          * @default "100%"
          */
-        height?: PxSize | PercentageSize
+        height?: PxSize | PercentageSize;
 
         /**
          * 区域顶部相对于作用对象或容器向上的偏移量，支持单位为 px 的逻辑像素值、百分比（相对于作用对象或容器的高度）或 "auto"
@@ -343,7 +343,7 @@ export interface AppPlus {
          *
          * 当未设置 height 值时，可通过 top 和 bottom 属性值来确定区域的高度
          */
-        bottom?: PxSize | PercentageSize | 'auto'
+        bottom?: PxSize | PercentageSize | 'auto';
 
         /**
          * 区域顶部相对于作用对象或容器向左的偏移量，支持单位为 px 的逻辑像素值、百分比（相对于作用对象或容器的高度）或 "auto"
@@ -354,17 +354,17 @@ export interface AppPlus {
          *
          * 当未设置 width 值时，可通过 left 和 right 属性值来确定区域的宽度
          */
-        right?: PxSize | PercentageSize | 'auto'
+        right?: PxSize | PercentageSize | 'auto';
 
-        [x: string]: any
-      }
+        [x: string]: any;
+      };
 
       /**
        * 绘制的文本内容
        *
        * 当 tag 属性值为 "font" 时有效，用于保存绘制的文本内容
        */
-      text?: string
+      text?: string;
 
       /**
        * 绘制文本的样式
@@ -383,7 +383,7 @@ export interface AppPlus {
          *
          * @default "center"
          */
-        align?: 'left' | 'right' | 'center'
+        align?: 'left' | 'right' | 'center';
 
         /**
          * 字体颜色，支持 HEX 和 RGBA 颜色
@@ -392,7 +392,7 @@ export interface AppPlus {
          *
          * @format color
          */
-        color?: HEXColor | RGBAColor
+        color?: HEXColor | RGBAColor;
 
         /**
          * 文本装饰
@@ -405,31 +405,31 @@ export interface AppPlus {
          *
          * @default "none"
          */
-        decoration?: 'none' | 'underline' | 'line-through'
+        decoration?: 'none' | 'underline' | 'line-through';
 
         /**
          * 字体名称，如果指定名称的字体不存在，则使用默认字体
          */
-        family?: string
+        family?: string;
 
         /**
          * 字体文件路径
          */
-        fontSrc?: string
+        fontSrc?: string;
 
         /**
          * 文本行间距，支持单位为 px 的逻辑像素值或百分比
          *
          * @default "20%"
          */
-        lineSpacing?: PxSize | PercentageSize
+        lineSpacing?: PxSize | PercentageSize;
 
         /**
          * 文本间距，用于设置字体在绘制目标区域四个方向（top / right / bottom / left）的边距，支持单位为 px 的逻辑像素值或百分比（相对于绘制目标区域）
          *
          * @default "0px"
          */
-        margin?: string
+        margin?: string;
 
         /**
          * 文本内容超出显示区域时处理方式
@@ -440,14 +440,14 @@ export interface AppPlus {
          *
          * @default "clip"
          */
-        overflow?: 'clip' | 'ellipsis'
+        overflow?: 'clip' | 'ellipsis';
 
         /**
          * 字体大小，单位为 px
          *
          * @default "16px"
          */
-        size?: PxSize
+        size?: PxSize;
 
         /**
          * 字体样式
@@ -458,7 +458,7 @@ export interface AppPlus {
          *
          * @default "normal"
          */
-        style?: 'normal' | 'italic'
+        style?: 'normal' | 'italic';
 
         /**
          * 垂直对齐方式，文本内容在指定绘制区域中的垂直对齐方式
@@ -471,7 +471,7 @@ export interface AppPlus {
          *
          * @default "middle"
          */
-        verticalAlign?: 'top' | 'middle' | 'bottom'
+        verticalAlign?: 'top' | 'middle' | 'bottom';
 
         /**
          * 字体粗细
@@ -482,7 +482,7 @@ export interface AppPlus {
          *
          * @default "normal"
          */
-        weight?: 'normal' | 'bold'
+        weight?: 'normal' | 'bold';
 
         /**
          * 文本换行模式
@@ -493,10 +493,10 @@ export interface AppPlus {
          *
          * @default "nowrap"
          */
-        whiteSpace?: 'normal' | 'nowrap'
+        whiteSpace?: 'normal' | 'nowrap';
 
-        [x: string]: any
-      }
+        [x: string]: any;
+      };
 
       /**
        * 绘制富文本的样式
@@ -515,23 +515,23 @@ export interface AppPlus {
          *
          * @default "left"
          */
-        align?: 'left' | 'right' | 'center'
+        align?: 'left' | 'right' | 'center';
 
         /**
          * 富文本默认使用的字体名称，如果指定名称的字体不存在，则使用默认字体
          */
-        family?: string
+        family?: string;
 
         /**
          * 富文本默认使用的字体文件路径，必须为本地路径，如果指定的文件路径无效，则使用系统默认字体
          */
-        fontSrc?: string
+        fontSrc?: string;
 
-        [x: string]: any
-      }
+        [x: string]: any;
+      };
 
-      [x: string]: any
-    }[]
+      [x: string]: any;
+    }[];
 
     /**
      * 原生导航栏上的搜索框配置，详见 [searchInput](https://uniapp.dcloud.net.cn/collocation/pages#app-titlenview-searchinput)
@@ -544,7 +544,7 @@ export interface AppPlus {
        *
        * @default false
        */
-      autoFocus?: boolean
+      autoFocus?: boolean;
 
       /**
        * 非输入状态下文本的对齐方式
@@ -557,7 +557,7 @@ export interface AppPlus {
        *
        * @default "center"
        */
-      align?: 'center' | 'left' | 'right'
+      align?: 'center' | 'left' | 'right';
 
       /**
        * 背景颜色，支持 HEX 和 RGBA 颜色
@@ -566,19 +566,19 @@ export interface AppPlus {
        *
        * @format color
        */
-      backgroundColor?: HEXColor | RGBAColor
+      backgroundColor?: HEXColor | RGBAColor;
 
       /**
        * 输入框的圆角半径，单位为 px
        *
        * @default "0px"
        */
-      borderRadius?: PxSize
+      borderRadius?: PxSize;
 
       /**
        * 提示文本
        */
-      placeholder?: string
+      placeholder?: string;
 
       /**
        * 提示文本颜色，支持 HEX 颜色
@@ -587,24 +587,24 @@ export interface AppPlus {
        *
        * @format color
        */
-      placeholderColor?: HEXColor
+      placeholderColor?: HEXColor;
 
       /**
        * 是否禁止输入
        *
        * @default false
        */
-      disabled?: boolean
+      disabled?: boolean;
 
-      [x: string]: any
-    }
+      [x: string]: any;
+    };
 
     /**
      * 标题栏控件是否显示 Home 按钮
      *
      * @default false
      */
-    homeButton?: boolean
+    homeButton?: boolean;
 
     /**
      * 标题栏控件是否显示左侧返回按钮
@@ -613,7 +613,7 @@ export interface AppPlus {
      *
      * @default true
      */
-    autoBackButton?: boolean
+    autoBackButton?: boolean;
 
     /**
      * 返回按钮的样式，详见 [backButton](https://uniapp.dcloud.net.cn/collocation/pages#app-titlenview-backbuttonstyles)
@@ -628,12 +628,12 @@ export interface AppPlus {
        *
        * @format color
        */
-      background?: HEXColor | RGBAColor
+      background?: HEXColor | RGBAColor;
 
       /**
        * 角标文本，最多显示3个字符，超过则显示为 ...
        */
-      badgeText?: string
+      badgeText?: string;
 
       /**
        * 图标和标题颜色，支持 HEX 和 RGBA 颜色
@@ -642,7 +642,7 @@ export interface AppPlus {
        *
        * @format color
        */
-      color?: HEXColor | RGBAColor
+      color?: HEXColor | RGBAColor;
 
       /**
        * 按下状态按钮文字颜色，支持 HEX 和 RGBA 颜色
@@ -651,7 +651,7 @@ export interface AppPlus {
        *
        * @format color
        */
-      colorPressed?: HEXColor | RGBAColor
+      colorPressed?: HEXColor | RGBAColor;
 
       /**
        * 返回图标的粗细
@@ -662,7 +662,7 @@ export interface AppPlus {
        *
        * @default "normal"
        */
-      fontWeight?: 'normal' | 'bold'
+      fontWeight?: 'normal' | 'bold';
 
       /**
        * 返回图标文字大小，单位为 px
@@ -671,21 +671,21 @@ export interface AppPlus {
        *
        * 窗口标题栏为默认样式 type 为 "default" 时，默认值为 "27px"
        */
-      fontSize?: PxSize
+      fontSize?: PxSize;
 
       /**
        * 是否显示红点，当设置了角标文本时红点不显示
        *
        * @default false
        */
-      redDot?: boolean
+      redDot?: boolean;
 
       /**
        * 返回按钮上的标题，显示在返回图标（字体图标）后
        *
        * @default ""
        */
-      title?: string
+      title?: string;
 
       /**
        * 返回按钮上标题的粗细
@@ -694,10 +694,10 @@ export interface AppPlus {
        *
        * "bold" 粗体
        */
-      titleWeight?: 'normal' | 'bold'
+      titleWeight?: 'normal' | 'bold';
 
-      [x: string]: any
-    }
+      [x: string]: any;
+    };
 
     /**
      * 背景图片
@@ -706,7 +706,7 @@ export interface AppPlus {
      *
      * 渐变色，仅支持线性渐变，两种颜色的渐变，如 "linear-gradient(to top, #a80077, #66ff00)"，其中第一个参数为渐变方向，可选 "to right"（从左向右渐变）/ "to left"（从右向左渐变）/ "to bottom"（从上到下渐变）/ "to top"（从下到上渐变）/ "to bottom right"（从左上到右下渐变）/"to top left"（从左上到右下渐变）
      */
-    backgroundImage?: string
+    backgroundImage?: string;
 
     /**
      * 仅在 backgroundImage 设置为图片路径时有效
@@ -721,7 +721,7 @@ export interface AppPlus {
      *
      * @default "no-repeat"
      */
-    backgroundRepeat?: 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat'
+    backgroundRepeat?: 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
 
     /**
      * 文本对齐方式
@@ -734,7 +734,7 @@ export interface AppPlus {
      *
      * @default "auto"
      */
-    titleAlign?: 'auto' | 'center' | 'left'
+    titleAlign?: 'auto' | 'center' | 'left';
 
     /**
      * 高斯模糊效果，仅在 type 为 "transparent" 或 "float" 时有效
@@ -751,7 +751,7 @@ export interface AppPlus {
      *
      * @default "none"
      */
-    blurEffect?: 'dark' | 'extralight' | 'light' | 'none'
+    blurEffect?: 'dark' | 'extralight' | 'light' | 'none';
 
     /**
      * 标题栏控件变化作用范围，仅在 type 为 "transparent" 时有效，页面滚动时标题栏背景透明度将发生变化
@@ -762,7 +762,7 @@ export interface AppPlus {
      *
      * @default "132px"
      */
-    coverage?: PxSize | PercentageSize
+    coverage?: PxSize | PercentageSize;
 
     /**
      * 是否显示标题栏的底部分割线
@@ -779,17 +779,17 @@ export interface AppPlus {
        *
        * @format color
        */
-      color?: HEXColor | RGBAColor
+      color?: HEXColor | RGBAColor;
 
       /**
        * 底部分割线高度，支持单位为 px 的逻辑像素值、百分比
        *
        * @default "1px"
        */
-      height?: PxSize | PercentageSize
+      height?: PxSize | PercentageSize;
 
-      [x: string]: any
-    }
+      [x: string]: any;
+    };
 
     /**
      * 副标题文字颜色，支持 HEX 和 RGBA 颜色
@@ -800,7 +800,7 @@ export interface AppPlus {
      *
      * @format color
      */
-    subtitleColor?: HEXColor | RGBAColor
+    subtitleColor?: HEXColor | RGBAColor;
 
     /**
      * 副标题文字字体大小，单位为 px
@@ -811,7 +811,7 @@ export interface AppPlus {
      *
      * @default "auto"
      */
-    subtitleSize?: PxSize | 'auto'
+    subtitleSize?: PxSize | 'auto';
 
     /**
      * 标题文字超出显示区域时处理方式
@@ -824,7 +824,7 @@ export interface AppPlus {
      *
      * @default "ellipsis"
      */
-    subtitleOverflow?: 'clip' | 'ellipsis'
+    subtitleOverflow?: 'clip' | 'ellipsis';
 
     /**
      * 副标题文字内容，设置副标题后将显示两行标题，副标题显示在主标题（titleText）下方
@@ -833,7 +833,7 @@ export interface AppPlus {
      *
      * @desc 2.6.6
      */
-    subtitleText?: string
+    subtitleText?: string;
 
     /**
      * 标题图标，图标路径如 "./img/t.png"，仅支持本地文件路径，相对路径，相对于当前页面的 host 位置，固定宽高为逻辑像素值 "34px"
@@ -844,17 +844,17 @@ export interface AppPlus {
      *
      * @desc 2.6.6
      */
-    titleIcon?: string
+    titleIcon?: string;
 
     /**
      * 标题图标圆角，单位为 px
      *
      * @default "0px"
      */
-    titleIconRadius?: PxSize
+    titleIconRadius?: PxSize;
 
-    [x: string]: any
-  }
+    [x: string]: any;
+  };
 
   /**
    * 原生子窗体，详见 [原生子窗体](https://uniapp.dcloud.net.cn/collocation/pages#app-subNVues)
@@ -865,12 +865,12 @@ export interface AppPlus {
     /**
      * 原生子窗体的标识
      */
-    id?: string
+    id?: string;
 
     /**
      * 配置 nvue 文件路径，nvue 文件需放置到使用 subNVue 的页面文件目录下，cli 项目需要去掉 .nvue 后缀，只保留文件名
      */
-    path?: string
+    path?: string;
 
     /**
      * 原生子窗口内置样式
@@ -879,7 +879,7 @@ export interface AppPlus {
      *
      * "navigationBar" 导航栏
      */
-    type?: string
+    type?: string;
 
     /**
      * 原生子窗体的样式
@@ -896,7 +896,7 @@ export interface AppPlus {
        *
        * @default "absolute"
        */
-      position?: 'static' | 'absolute' | 'dock'
+      position?: 'static' | 'absolute' | 'dock';
 
       /**
        * 原生子窗体停靠位置，仅 position 为 "dock" 时生效
@@ -911,7 +911,7 @@ export interface AppPlus {
        *
        * @default "bottom"
        */
-      dock?: 'top' | 'bottom' | 'right' | 'left'
+      dock?: 'top' | 'bottom' | 'right' | 'left';
 
       /**
        * 原生子窗体的遮罩层，仅当原生子窗体 type 为 "popup" 时生效，支持 RGBA 颜色
@@ -920,7 +920,7 @@ export interface AppPlus {
        *
        * @format color
        */
-      mask?: RGBAColor
+      mask?: RGBAColor;
 
       /**
        * 原生子窗体的宽度，支持以 px 为单位的逻辑像素值或百分比
@@ -929,7 +929,7 @@ export interface AppPlus {
        *
        * @default "100%"
        */
-      width?: PxSize | PercentageSize
+      width?: PxSize | PercentageSize;
 
       /**
        * 原生子窗体的高度，支持以 px 为单位的逻辑像素值或百分比
@@ -938,7 +938,7 @@ export interface AppPlus {
        *
        * @default "100%"
        */
-      height?: PxSize | PercentageSize
+      height?: PxSize | PercentageSize;
 
       /**
        * 原生子窗体垂直向下的偏移量，支持以 px 为单位的逻辑像素值或百分比
@@ -947,7 +947,7 @@ export interface AppPlus {
        *
        * @default "0px"
        */
-      top?: PxSize | PercentageSize
+      top?: PxSize | PercentageSize;
 
       /**
        * 原生子窗体垂直向上的偏移量，支持以 px 为单位的逻辑像素值或百分比
@@ -958,7 +958,7 @@ export interface AppPlus {
        *
        * @default 根据 top 和 height 属性值自动计算
        */
-      bottom?: PxSize | PercentageSize
+      bottom?: PxSize | PercentageSize;
 
       /**
        * 原生子窗体水平向左的偏移量，支持以 px 为单位的逻辑像素值或百分比
@@ -967,7 +967,7 @@ export interface AppPlus {
        *
        * @default "0px"
        */
-      left?: PxSize | PercentageSize
+      left?: PxSize | PercentageSize;
 
       /**
        * 原生子窗体水平向右的偏移量，支持以 px 为单位的逻辑像素值或百分比
@@ -978,19 +978,19 @@ export interface AppPlus {
        *
        * @default 根据 left 和 width 属性值来自动计算
        */
-      right?: PxSize | PercentageSize
+      right?: PxSize | PercentageSize;
 
       /**
        * 原生子窗体的边距，用于定位原生子窗体的位置，若设置了 left、right、top、bottom 则对应的边距值失效
        *
        * "auto" 居中
        */
-      margin?: string
+      margin?: string;
 
       /**
        * 原生子窗体的窗口的堆叠顺序值，拥有更高堆叠顺序的窗口总是会处于堆叠顺序较低的窗口的前面，拥有相同堆叠顺序的窗口后调用 show 方法则在前面
        */
-      zindex?: number
+      zindex?: number;
 
       /**
        * 窗口的背景颜色，支持 Hex 颜色
@@ -1001,20 +1001,20 @@ export interface AppPlus {
        *
        * @format color
        */
-      background?: HEXColor | 'transparent'
+      background?: HEXColor | 'transparent';
 
-      [x: string]: any
-    }
+      [x: string]: any;
+    };
 
-    [x: string]: any
-  }[]
+    [x: string]: any;
+  }[];
 
   /**
    * 页面回弹效果，设置为 "none" 时关闭效果
    *
    * @desc App-vue（nvue Android 无页面级bounce效果，仅 list、recycle-list、waterfall 等滚动组件有 bounce 效果）
    */
-  bounce?: string
+  bounce?: string;
 
   /**
    * 侧滑返回功能，仅支持 "close" / "none"
@@ -1027,7 +1027,7 @@ export interface AppPlus {
    *
    * @desc App-iOS
    */
-  popGesture?: 'close' | 'none'
+  popGesture?: 'close' | 'none';
 
   /**
    * iOS 软键盘上完成工具栏的显示模式，设置为 "none" 时关闭工具栏
@@ -1036,7 +1036,7 @@ export interface AppPlus {
    *
    * @desc App-iOS
    */
-  softInputNavBar?: 'auto' | 'none'
+  softInputNavBar?: 'auto' | 'none';
 
   /**
    * 软键盘弹出模式，仅支持 "adjustResize" / "adjustPan"
@@ -1045,7 +1045,7 @@ export interface AppPlus {
    *
    * @desc App
    */
-  softInputMode?: 'adjustResize' | 'adjustPan'
+  softInputMode?: 'adjustResize' | 'adjustPan';
 
   /**
    * 下拉刷新
@@ -1058,7 +1058,7 @@ export interface AppPlus {
      *
      * @default false
      */
-    support?: boolean
+    support?: boolean;
 
     /**
      * 下拉刷新控件颜色，仅 style 为 "circle" 时有效，支持 HEX 颜色
@@ -1067,7 +1067,7 @@ export interface AppPlus {
      *
      * @format color
      */
-    color?: HEXColor
+    color?: HEXColor;
 
     /**
      * 下拉刷新控件样式
@@ -1078,24 +1078,24 @@ export interface AppPlus {
      *
      * @default Android 为 "circle"，iOS 为 "default"
      */
-    style?: 'default' | 'circle'
+    style?: 'default' | 'circle';
 
     /**
      * 下拉刷新控件进入刷新状态的拉拽高度，支持以 px 为单位的逻辑像素值或百分比
      */
-    height?: PxSize | PercentageSize
+    height?: PxSize | PercentageSize;
 
     /**
      * 窗口可下拉拖拽的范围，支持以 px 为单位的逻辑像素值或百分比
      */
-    range?: PxSize | PercentageSize
+    range?: PxSize | PercentageSize;
 
     /**
      * 下拉刷新控件的起始位置，仅 style 为 "circle" 时有效，用于定义刷新控件下拉时的起始位置，支持以 px 为单位的逻辑像素值或百分比
      *
      * 如使用了非原生 title 且需要原生下拉刷新，一般都设置 style 为 "circle" 并将 offset 设置为自定义 title 的高度
      */
-    offset?: PxSize | PercentageSize
+    offset?: PxSize | PercentageSize;
 
     /**
      * 下拉可刷新状态时配置，仅 style 为 "default" 时有效
@@ -1104,10 +1104,10 @@ export interface AppPlus {
       /**
        * 下拉可刷新状态时下拉刷新控件标题内容
        */
-      caption?: string
+      caption?: string;
 
-      [x: string]: any
-    }
+      [x: string]: any;
+    };
 
     /**
      * 释放可刷新状态时配置，仅 style 为 "default" 时有效
@@ -1116,10 +1116,10 @@ export interface AppPlus {
       /**
        * 释放可刷新状态时下拉刷新控件标题内容
        */
-      caption?: string
+      caption?: string;
 
-      [x: string]: any
-    }
+      [x: string]: any;
+    };
 
     /**
      * 正在刷新状态时配置，仅 style 为 "default" 时有效
@@ -1128,20 +1128,20 @@ export interface AppPlus {
       /**
        * 正在刷新状态时下拉刷新控件标题内容
        */
-      caption?: string
+      caption?: string;
 
-      [x: string]: any
-    }
+      [x: string]: any;
+    };
 
-    [x: string]: any
-  }
+    [x: string]: any;
+  };
 
   /**
    * 滚动条显示策略，设置为 "none" 时不显示滚动条
    *
    * @desc App
    */
-  scrollIndicator?: string
+  scrollIndicator?: string;
 
   /**
    * 窗口显示的动画效果，详见 [窗口动画](https://uniapp.dcloud.net.cn/api/router#animation)
@@ -1150,7 +1150,7 @@ export interface AppPlus {
    *
    * @desc App
    */
-  animationType?: AnimationType
+  animationType?: AnimationType;
 
   /**
    * 窗口显示动画的持续时间，单位为 ms
@@ -1159,7 +1159,7 @@ export interface AppPlus {
    *
    * @desc App
    */
-  animationDuration?: number
+  animationDuration?: number;
 
-  [x: string]: any
+  [x: string]: any;
 }

@@ -1,4 +1,4 @@
-import type { HEXColor, ThemeVar } from '../common'
+import type { HEXColor, ThemeVar } from '../common';
 
 /**
  * 设置编译到 mp-jd 平台的特定样式，配置项参考 <https://mp-docs.jd.com/doc/dev/framework/504#heading-3>
@@ -15,19 +15,19 @@ export interface MpJd {
    *
    * @format color
    */
-  navigationBarBackgroundColor?: HEXColor | ThemeVar
+  navigationBarBackgroundColor?: HEXColor | ThemeVar;
 
   /**
    * 导航栏标题、状态栏颜色
    *
    * @default "white"
    */
-  navigationBarTextStyle?: 'black' | 'white' | ThemeVar
+  navigationBarTextStyle?: 'black' | 'white' | ThemeVar;
 
   /**
    * 导航栏标题文字内容
    */
-  navigationBarTitleText?: string
+  navigationBarTitleText?: string;
 
   /**
    * 导航栏样式
@@ -38,42 +38,42 @@ export interface MpJd {
    *
    * @default "default"
    */
-  navigationStyle?: 'default' | 'custom'
+  navigationStyle?: 'default' | 'custom';
 
   /**
    * 下拉窗口的背景色，不是页面的背景颜色
    *
    * @default "#FFFFFF"
    */
-  backgroundColor?: HEXColor | ThemeVar
+  backgroundColor?: HEXColor | ThemeVar;
 
   /**
    * 下拉 loading 的样式，仅支持 "dark" / "light"
    *
    * @default "dark"
    */
-  backgroundTextStyle?: 'dark' | 'light' | ThemeVar
+  backgroundTextStyle?: 'dark' | 'light' | ThemeVar;
 
   /**
    * 顶部窗口的背景色，仅 iOS 支持
    *
    * @default "#FFFFFF"
    */
-  backgroundColorTop?: HEXColor | ThemeVar
+  backgroundColorTop?: HEXColor | ThemeVar;
 
   /**
    * 底部窗口的背景色，仅 iOS 支持
    *
    * @default "#FFFFFF"
    */
-  backgroundColorBottom?: HEXColor | ThemeVar
+  backgroundColorBottom?: HEXColor | ThemeVar;
 
   /**
    * 是否开启全局的下拉刷新，详见 [Page.onPullDownRefresh](https://mp-docs.jd.com/doc/dev/framework/520#heading-10)
    *
    * @default false
    */
-  enablePullDownRefresh?: boolean
+  enablePullDownRefresh?: boolean;
 
-  [x: string]: any
+  [x: string]: any;
 }

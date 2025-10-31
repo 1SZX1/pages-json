@@ -1,4 +1,4 @@
-import type { HEXColor, ThemeVar } from '../common'
+import type { HEXColor, ThemeVar } from '../common';
 
 /**
  * 设置编译到 mp-weixin 平台的特定样式，配置项参考 [MP-WEIXIN](https://uniapp.dcloud.net.cn/collocation/pages#mp-weixin) 和 <https://developers.weixin.qq.com/miniprogram/dev/reference/configuration/app.html#window>
@@ -15,19 +15,19 @@ export interface MpWeixin {
    *
    * @format color
    */
-  navigationBarBackgroundColor?: HEXColor | ThemeVar
+  navigationBarBackgroundColor?: HEXColor | ThemeVar;
 
   /**
    * 导航栏标题、状态栏颜色
    *
    * @default "white"
    */
-  navigationBarTextStyle?: 'black' | 'white' | ThemeVar
+  navigationBarTextStyle?: 'black' | 'white' | ThemeVar;
 
   /**
    * 导航栏标题文字内容
    */
-  navigationBarTitleText?: string
+  navigationBarTitleText?: string;
 
   /**
    * 导航栏样式
@@ -40,7 +40,7 @@ export interface MpWeixin {
    *
    * @default "default"
    */
-  navigationStyle?: 'default' | 'custom'
+  navigationStyle?: 'default' | 'custom';
 
   /**
    * 在非首页、非页面栈最底层页面或非 tabbar 内页面中的导航栏展示 home 键
@@ -49,21 +49,21 @@ export interface MpWeixin {
    *
    * @default false
    */
-  homeButton?: boolean
+  homeButton?: boolean;
 
   /**
    * 窗口的背景色，支持 HEX 颜色
    *
    * @default "#FFFFFF"
    */
-  backgroundColor?: HEXColor | ThemeVar
+  backgroundColor?: HEXColor | ThemeVar;
 
   /**
    * 下拉 loading 的样式，仅支持 "dark" / "light"
    *
    * @default "dark"
    */
-  backgroundTextStyle?: 'dark' | 'light' | ThemeVar
+  backgroundTextStyle?: 'dark' | 'light' | ThemeVar;
 
   /**
    * 顶部窗口的背景色，仅 iOS 支持
@@ -72,7 +72,7 @@ export interface MpWeixin {
    *
    * @default "#FFFFFF"
    */
-  backgroundColorTop?: HEXColor | ThemeVar
+  backgroundColorTop?: HEXColor | ThemeVar;
 
   /**
    * 底部窗口的背景色，仅 iOS 支持
@@ -81,21 +81,21 @@ export interface MpWeixin {
    *
    * @default "#FFFFFF"
    */
-  backgroundColorBottom?: HEXColor | ThemeVar
+  backgroundColorBottom?: HEXColor | ThemeVar;
 
   /**
    * 是否开启全局的下拉刷新，详见 [Page.onPullDownRefresh](https://developers.weixin.qq.com/miniprogram/dev/reference/api/Page.html#onpulldownrefresh)
    *
    * @default false
    */
-  enablePullDownRefresh?: boolean
+  enablePullDownRefresh?: boolean;
 
   /**
    * 页面上拉触底事件触发时距页面底部距离，单位为 px，详见 [Page.onReachBottom](https://developers.weixin.qq.com/miniprogram/dev/reference/api/Page.html#onreachbottom)
    *
    * @default 50
    */
-  onReachBottomDistance?: number
+  onReachBottomDistance?: number;
 
   /**
    * 屏幕旋转设置，支持 auto / portrait / landscape，详见 [响应显示区域变化](https://developers.weixin.qq.com/miniprogram/dev/framework/view/resizable.html)
@@ -110,7 +110,7 @@ export interface MpWeixin {
    *
    * @default "portrait"
    */
-  pageOrientation?: 'auto' | 'portrait' | 'landscape'
+  pageOrientation?: 'auto' | 'portrait' | 'landscape';
 
   /**
    * 重新启动策略配置
@@ -121,14 +121,14 @@ export interface MpWeixin {
    *
    * @desc [2.8.0](https://developers.weixin.qq.com/miniprogram/dev/framework/compatibility.html)
    */
-  restartStrategy?: 'homePage' | 'homePageAndLatestPage'
+  restartStrategy?: 'homePage' | 'homePageAndLatestPage';
 
   /**
    * 页面初始渲染缓存配置，详见 [初始渲染缓存](https://developers.weixin.qq.com/miniprogram/dev/framework/view/initial-rendering-cache.html)
    *
    * @desc [2.11.1](https://developers.weixin.qq.com/miniprogram/dev/framework/compatibility.html)
    */
-  initialRenderingCache?: 'static' | 'dynamic'
+  initialRenderingCache?: 'static' | 'dynamic';
 
   /**
    * 切入系统后台时，隐藏页面内容，保护用户隐私
@@ -137,7 +137,7 @@ export interface MpWeixin {
    *
    * @default "none"
    */
-  visualEffectInBackground?: 'hidden' | 'none'
+  visualEffectInBackground?: 'hidden' | 'none';
 
   /**
    * 控制预加载下个页面的时机，详见 [控制预加载下个页面的时机](https://developers.weixin.qq.com/miniprogram/dev/framework/performance/tips/runtime_nav.html#_2-4-%E6%8E%A7%E5%88%B6%E9%A2%84%E5%8A%A0%E8%BD%BD%E4%B8%8B%E4%B8%AA%E9%A1%B5%E9%9D%A2%E7%9A%84%E6%97%B6%E6%9C%BA)
@@ -152,7 +152,7 @@ export interface MpWeixin {
    *
    * @default "static"
    */
-  handleWebviewPreload?: 'static' | 'manual' | 'auto'
+  handleWebviewPreload?: 'static' | 'manual' | 'auto';
 
-  [x: string]: any
+  [x: string]: any;
 }

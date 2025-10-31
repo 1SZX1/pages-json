@@ -1,4 +1,4 @@
-import type { HEXColor, ThemeVar } from '../common'
+import type { HEXColor, ThemeVar } from '../common';
 
 /**
  * 设置编译到 mp-qq 平台的特定样式，配置项参考 <https://q.qq.com/wiki/develop/miniprogram/frame/dispose.html#window>
@@ -15,19 +15,19 @@ export interface MpQq {
    *
    * @format color
    */
-  navigationBarBackgroundColor?: HEXColor | ThemeVar
+  navigationBarBackgroundColor?: HEXColor | ThemeVar;
 
   /**
    * 导航栏标题、状态栏颜色
    *
    * @default "white"
    */
-  navigationBarTextStyle?: 'black' | 'white' | ThemeVar
+  navigationBarTextStyle?: 'black' | 'white' | ThemeVar;
 
   /**
    * 导航栏标题文字内容
    */
-  navigationBarTitleText?: string
+  navigationBarTitleText?: string;
 
   /**
    * 导航栏样式
@@ -38,42 +38,42 @@ export interface MpQq {
    *
    * @default "default"
    */
-  navigationStyle?: 'default' | 'custom'
+  navigationStyle?: 'default' | 'custom';
 
   /**
    * 窗口的背景色，支持 HEX 颜色
    *
    * @default "#FFFFFF"
    */
-  backgroundColor?: HEXColor | ThemeVar
+  backgroundColor?: HEXColor | ThemeVar;
 
   /**
    * 下拉 loading 的样式，仅支持 "dark" / "light"
    *
    * @default "dark"
    */
-  backgroundTextStyle?: 'dark' | 'light' | ThemeVar
+  backgroundTextStyle?: 'dark' | 'light' | ThemeVar;
 
   /**
    * 顶部窗口的背景色，仅 iOS 支持
    *
    * @default "#FFFFFF"
    */
-  backgroundColorTop?: HEXColor | ThemeVar
+  backgroundColorTop?: HEXColor | ThemeVar;
 
   /**
    * 底部窗口的背景色，仅 iOS 支持
    *
    * @default "#FFFFFF"
    */
-  backgroundColorBottom?: HEXColor | ThemeVar
+  backgroundColorBottom?: HEXColor | ThemeVar;
 
   /**
    * 是否开启全局的下拉刷新，详见 [Page.onPullDownRefresh](https://q.qq.com/wiki/develop/miniprogram/frame/logic/logic_register_page.html#onPullDownRefresh)
    *
    * @default false
    */
-  enablePullDownRefresh?: boolean
+  enablePullDownRefresh?: boolean;
 
   /**
    * 屏幕旋转设置，支持 auto / portrait / landscape，详见 [响应显示区域变化](https://q.qq.com/wiki/develop/miniprogram/frame/view/view_section_change.html)
@@ -86,7 +86,7 @@ export interface MpQq {
    *
    * @default "portrait"
    */
-  pageOrientation?: 'auto' | 'portrait' | 'landscape'
+  pageOrientation?: 'auto' | 'portrait' | 'landscape';
 
-  [x: string]: any
+  [x: string]: any;
 }

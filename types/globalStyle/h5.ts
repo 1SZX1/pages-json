@@ -1,4 +1,4 @@
-import type { HEXColor, PercentageSize, PxSize, RGBAColor, TitleNViewButton } from '../common'
+import type { HEXColor, PercentageSize, PxSize, RGBAColor, TitleNViewButton } from '../common';
 
 export interface H5 {
   /**
@@ -12,12 +12,12 @@ export interface H5 {
      *
      * @format color
      */
-    backgroundColor?: HEXColor
+    backgroundColor?: HEXColor;
 
     /**
      * 自定义按钮，详见 [自定义按钮](https://uniapp.dcloud.net.cn/collocation/pages#app-titlenview-buttons)
      */
-    buttons?: TitleNViewButton[]
+    buttons?: TitleNViewButton[];
 
     /**
      * 标题文字颜色，支持 HEX 颜色
@@ -26,17 +26,17 @@ export interface H5 {
      *
      * @format color
      */
-    titleColor?: HEXColor
+    titleColor?: HEXColor;
 
     /**
      * 标题文字内容
      */
-    titleText?: string
+    titleText?: string;
 
     /**
      * 标题文字大小
      */
-    titleSize?: string
+    titleSize?: string;
 
     /**
      * 导航栏样式
@@ -47,7 +47,7 @@ export interface H5 {
      *
      * @default "default"
      */
-    type?: 'default' | 'transparent'
+    type?: 'default' | 'transparent';
 
     /**
      * 导航栏上的搜索框配置，详见 [searchInput](https://uniapp.dcloud.net.cn/collocation/pages#h5-searchinput)
@@ -60,7 +60,7 @@ export interface H5 {
        *
        * @default false
        */
-      autoFocus?: boolean
+      autoFocus?: boolean;
 
       /**
        * 非输入状态下文本的对齐方式
@@ -73,7 +73,7 @@ export interface H5 {
        *
        * @default "center"
        */
-      align?: 'center' | 'left' | 'right'
+      align?: 'center' | 'left' | 'right';
 
       /**
        * 背景颜色，支持 HEX 和 RGBA 颜色
@@ -82,19 +82,19 @@ export interface H5 {
        *
        * @format color
        */
-      backgroundColor?: HEXColor | RGBAColor
+      backgroundColor?: HEXColor | RGBAColor;
 
       /**
        * 输入框的圆角半径，单位为 px
        *
        * @default "0px"
        */
-      borderRadius?: PxSize
+      borderRadius?: PxSize;
 
       /**
        * 提示文本
        */
-      placeholder?: string
+      placeholder?: string;
 
       /**
        * 提示文本颜色，支持 HEX 颜色
@@ -103,20 +103,20 @@ export interface H5 {
        *
        * @format color
        */
-      placeholderColor?: HEXColor
+      placeholderColor?: HEXColor;
 
       /**
        * 是否禁止输入
        *
        * @default false
        */
-      disabled?: boolean
+      disabled?: boolean;
 
-      [x: string]: any
-    }
+      [x: string]: any;
+    };
 
-    [x: string]: any
-  }
+    [x: string]: any;
+  };
 
   /**
    * 下拉刷新，详见 [下拉刷新](https://uniapp.dcloud.net.cn/collocation/pages#h5-pulltorefresh)
@@ -127,17 +127,17 @@ export interface H5 {
      *
      * @default "#2BD009"
      */
-    color?: HEXColor
+    color?: HEXColor;
 
     /**
      * 下拉刷新控件起始位置，支持支持单位为 px 的逻辑像素值或百分比
      *
      * @default "0px"
      */
-    offset?: PxSize | PercentageSize
+    offset?: PxSize | PercentageSize;
 
-    [x: string]: any
-  }
+    [x: string]: any;
+  };
 
-  [x: string]: any
+  [x: string]: any;
 }
