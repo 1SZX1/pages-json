@@ -130,7 +130,7 @@ export class PageFile {
     }
 
     const { tabbar } = this.metas.get(platform) || {};
-    if (!tabbar) {
+    if (tabbar === undefined) {
       return;
     }
 
@@ -247,7 +247,7 @@ export class PageFile {
     }
 
     const env: Record<string, any> = {
-      UNI_PLATFORM: platform.toLowerCase(),
+      UNI_PLATFORM: platform,
     };
 
     const parsed = await parseCode({

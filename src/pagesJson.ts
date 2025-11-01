@@ -85,7 +85,7 @@ export class DynamicPagesJson {
     }
 
     const env: Record<string, any> = {
-      UNI_PLATFORM: platform.toLowerCase(),
+      UNI_PLATFORM: platform,
     };
 
     const parsed = await parseCode({

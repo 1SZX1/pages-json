@@ -158,22 +158,26 @@ export class Context {
       return false;
     }
 
-    this.checkStaticJsonFileSync();
-    const { platforms } = await this.detectStaticJsonFile(true);
-
-    const json = await this.generatePagesJson(platforms);
-
     if (this.files.size === 0) {
       await this.scanFiles(); // 避免每次都扫描全局
     }
 
+    this.checkStaticJsonFileSync();
+    const { platforms, indent, eof } = await this.detectStaticJsonFile(true);
+
+    const json = await this.generatePagesJson(platforms);
     await this.generatePages(json, platforms);
     await this.generateSubPackages(json, platforms);
     await this.generateTabbar(json, platforms);
-
-    const result = await this.writePagesJson(json);
+    const raw = await this.stringifyPagesJson(json, { platforms, indent, eof });
+    const result = await this.writePagesJson(raw);
 
     if (result && this.cfg.dts) {
+      // dts 必须是无条件编译的，否则重复 key 会导致生成错误
+      const json = await this.generatePagesJson();
+      await this.generatePages(json);
+      await this.generateSubPackages(json);
+      await this.generateTabbar(json);
       await writeDeclaration(json, this.cfg.dts as string);
     }
 
@@ -192,7 +196,10 @@ export class Context {
     await this.generateSubPackages(pagesJson);
     await this.generateTabbar(pagesJson);
 
-    return `export default ${JSON.stringify(pagesJson, null, 2)}\n`;
+    return `/** @type {import('@uni-ku/pages-json/types').PagesJson} */
+    const json = ${JSON.stringify(pagesJson, null, 2)};
+    export default json;
+    `;
   }
 
   public isValidFile(filepath: string): boolean {
@@ -257,7 +264,7 @@ export class Context {
   /**
    * 检测静态 pages.json 文件
    */
-  private async detectStaticJsonFile(forceUpdate = false): Promise<StaticJsonFileInfo> {
+  public async detectStaticJsonFile(forceUpdate = false): Promise<StaticJsonFileInfo> {
     if (!forceUpdate && this.staticJsonFileInfo) {
       return this.staticJsonFileInfo;
     }
@@ -318,7 +325,11 @@ export class Context {
     return this.staticJsonFileInfo;
   }
 
-  private async generatePagesJson(platforms: Map<BuiltInPlatform, number> = new Map()): Promise<PagesJSON.PagesJson> {
+  /**
+   * 根据指定的平台生成 PagesJson 对象
+   * @param platforms
+   */
+  public async generatePagesJson(platforms: Map<BuiltInPlatform, number> = new Map()): Promise<PagesJSON.PagesJson> {
     let { pages, subPackages, tabBar, ...v1rest } = (await this.dynamicPagesJson.getJson() || {});
     for (const [platform] of platforms) {
       const { pages: v2pages, subPackages: v2subPackages, tabBar: v2tabBar, ...v2rest } = (await this.dynamicPagesJson.getJson({ platform }) || {});
@@ -368,7 +379,10 @@ export class Context {
     };
   }
 
-  private async generatePages(pagesJson: PagesJSON.PagesJson, platforms: Map<BuiltInPlatform, number> = new Map()): Promise<void> {
+  /**
+   * 根据指定的平台生成 Pages，并合并到 pagesJson
+   */
+  public async generatePages(pagesJson: PagesJSON.PagesJson, platforms: Map<BuiltInPlatform, number> = new Map()): Promise<void> {
 
     if (this.pages.size === 0) {
       return;
@@ -407,7 +421,10 @@ export class Context {
     });
   }
 
-  private async generateSubPackages(pagesJson: PagesJSON.PagesJson, platforms: Map<BuiltInPlatform, number> = new Map()): Promise<void> {
+  /**
+   * 根据指定的平台生成 SubPackages，并合并到 pagesJson
+   */
+  public async generateSubPackages(pagesJson: PagesJSON.PagesJson, platforms: Map<BuiltInPlatform, number> = new Map()): Promise<void> {
 
     if (this.subPackages.size === 0) {
       return;
@@ -444,10 +461,14 @@ export class Context {
 
   }
 
-  private async generateTabbar(pagesJson: PagesJSON.PagesJson, platforms: Map<BuiltInPlatform, number> = new Map()): Promise<void> {
+  /**
+   * 根据指定的平台生成 TabBar，并合并到 pagesJson
+   */
+  public async generateTabbar(pagesJson: PagesJSON.PagesJson, platforms: Map<BuiltInPlatform, number> = new Map()): Promise<void> {
+
+    const items = new Map<BuiltInPlatform, PagesJSON.TabBarItem>();
 
     for (const [_, pf] of this.pages) {
-      const items = new Map<BuiltInPlatform, PagesJSON.TabBarItem>();
       const tabbarItem = await pf.getTabbarItem();
       if (tabbarItem) {
         items.set(currentPlatform, tabbarItem);
@@ -457,24 +478,23 @@ export class Context {
         if (platformItem) {
           items.set(platform, platformItem);
         }
+      }
+    }
 
-        if (items.size > 0) {
+    if (items.size > 0) {
+      pagesJson.tabBar = pagesJson.tabBar || {};
+      pagesJson.tabBar.list = pagesJson.tabBar.list || [];
 
-          pagesJson.tabBar = pagesJson.tabBar || {};
-          pagesJson.tabBar.list = pagesJson.tabBar.list || [];
+      const [[pf1, v1], ...rest] = items.entries();
+      for (const [pf2, v2] of rest) {
+        mergePlatformObject(pf1, v1, pf2, v2);
+      }
 
-          const [[pf1, v1], ...rest] = items.entries();
-          for (const [pf2, v2] of rest) {
-            mergePlatformObject(pf1, v1, pf2, v2);
-          }
-
-          const idx = pagesJson.tabBar.list.findIndex(item => item.pagePath === v1.pagePath);
-          if (idx !== -1) {
-            deepAssign(pagesJson.tabBar.list[idx], v1);
-          } else {
-            pagesJson.tabBar.list.push(v1);
-          }
-        }
+      const idx = pagesJson.tabBar.list.findIndex(item => item.pagePath === v1.pagePath);
+      if (idx !== -1) {
+        deepAssign(pagesJson.tabBar.list[idx], v1);
+      } else {
+        pagesJson.tabBar.list.push(v1);
       }
     }
 
@@ -482,30 +502,62 @@ export class Context {
     if (pagesJson.tabBar && pagesJson.tabBar.list) {
       pagesJson.tabBar.list.sort((a, b) => getTabbarIndex(a) - getTabbarIndex(b));
     }
-
   }
 
-  private async writePagesJson(pagesJson: PagesJSON.PagesJson): Promise<boolean> {
-    const { indent, eof, platforms } = this.staticJsonFileInfo!;
+  /**
+   * 格式化 json 字符串
+   *   - 添加所用的 平台＋时间戳 的注释
+   *   - 清理条件编译的 key 后缀
+   *   - 修复 #ifdef 行注释位置
+   *   - 修复 #endif 行注释位置
+   */
+  public async stringifyPagesJson(pagesJson: PagesJSON.PagesJson, { indent, eof, platforms }: {
+    platforms: Map<BuiltInPlatform, number>;
+    indent: string;
+    eof: string;
+  }): Promise<string> {
     const merged = new Map<BuiltInPlatform, number>(platforms.entries()).set(currentPlatform, Date.now());
     const sorted = Array.from(merged.entries()).sort(([p1], [p2]) => p1.localeCompare(p2));
-    const comment = `// GENERATED BY @uni-ku/pages-json, PLATFORM: ${sorted.map(([p]) => `${p}`).join(' || ')} \n`;
 
-    const raw = cjStringify(pagesJson, null, indent) + eof;
+    let rawJson = cjStringify(pagesJson, null, indent) + eof;
 
-    const rawComment = comment + raw;
+    const comment = `// GENERATED BY @uni-ku/pages-json, PLATFORM: ${sorted.map(([p, t]) => `${p}@${t}`).join(' || ')} \n`;
+    rawJson = comment + rawJson;
 
-    if (this.lastPagesJson === rawComment) {
+    // 清理 key 后缀
+    rawJson = rawJson.replace(/"([^"]+)#ifdef_.*?"/g, '"$1"');
+
+    // 修复 #ifdef 行注释位置。（comment-json 将此行注释放在上一个行的末尾，而不是同等缩进的新行）
+    // eslint-disable-next-line regexp/no-super-linear-backtracking
+    rawJson = rawJson.replace(/\n(\s*.+)\s*(\/\/ #ifdef .*)\n(\s*)/g, '\n$1\n$3$2\n$3');
+
+    // 修复 #endif 行注释位置。（comment-json 将此行注释行末尾，而不是同等缩进的新行）
+    // eslint-disable-next-line regexp/no-super-linear-backtracking
+    rawJson = rawJson.replace(/\n((\s*).*?)\s*\/\/ #endif/g, '\n$1\n$2// #endif');
+
+    // 清除多余的换行
+    rawJson = rawJson.replace(/\n\s*\n/g, '\n');
+
+    return rawJson;
+  }
+
+  public async writePagesJson(rawJson: string): Promise<boolean> {
+
+    const lines = rawJson.split('\n');
+    if (lines[0].startsWith('// GENERATED BY @uni-ku/pages-json, PLATFORM:')) { // 第一行是注释行
+      // 使用正则表达式移除 @timestamp 部分，用于对比 lastPagesJson
+      lines[0] = lines[0].replace(/@\d+/g, '');
+    }
+
+    const rawNoTS = lines.join('\n'); // 重新组合文件内容
+    if (this.lastPagesJson === rawNoTS) {
       debug.info('pages.json 无改动，跳过更新。');
       return false;
     }
 
-    const commentTS = `// GENERATED BY @uni-ku/pages-json, PLATFORM: ${sorted.map(([p, t]) => `${p}@${t}`).join(' || ')} \n`;
-    const final = formatJson(commentTS + raw);
+    await writeFileWithLock(this.staticJsonFilePath, rawJson);
 
-    await writeFileWithLock(this.staticJsonFilePath, final);
-
-    this.lastPagesJson = rawComment;
+    this.lastPagesJson = rawNoTS;
 
     return true;
   }
@@ -613,30 +665,6 @@ function mergePlatformObject<T extends object>(pf1: BuiltInPlatform, v1: T, pf2:
     (v1 as any)[p1pk] = v1Child;
     wrapIfdef(v1, p1pk, pf1);
   }
-}
-
-/**
- * 格式化 json 字符串
- *   - 清理条件编译的 key 后缀
- *   - 修复 #ifdef 行注释位置
- *   - 修复 #endif 行注释位置
- */
-function formatJson(rawJson: string): string {
-  // 清理 key 后缀
-  rawJson = rawJson.replace(/"([^"]+)#ifdef_.*?"/g, '"$1"');
-
-  // 修复 #ifdef 行注释位置。（comment-json 将此行注释放在上一个行的末尾，而不是同等缩进的新行）
-  // eslint-disable-next-line regexp/no-super-linear-backtracking
-  rawJson = rawJson.replace(/\n(\s*.+)\s*(\/\/ #ifdef .*)\n(\s*)/g, '\n$1\n$3$2\n$3');
-
-  // 修复 #endif 行注释位置。（comment-json 将此行注释行末尾，而不是同等缩进的新行）
-  // eslint-disable-next-line regexp/no-super-linear-backtracking
-  rawJson = rawJson.replace(/\n((\s*).*?)\s*\/\/ #endif/g, '\n$1\n$2// #endif');
-
-  // 清除多余的换行
-  rawJson = rawJson.replace(/\n\s*\n/g, '\n');
-
-  return rawJson;
 }
 
 function wrapIfdef(obj: any, key: string, platform: string): void {
