@@ -8,7 +8,7 @@ import { resolveConfig, type UserConfig } from './config';
 import { Context } from './context';
 import { debug } from './utils/debug';
 
-const MODULE_ID_VIRTUAL = 'virtual:@uni-ku/pages-json' as const;
+const MODULE_ID_VIRTUAL = 'virtual:pages-json' as const;
 const RESOLVED_MODULE_ID_VIRTUAL = `\0${MODULE_ID_VIRTUAL}` as const;
 
 export default function pagesJson(userConfig: UserConfig = {}): PluginOption {

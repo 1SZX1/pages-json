@@ -259,7 +259,7 @@ export default {
 由于 `pages.json` 内包含条件编译，以及有重复 key，无法通过 `import` 引入当前环境的完整 json。
 可通过虚拟模块引入：
 ```ts
-import pagesJson from 'virtual:@uni-ku/pages-json';
+import pagesJson from 'virtual:pages-json';
 
 console.log(pagesJson);
 ```
