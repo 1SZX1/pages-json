@@ -14,7 +14,7 @@ const ctx = new Context(cfg);
 describe('get files', () => {
   it('pages', async () => {
     await ctx.scanFiles();
-    const files = [...ctx.files.keys()].map(f => path.relative(cfg.root, f)).sort();
+    const files = [...ctx.files.keys()].map(f => path.posix.relative(cfg.root, f)).sort();
     expect(files).toMatchInlineSnapshot(`
       [
         "src/pages-sub/about/index.vue",
