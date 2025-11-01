@@ -330,10 +330,11 @@ export class Context {
    * @param platforms
    */
   public async generatePagesJson(platforms: Map<BuiltInPlatform, number> = new Map()): Promise<PagesJSON.PagesJson> {
-    let { pages, subPackages, tabBar, ...v1rest } = (await this.dynamicPagesJson.getJson() || {});
+    const json = (await this.dynamicPagesJson.getJson() || {});
+    let { pages, subPackages, tabBar, ...rest } = json;
     for (const [platform] of platforms) {
       const { pages: v2pages, subPackages: v2subPackages, tabBar: v2tabBar, ...v2rest } = (await this.dynamicPagesJson.getJson({ platform }) || {});
-      mergePlatformObject(currentPlatform, v1rest, platform, v2rest);
+      mergePlatformObject(currentPlatform, rest, platform, v2rest);
 
       // 合并 pages
       if (v2pages && v2pages.length > 0) {
@@ -372,7 +373,8 @@ export class Context {
     }
 
     return {
-      ...v1rest,
+      ...json,
+      ...rest,
       pages,
       subPackages,
       tabBar,
