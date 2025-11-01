@@ -59,38 +59,40 @@ export class Context {
 
     const files = new Map<string, PageFile>();
     const pages = new Map<string, PageFile>();
-
-    // pages
-    listFiles(this.cfg.pageDir, {
-      cwd: this.cfg.root,
-      ignore: this.cfg.excludes,
-    }).forEach((f) => {
-      debug.debug(`pages: ${f}`);
-
-      const page = this.pages.get(f) || new PageFile(this, f);
-      pages.set(f, page);
-      files.set(f, page);
-    });
-
-    // subPackages
     const subPackages = new Map<string, Map<string, PageFile>>();
+
+    // subPackages, 先处理 subPackages 避免重复出现在 pages 里
     for (const dir of this.cfg.subPackageDirs) {
       const subPages = new Map<string, PageFile>();
 
       const root = path.basename(dir);
 
-      listFiles(dir, {
-        cwd: this.cfg.root,
-        ignore: this.cfg.excludes,
-      }).forEach((f) => {
+      for (const f of listFiles(dir, { cwd: this.cfg.root, ignore: this.cfg.excludes })) {
+        if (files.has(f)) {
+          continue; // 跳过重复文件
+        }
+
         debug.debug(`subPackages: ${f}`);
 
         const page = this.subPackages.get(root)?.get(f) || new PageFile(this, f);
         subPages.set(f, page);
         files.set(f, page);
-      });
+      }
 
       subPackages.set(root, subPages);
+    }
+
+    // pages
+    for (const f of listFiles(this.cfg.pageDir, { cwd: this.cfg.root, ignore: this.cfg.excludes })) {
+      if (files.has(f)) {
+        continue; // 跳过重复文件
+      }
+
+      debug.debug(`pages: ${f}`);
+
+      const page = this.pages.get(f) || new PageFile(this, f);
+      pages.set(f, page);
+      files.set(f, page);
     }
 
     this.pages = pages;
