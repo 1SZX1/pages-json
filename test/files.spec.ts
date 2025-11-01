@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { normalizePath } from 'vite';
 import { describe, expect, it } from 'vitest';
 import { resolveConfig } from '../src/config';
 import { Context } from '../src/context';
@@ -14,7 +15,7 @@ const ctx = new Context(cfg);
 describe('get files', () => {
   it('pages', async () => {
     await ctx.scanFiles();
-    const files = [...ctx.files.keys()].map(f => path.posix.relative(cfg.root, f)).sort();
+    const files = [...ctx.files.keys()].map(f => normalizePath(path.relative(cfg.root, f))).sort();
     expect(files).toMatchInlineSnapshot(`
       [
         "src/pages-sub/about/index.vue",
