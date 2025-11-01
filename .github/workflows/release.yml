@@ -82,28 +82,13 @@ jobs:
           current_tag="${{ steps.get_tags.outputs.current_tag }}"
           previous_tag="${{ steps.get_tags.outputs.previous_tag }}"
           if [ -z "$previous_tag" ]; then
-            commit_messages=$(git log --pretty=format:"%s - by @%an (%h)" "$current_tag" | grep -E 'feat|fix|docs|perf' || true)
+            commit_messages=$(git log --pretty=format:"%s - by @%an (%h)" "$current_tag" | grep -E 'feat|fix|docs|perf|refactor' || true)
           else
-            commit_messages=$(git log --pretty=format:"%s - by @%an (%h)" "$previous_tag".."$current_tag" | grep -E 'feat|fix|docs|perf' || true)
+            commit_messages=$(git log --pretty=format:"%s - by @%an (%h)" "$previous_tag".."$current_tag" | grep -E 'feat|fix|docs|perf|refactor' || true)
           fi
 
           # 转义 ` 字符
           commit_messages=$(echo "$commit_messages" | sed 's/`/\\\`/g')
-
-          # feat_messages=$(echo "$commit_messages" | grep 'feat' || true)
-          # fix_messages=$(echo "$commit_messages" | grep 'fix' || true)
-          # docs_messages=$(echo "$commit_messages" | grep 'docs' || true)
-          # perf_messages=$(echo "$commit_messages" | grep 'perf' || true)
-
-          # feat_messages=("${feat_messages[@]//\`/\\\`}")
-          # fix_messages=("${fix_messages[@]//\`/\\\`}")
-          # docs_messages=("${docs_messages[@]//\`/\\\`}")
-          # perf_messages=("${perf_messages[@]//\`/\\\`}")
-
-          # echo "feat_messages=(${feat_messages[@]})" >> $GITHUB_OUTPUT
-          # echo "fix_messages=(${fix_messages[@]})" >> $GITHUB_OUTPUT
-          # echo "docs_messages=(${docs_messages[@]})" >> $GITHUB_OUTPUT
-          # echo "perf_messages=(${perf_messages[@]})" >> $GITHUB_OUTPUT
 
           {
             echo 'feat_messages<<EOF'
@@ -125,6 +110,11 @@ jobs:
             echo "$commit_messages" | grep 'perf' || true
             echo 'EOF'
           } >> $GITHUB_OUTPUT
+          {
+            echo 'refactor_messages<<EOF'
+            echo "$commit_messages" | grep 'refactor' || true
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
 
       - name: 获取当前分支名
         id: get_branch_name
@@ -140,6 +130,7 @@ jobs:
           fix_messages=("${{ steps.extract_commit_messages.outputs.fix_messages }}")
           docs_messages=("${{ steps.extract_commit_messages.outputs.docs_messages }}")
           perf_messages=("${{ steps.extract_commit_messages.outputs.perf_messages }}")
+          refactor_messages=("${{ steps.extract_commit_messages.outputs.refactor_messages }}")
 
           release_notes=""
 
@@ -169,6 +160,13 @@ jobs:
             while IFS= read -r message; do
               release_notes="$release_notes\n- $message"
             done <<< "$perf_messages"
+          fi
+
+          if [[ -n "$refactor_messages" ]]; then
+            release_notes="$release_notes\n### ♻️ Refactors 重构:  \n"
+            while IFS= read -r message; do
+              release_notes="$release_notes\n- $message"
+            done <<< "$refactor_messages"
           fi
 
           # 转义 ` 字符
