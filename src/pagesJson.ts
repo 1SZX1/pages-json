@@ -2,7 +2,6 @@ import type { BuiltInPlatform } from '@uni-helper/uni-env';
 import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { Context } from './context';
 import fs from 'node:fs';
-import path from 'node:path';
 import { platform as currentPlatform } from '@uni-helper/uni-env';
 import { parseCode } from './utils/parser';
 
@@ -31,6 +30,9 @@ export class DynamicPagesJson {
    * json 内容
    */
   private jsons: Map<BuiltInPlatform, PagesJSON.PagesJson> = new Map();
+
+  static readonly basename = 'pages.json';
+  static readonly exts = ['.ts', '.mts', '.cts', '.js', '.cjs', '.mjs'];
 
   public constructor(ctx: Context) {
     this.ctx = ctx;
@@ -109,7 +111,7 @@ export class DynamicPagesJson {
    * @returns 绝对路径 | undefined
    */
   public detectFilePath(): string | undefined {
-    for (const filepath of DynamicPagesJson.possibleFilePaths(this.ctx.cfg.root, this.ctx.cfg.src)) {
+    for (const filepath of this.ctx.possibleDynamicJsonFilePaths()) {
       try {
         const stat = fs.statSync(filepath);
         if (stat && stat.isFile()) {
@@ -119,33 +121,6 @@ export class DynamicPagesJson {
         continue;
       }
     }
-  }
-
-  public static readonly basename = 'pages.json';
-  public static readonly exts = ['.ts', '.mts', '.cts', '.js', '.cjs', '.mjs'];
-  public static possibleFilePaths(rootDir: string, ...baseDirs: string[]): string[] {
-    const dirs = [rootDir];
-
-    for (const baseDir of baseDirs) {
-      const sub = path.resolve(rootDir, baseDir);
-      if (sub !== rootDir) {
-        dirs.push(sub);
-      }
-    }
-
-    const paths: string[] = [];
-
-    for (const dir of dirs) {
-      for (const ext of DynamicPagesJson.exts) {
-        paths.push(path.join(dir, DynamicPagesJson.basename + ext));
-      }
-    }
-
-    return paths;
-  }
-
-  public static isValid(filepath: string, rootDir: string, ...baseDirs: string[]): boolean {
-    return DynamicPagesJson.possibleFilePaths(rootDir, ...baseDirs).includes(filepath);
   }
 
 }

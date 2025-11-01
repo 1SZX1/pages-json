@@ -6,8 +6,6 @@ import chokidar from 'chokidar';
 import MagicString from 'magic-string';
 import { resolveConfig, type UserConfig } from './config';
 import { Context } from './context';
-import { PageFile } from './pageFile';
-import { DynamicPagesJson } from './pagesJson';
 import { debug } from './utils/debug';
 
 const MODULE_ID_VIRTUAL = 'virtual:@uni-ku/pages-json' as const;
@@ -39,7 +37,7 @@ export default function pagesJson(userConfig: UserConfig = {}): PluginOption {
             ctx.cfg.pageDir,
             ...ctx.cfg.subPackageDirs,
           ]),
-          ...DynamicPagesJson.possibleFilePaths(ctx.cfg.root, ctx.cfg.src),
+          ...ctx.possibleDynamicJsonFilePaths(),
         ]));
       }
     },
@@ -107,12 +105,12 @@ async function setupWatcher(ctx: Context, watcher: FSWatcher) {
       ctx.cfg.pageDir,
       ...ctx.cfg.subPackageDirs,
     ]),
-    ...DynamicPagesJson.possibleFilePaths(ctx.cfg.root, ctx.cfg.src),
+    ...ctx.possibleDynamicJsonFilePaths(),
   ];
 
   const excludes: AnymatchMatcher = [
     ...ctx.cfg.excludes,
-    file => !PageFile.isValid(file) && !DynamicPagesJson.isValid(file, ctx.cfg.root, ctx.cfg.src),
+    file => !ctx.isValidFile(file),
   ];
 
   watcher.on('add', async (file) => {

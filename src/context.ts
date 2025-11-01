@@ -116,8 +116,8 @@ export class Context {
         ? filepath
         : path.join(this.cfg.root, filepath);
 
-      // 检测是否合格的动态 pages 文件
-      if (!DynamicPagesJson.isValid(abspath, this.cfg.root, this.cfg.src)) {
+      // 检测是否合格的动态 pages.json 文件
+      if (this.isValidDynamicJsonFile(abspath)) {
         if (abspath !== this.dynamicPagesJson.path) {
           this.dynamicPagesJson.path = abspath;
         }
@@ -132,7 +132,7 @@ export class Context {
       }
 
       // 检测是否合格的 page 文件
-      if (PageFile.isValid(abspath)) {
+      if (this.isValidPageFile(abspath)) {
         const pageFile = this.files.get(abspath);
         if (pageFile) { // 文件存在
           await pageFile.read();
@@ -194,7 +194,54 @@ export class Context {
   }
 
   public isValidFile(filepath: string): boolean {
-    return PageFile.isValid(filepath) && DynamicPagesJson.isValid(filepath, this.cfg.root, this.cfg.src);
+    return this.isValidPageFile(filepath) || this.isValidDynamicJsonFile(filepath);
+  }
+
+  public isValidPageFile(filepath: string): boolean {
+    if (!PageFile.exts.some(ext => filepath.endsWith(ext))) {
+      return false;
+    }
+
+    const abspath = path.isAbsolute(filepath)
+      ? filepath
+      : path.resolve(this.cfg.root, filepath);
+
+    const dirs = [this.cfg.pageDir, ...this.cfg.subPackageDirs].map((dir) => {
+      return path.isAbsolute(dir)
+        ? dir
+        : path.resolve(this.cfg.root, dir);
+    });
+
+    return dirs.some(dir => abspath.startsWith(dir));
+  }
+
+  public isValidDynamicJsonFile(filepath: string): boolean {
+
+    const abspath = path.isAbsolute(filepath)
+      ? filepath
+      : path.resolve(this.cfg.root, filepath);
+
+    return this.possibleDynamicJsonFilePaths().includes(abspath);
+  }
+
+  public possibleDynamicJsonFilePaths(): string[] {
+
+    const root = path.resolve(this.cfg.root);
+
+    const dirs = [
+      root,
+      path.resolve(root, this.cfg.src),
+    ];
+
+    const paths: string[] = [];
+
+    for (const dir of dirs) {
+      for (const ext of DynamicPagesJson.exts) {
+        paths.push(path.join(dir, DynamicPagesJson.basename + ext));
+      }
+    }
+
+    return paths;
   }
 
   public checkStaticJsonFileSync(): boolean {

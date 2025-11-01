@@ -84,6 +84,11 @@ export class PageFile {
   private sfc?: SFCDescriptor;
   private macro?: MacroInfo;
 
+  /**
+   * 页面文件的扩展名
+   */
+  public static readonly exts = ['.vue', '.nvue', '.uvue'];
+
   constructor(ctx: Context, filepath: string) {
     this.ctx = ctx;
     this.file = path.isAbsolute(filepath)
@@ -270,14 +275,6 @@ export class PageFile {
     return this.macro;
   }
 
-  /**
-   * 页面文件的扩展名
-   */
-  public static readonly exts = ['.vue', '.nvue', '.uvue'];
-
-  public static isValid(filepath: string): boolean {
-    return PageFile.exts.some(ext => filepath.endsWith(ext));
-  }
 }
 
 export function getPageType(page: PagesJSON.Page): 'page' | 'home' {
