@@ -1,13 +1,13 @@
 <script lang="ts" setup>
+// t 函数仅作为类型提示，不会被实际调用。
+// 函数参数 platform 会被自动注入，表示当前页面所属平台。
 definePage(({ t, platform }) => {
 
   return t({
     style: {
-      navigationBarTitleText: `hello ${platform}`,
+      navigationBarTitleText: `hello from ${platform}`,
     },
-    middlewares: [
-      'auth',
-    ],
+    // ...
   });
 });
 </script>

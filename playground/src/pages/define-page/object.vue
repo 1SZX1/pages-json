@@ -3,10 +3,8 @@ definePage({
   style: {
     navigationBarTitleText: 'hello world',
   },
-  middlewares: [
-    'auth',
-  ],
-  tabbar: {},
+  tabbar:{}
+  // ...
 });
 </script>
 
