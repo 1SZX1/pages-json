@@ -1,12 +1,12 @@
 import type { BuiltInPlatform } from '@uni-helper/uni-env';
 import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { CommentToken } from 'comment-json';
-import type { ResolvedConfig } from './config';
 import fs from 'node:fs';
 import path from 'node:path';
 import { platform as currentPlatform } from '@uni-helper/uni-env';
 import { parse as cjParse, stringify as cjStringify } from 'comment-json';
 import fg from 'fast-glob';
+import { resolveConfig, type ResolvedConfig, type UserConfig } from './config';
 import { writeDeclaration } from './declaration';
 import { getPageType, getTabbarIndex, PageFile } from './pageFile';
 import { DynamicPagesJson } from './pagesJson';
@@ -45,8 +45,8 @@ export class Context {
 
   private lastPagesJson = '';
 
-  constructor(config: ResolvedConfig) {
-    this.cfg = config;
+  constructor(config: UserConfig) {
+    this.cfg = resolveConfig(config);
 
     this.staticJsonFilePath = path.join(this.cfg.src, 'pages.json');
     this.dynamicPagesJson = new DynamicPagesJson(this);
@@ -61,38 +61,48 @@ export class Context {
     const pages = new Map<string, PageFile>();
     const subPackages = new Map<string, Map<string, PageFile>>();
 
+    const parseUri = (filepath: string, root: string, ...baseDirs: string[]): string => {
+      const baseDir = path.resolve(root, ...baseDirs);
+      const rel = path.relative(baseDir, filepath);
+      return rel.replace(path.extname(rel), '');
+    };
+
     // subPackages, 先处理 subPackages 避免重复出现在 pages 里
     for (const dir of this.cfg.subPackageDirs) {
       const subPages = new Map<string, PageFile>();
 
       const root = path.basename(dir);
 
-      for (const f of listFiles(dir, { cwd: this.cfg.root, ignore: this.cfg.excludes })) {
-        if (files.has(f)) {
+      for (const file of listFiles(dir, { cwd: this.cfg.root, ignore: this.cfg.excludes })) {
+        if (files.has(file)) {
           continue; // 跳过重复文件
         }
 
-        debug.debug(`subPackages: ${f}`);
+        debug.debug(`subPackages: ${file}`);
 
-        const page = this.subPackages.get(root)?.get(f) || new PageFile(this, f);
-        subPages.set(f, page);
-        files.set(f, page);
+        const uri = parseUri(file, this.cfg.root, dir);
+
+        const page = this.subPackages.get(root)?.get(file) || new PageFile(file, uri);
+        subPages.set(file, page);
+        files.set(file, page);
       }
 
       subPackages.set(root, subPages);
     }
 
     // pages
-    for (const f of listFiles(this.cfg.pageDir, { cwd: this.cfg.root, ignore: this.cfg.excludes })) {
-      if (files.has(f)) {
+    for (const file of listFiles(this.cfg.pageDir, { cwd: this.cfg.root, ignore: this.cfg.excludes })) {
+      if (files.has(file)) {
         continue; // 跳过重复文件
       }
 
-      debug.debug(`pages: ${f}`);
+      debug.debug(`pages: ${file}`);
 
-      const page = this.pages.get(f) || new PageFile(this, f);
-      pages.set(f, page);
-      files.set(f, page);
+      const uri = parseUri(file, this.cfg.root, this.cfg.src);
+
+      const page = this.pages.get(file) || new PageFile(file, uri);
+      pages.set(file, page);
+      files.set(file, page);
     }
 
     this.pages = pages;

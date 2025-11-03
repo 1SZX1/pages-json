@@ -1,10 +1,10 @@
 import type { Matcher as AnymatchMatcher } from 'anymatch';
 import type { FSWatcher, PluginOption, ViteDevServer } from 'vite';
+import type { UserConfig } from './config';
 import path from 'node:path';
 import anymatch from 'anymatch';
 import chokidar from 'chokidar';
 import MagicString from 'magic-string';
-import { resolveConfig, type UserConfig } from './config';
 import { Context } from './context';
 import { debug } from './utils/debug';
 
@@ -15,8 +15,7 @@ export default function pagesJson(userConfig: UserConfig = {}): PluginOption {
 
   let _server: ViteDevServer | undefined;
 
-  const cfg = resolveConfig(userConfig);
-  const ctx = new Context(cfg);
+  const ctx = new Context(userConfig);
 
   ctx.checkStaticJsonFileSync();
 
@@ -54,11 +53,12 @@ export default function pagesJson(userConfig: UserConfig = {}): PluginOption {
       }
 
       const s = new MagicString(code);
-      s.remove(macro.loc.start, macro.loc.end);
+      s.remove(macro.ast.start!, macro.ast.end!);
 
       if (s.hasChanged()) {
+        const newCode = s.toString();
         return {
-          code: s.toString(),
+          code: newCode,
           map: s.generateMap({
             source: id,
             includeContent: true,

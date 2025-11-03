@@ -3,7 +3,7 @@ definePage({
   style: {
     navigationBarTitleText: 'hello world',
   },
-  tabbar:{}
+  tabbar: {},
   // ...
 });
 </script>

@@ -1,23 +1,15 @@
 import type { BuiltInPlatform } from '@uni-helper/uni-env';
 import type * as PagesJSON from '@uni-ku/pages-json/types';
-import type { SFCDescriptor } from '@vue/compiler-sfc';
-import type { Context } from './context';
+import type { SFCDescriptor, SFCScriptBlock } from '@vue/compiler-sfc';
 import type { DeepPartial } from './types';
 import fs from 'node:fs/promises';
-import path, { extname } from 'node:path';
 import * as t from '@babel/types';
 import { platform as currentPlatform } from '@uni-helper/uni-env';
 import { parse as VueParser } from '@vue/compiler-sfc';
 import { babelParse, isCallOf } from 'ast-kit';
-import { normalizePath } from 'vite';
 import { generate as babelGenerate } from './utils/babel';
 import { debug } from './utils/debug';
 import { parseCode } from './utils/parser';
-
-export interface PathSet {
-  rel: string;
-  abs: string;
-}
 
 export interface UserTabBarItem extends DeepPartial<PagesJSON.TabBarItem> {
   /**
@@ -54,22 +46,15 @@ export interface UserPageMeta extends DeepPartial<PagesJSON.Page> {
 export const PAGE_TYPE_KEY = Symbol.for('page_type');
 export const TABBAR_INDEX_KEY = Symbol.for('tabbar_index');
 
-export interface Position {
-  start: number;
-  end: number;
-}
-
 export interface MacroInfo {
   imports: t.ImportDeclaration[];
   ast: t.CallExpression;
-  loc: Position; // 代码位置，包括 definePage() 函数。
   code: string; // definePage 的参数的代码
   preparedCode: string; // 预处理后的代码，可直接用于解析。
 }
 
 export class PageFile {
-  readonly ctx: Context;
-  readonly file: PathSet;
+  readonly file: string;
   readonly uri: string;
 
   private changed = true;
@@ -89,18 +74,9 @@ export class PageFile {
    */
   public static readonly exts = ['.vue', '.nvue', '.uvue'];
 
-  constructor(ctx: Context, filepath: string) {
-    this.ctx = ctx;
-    this.file = path.isAbsolute(filepath)
-      ? {
-          abs: filepath,
-          rel: path.relative(ctx.cfg.root, filepath),
-        }
-      : {
-          abs: path.join(ctx.cfg.root, filepath),
-          rel: filepath,
-        };
-    this.uri = normalizePath(this.file.rel.replace(extname(this.file.rel), ''));
+  constructor(abspath: string, uri: string) {
+    this.file = abspath;
+    this.uri = uri.replaceAll('\\', '/');
   }
 
   public async getPage({ platform = currentPlatform, forceRead = false }: { platform?: BuiltInPlatform; forceRead?: boolean } = {}): Promise<PagesJSON.Page> {
@@ -152,80 +128,92 @@ export class PageFile {
    */
   public async read(): Promise<void> {
     // content
-    this.content = await fs.readFile(this.file.abs, { encoding: 'utf-8' }).catch(() => '');
+    this.content = await fs.readFile(this.file, { encoding: 'utf-8' }).catch(() => '');
 
     // sfc
     this.sfc = (
       VueParser(this.content, {
         pad: 'space',
-        filename: this.file.abs,
+        filename: this.file,
       }).descriptor
       // for @vue/compiler-sfc ^2.7
       || (VueParser as any)({
         source: this.content,
-        filename: this.file.abs,
+        filename: this.file,
       })
     );
 
-    const sfcScript = this.sfc.scriptSetup || this.sfc.script;
-    if (!sfcScript) {
-      return;
-    }
-
-    const ast = babelParse(sfcScript.content, sfcScript.lang || 'js', {
-      plugins: [['importAttributes', { deprecatedAssertSyntax: true }]],
-    });
-
-    // imports
-    const imports: t.ImportDeclaration[] = [];
-    for (const stmt of ast.body) {
-      if (t.isImportDeclaration(stmt)) {
-        imports.push(stmt);
-      }
-    }
-
-    // macro
-    let macro: t.CallExpression | undefined;
-
-    for (const stmt of ast.body) {
-      let node: t.Node = stmt;
-      if (stmt.type === 'ExpressionStatement') {
-        node = stmt.expression;
+    const findMacro = (sfcScript: SFCScriptBlock | null): { imports: t.ImportDeclaration[]; macro: t.CallExpression } | undefined => {
+      if (!sfcScript) {
+        return;
       }
 
-      if (isCallOf(node, 'definePage')) {
-        macro = node;
-        break;
+      const ast = babelParse(sfcScript.content, sfcScript.lang || 'js', {
+        plugins: [['importAttributes', { deprecatedAssertSyntax: true }]],
+      });
+
+      // macro
+      let macro: t.CallExpression | undefined;
+
+      for (const stmt of ast.body) {
+        let node: t.Node = stmt;
+        if (stmt.type === 'ExpressionStatement') {
+          node = stmt.expression;
+        }
+
+        if (isCallOf(node, 'definePage')) {
+          macro = node;
+          break;
+        }
       }
+
+      if (!macro) {
+        return;
+      }
+
+      // imports
+      const imports: t.ImportDeclaration[] = [];
+      for (const stmt of ast.body) {
+        if (t.isImportDeclaration(stmt)) {
+          imports.push(stmt);
+        }
+      }
+
+      return {
+        imports,
+        macro,
+      };
+    };
+
+    let res = findMacro(this.sfc.scriptSetup);
+
+    if (!res) {
+      res = findMacro(this.sfc.script);
     }
 
-    if (!macro) {
+    if (!res) {
       return;
     }
 
     // 提取 macro function 内的第一个参数
-    const [arg1] = macro.arguments;
+    const [arg1] = res.macro.arguments;
 
     // 检查 macro 的参数是否正确
     if (arg1 && !t.isFunctionExpression(arg1) && !t.isArrowFunctionExpression(arg1) && !t.isObjectExpression(arg1)) {
-      debug.warn(`definePage() 参数仅支持函数或对象：${this.file.rel}`);
+      debug.warn(`definePage() 参数仅支持函数或对象：${this.file}`);
       return;
     }
 
     // 缓存 macro code，避免每次生成代码
     const code = babelGenerate(arg1).code;
     const preparedCode = ([
-      ...imports.map(imp => babelGenerate(imp).code),
+      ...res.imports.map(imp => babelGenerate(imp).code),
       `export default ${code}`,
     ]).join('\n');
 
     this.macro = {
-      imports,
-      ast: macro,
-      loc: {
-        start: macro.start! + sfcScript.loc.start.offset,
-        end: macro.end! + sfcScript.loc.start.offset,
-      },
+      imports: res.imports,
+      ast: res.macro,
       code,
       preparedCode,
     };
@@ -252,7 +240,7 @@ export class PageFile {
 
     const parsed = await parseCode({
       code: this.macro.preparedCode,
-      filename: this.file.abs,
+      filename: this.file,
       env,
     });
 
