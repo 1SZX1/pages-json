@@ -11,7 +11,7 @@ import { writeDeclaration } from './declaration';
 import { getPageType, getTabbarIndex, PageFile } from './pageFile';
 import { DynamicPagesJson } from './pagesJson';
 import { debug } from './utils/debug';
-import { checkFileSync, writeFileWithLock } from './utils/file';
+import { checkFile, checkFileSync, writeFileWithLock } from './utils/file';
 import { deepAssign } from './utils/object';
 
 interface StaticJsonFileInfo {
@@ -172,7 +172,7 @@ export class Context {
       await this.scanFiles(); // 避免每次都扫描全局
     }
 
-    this.checkStaticJsonFileSync();
+    await this.checkStaticJsonFile();
     const { platforms, indent, eof } = await this.detectStaticJsonFile(true);
 
     const json = await this.generatePagesJson(platforms);
@@ -243,6 +243,14 @@ export class Context {
     }
 
     return paths;
+  }
+
+  public checkStaticJsonFile():Promise<boolean>{
+    return checkFile({
+      path: this.staticJsonFilePath,
+      newContent: JSON.stringify({ pages: [{ path: '' }] }, null, 4),
+      modeFlag: fs.constants.R_OK | fs.constants.W_OK,
+    });
   }
 
   public checkStaticJsonFileSync(): boolean {
