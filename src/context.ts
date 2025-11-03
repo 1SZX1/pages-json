@@ -194,24 +194,6 @@ export class Context {
     return result;
   }
 
-  /**
-   * vite 的虚拟路径
-   *
-   */
-  public async virtualModule() {
-
-    const pagesJson = await this.generatePagesJson();
-
-    await this.generatePages(pagesJson);
-    await this.generateSubPackages(pagesJson);
-    await this.generateTabbar(pagesJson);
-
-    return `/** @type {import('@uni-ku/pages-json/types').PagesJson} */
-    const json = ${JSON.stringify(pagesJson, null, 2)};
-    export default json;
-    `;
-  }
-
   public isValidFile(filepath: string): boolean {
     return this.isValidPageFile(filepath) || this.isValidDynamicJsonFile(filepath);
   }
@@ -313,6 +295,9 @@ export class Context {
             }
           }
         }
+
+        // TODO: 删除
+        res.platforms.set('mp-weixin', Date.now());
 
         res.indent = ' '.repeat(detectIndent(content));
 
@@ -681,10 +666,12 @@ function mergePlatformObject<T extends object>(pf1: BuiltInPlatform, v1: T, pf2:
 
 function wrapIfdef(obj: any, key: string, platform: string): void {
 
+  const upperPlatform = platform.toUpperCase();
+
   obj[Symbol.for(`before:${key}`)] = obj[Symbol.for(`before:${key}`)] || [] as CommentToken[];
   (obj[Symbol.for(`before:${key}`)] as CommentToken[]).push({
     type: 'LineComment',
-    value: ` #ifdef ${platform}`,
+    value: ` #ifdef ${upperPlatform}`,
     inline: true,
     loc: {
       start: { line: 0, column: 0 },

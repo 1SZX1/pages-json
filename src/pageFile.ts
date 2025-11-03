@@ -9,6 +9,7 @@ import { parse as VueParser } from '@vue/compiler-sfc';
 import { babelParse, isCallOf } from 'ast-kit';
 import { generate as babelGenerate } from './utils/babel';
 import { debug } from './utils/debug';
+import { deepCopy } from './utils/object';
 import { parseCode } from './utils/parser';
 
 export interface UserTabBarItem extends DeepPartial<PagesJSON.TabBarItem> {
@@ -88,7 +89,7 @@ export class PageFile {
       await this.parsePageMeta({ platform });
     }
 
-    const { tabbar: _, path, type, ...others } = this.metas.get(platform) || {};
+    const { tabbar: _, path, type, ...others } = deepCopy(this.metas.get(platform) || {});
 
     return {
       path: path || this.uri,
@@ -110,7 +111,7 @@ export class PageFile {
       return;
     }
 
-    const { index, pagePath, ...others } = tabbar;
+    const { index, pagePath, ...others } = deepCopy(tabbar);
 
     return {
       pagePath: pagePath || this.uri,

@@ -83,10 +83,43 @@ export default function pagesJson(userConfig: UserConfig = {}): PluginOption {
         return RESOLVED_MODULE_ID_VIRTUAL;
       }
     },
-    load(id) {
+
+    async load(id) {
       if (id === RESOLVED_MODULE_ID_VIRTUAL) {
-        return ctx.virtualModule();
+        const pagesJson = await ctx.generatePagesJson();
+
+        await ctx.generatePages(pagesJson);
+        await ctx.generateSubPackages(pagesJson);
+        await ctx.generateTabbar(pagesJson);
+
+        return `export default ${JSON.stringify(pagesJson, null, 2)};`;
       }
+    },
+
+    handleHotUpdate: ({ modules, file, server }) => {
+
+      const hasVirual = modules.some(m => m.id === RESOLVED_MODULE_ID_VIRTUAL);
+      if (hasVirual) {
+        return modules; // 已有 virtual module，无须重新增加
+      }
+
+      if (file && isWatchFile(ctx, file)) {
+        // ! 无法通过 getModuleById 获取 module
+        // const mod = server.moduleGraph.getModuleById(RESOLVED_MODULE_ID_VIRTUAL);
+        // if (mod) {
+        //   return [
+        //     ...modules,
+        //     mod,
+        //   ];
+        // }
+
+        // TODO: 优化仅增加更新虚拟模块
+        server.ws.send({
+          type: 'full-reload',
+        });
+      }
+
+      return modules;
     },
   };
 }
@@ -98,8 +131,7 @@ function dirsToGlob(root: string, dirs: string[]): string[] {
   );
 }
 
-async function setupWatcher(ctx: Context, watcher: FSWatcher) {
-
+function isWatchFile(ctx: Context, file: string) {
   const includes: AnymatchMatcher = [
     ...dirsToGlob(ctx.cfg.root, [
       ctx.cfg.pageDir,
@@ -113,11 +145,21 @@ async function setupWatcher(ctx: Context, watcher: FSWatcher) {
     file => !ctx.isValidFile(file),
   ];
 
+  if (!anymatch(includes, file)) {
+    return false;
+  }
+
+  if (anymatch(excludes, file)) {
+    return false;
+  }
+
+  return true;
+}
+
+async function setupWatcher(ctx: Context, watcher: FSWatcher) {
+
   watcher.on('add', async (file) => {
-    if (!anymatch(includes, file)) {
-      return;
-    }
-    if (anymatch(excludes, file)) {
+    if (!isWatchFile(ctx, file)) {
       return;
     }
 
@@ -126,10 +168,7 @@ async function setupWatcher(ctx: Context, watcher: FSWatcher) {
   });
 
   watcher.on('change', async (file) => {
-    if (!anymatch(includes, file)) {
-      return;
-    }
-    if (anymatch(excludes, file)) {
+    if (!isWatchFile(ctx, file)) {
       return;
     }
 
@@ -138,10 +177,7 @@ async function setupWatcher(ctx: Context, watcher: FSWatcher) {
   });
 
   watcher.on('unlink', async (file) => {
-    if (!anymatch(includes, file)) {
-      return;
-    }
-    if (anymatch(excludes, file)) {
+    if (!isWatchFile(ctx, file)) {
       return;
     }
 

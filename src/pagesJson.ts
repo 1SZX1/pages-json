@@ -3,6 +3,7 @@ import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { Context } from './context';
 import fs from 'node:fs';
 import { platform as currentPlatform } from '@uni-helper/uni-env';
+import { deepCopy } from './utils/object';
 import { parseCode } from './utils/parser';
 
 export class DynamicPagesJson {
@@ -79,9 +80,9 @@ export class DynamicPagesJson {
       return;
     }
 
-    const json = this.jsons.get(platform);
+    const json = deepCopy(this.jsons.get(platform));
     if (json) {
-      return json;
+      return deepCopy(json);
     }
 
     const env: Record<string, any> = {
@@ -102,7 +103,7 @@ export class DynamicPagesJson {
 
     this.changed = false; // 已经更新过 page meta, 可以将 changed 标记置为 false
 
-    return res;
+    return deepCopy(res);
   }
 
   /**

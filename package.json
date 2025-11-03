@@ -31,9 +31,9 @@
         "default": "./dist/index.cjs"
       }
     },
-    "./types": {
-      "types": "./dist/types/index.d.ts"
-    },
+    "./types": "./dist/types/index.d.ts",
+    "./global": "./global.d.ts",
+    "./client": "./client.d.ts",
     "./*": {
       "import": {
         "types": "./dist/*.d.ts",
@@ -49,6 +49,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
+    "*.d.ts",
     "dist"
   ],
   "scripts": {

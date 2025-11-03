@@ -38,7 +38,7 @@ export default defineConfig({
 ```json
 {
   "compilerOptions": {
-    "types": ["@uni-ku/pages-json"]
+    "types": ["@uni-ku/pages-json/client"]
   }
 }
 ```
@@ -254,10 +254,10 @@ export default {
 </script>
 ```
 
-## 获取当前上下文的数据
+## 获取当前平台的 pages.json 内容
 
-由于 `pages.json` 内包含条件编译，以及有重复 key，无法通过 `import` 引入当前环境的完整 json。
-可通过虚拟模块引入：
+- 直接通过 `import` 引入 `pages.json` （uniapp 会处理成当前平台的 json 内容）
+- 可通过虚拟模块引入：
 ```ts
 import pagesJson from 'virtual:pages-json';
 
