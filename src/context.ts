@@ -304,9 +304,6 @@ export class Context {
           }
         }
 
-        // TODO: 删除
-        res.platforms.set('mp-weixin', Date.now());
-
         res.indent = ' '.repeat(detectIndent(content));
 
         const lastChar = content[content.length - 1];
