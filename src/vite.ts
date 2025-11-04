@@ -11,6 +11,8 @@ import { debug } from './utils/debug';
 const MODULE_ID_VIRTUAL = 'virtual:pages-json' as const;
 const RESOLVED_MODULE_ID_VIRTUAL = `\0${MODULE_ID_VIRTUAL}` as const;
 
+export type { UserConfig };
+
 export default function pagesJson(userConfig: UserConfig = {}): PluginOption {
 
   let _server: ViteDevServer | undefined;
@@ -22,11 +24,8 @@ export default function pagesJson(userConfig: UserConfig = {}): PluginOption {
   return {
     name: '@uni-ku/pages-json',
     enforce: 'pre',
-    async configResolved(viteConf) {
 
-      if (!userConfig.root) {
-        ctx.cfg.root = viteConf.root;
-      }
+    async configResolved(viteConf) {
 
       await ctx.updatePagesJSON();
 

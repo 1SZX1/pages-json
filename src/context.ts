@@ -26,11 +26,6 @@ export class Context {
   /** Map<filepath, PageFile> */
   public files = new Map<string, PageFile>();
 
-  /** Map<filepath, Page> */
-  public pages = new Map<string, PageFile>();
-  /** Map<root, Map<filepath, Page>> */
-  public subPackages = new Map<string, Map<string, PageFile>>();
-
   public readonly cfg: ResolvedConfig;
 
   /**
@@ -58,18 +53,14 @@ export class Context {
   public scanFiles(): void {
 
     const files = new Map<string, PageFile>();
-    const pages = new Map<string, PageFile>();
-    const subPackages = new Map<string, Map<string, PageFile>>();
 
-    const parseUri = (filepath: string, root: string, ...baseDirs: string[]): string => {
-      const baseDir = path.resolve(root, ...baseDirs);
+    const parsePagePath = (baseDir: string, filepath: string): string => {
       const rel = path.relative(baseDir, filepath);
-      return rel.replace(path.extname(rel), '');
+      return rel.replace(path.extname(rel), '').replace('\\', '/');
     };
 
     // subPackages, 先处理 subPackages 避免重复出现在 pages 里
     for (const dir of this.cfg.subPackageDirs) {
-      const subPages = new Map<string, PageFile>();
 
       const root = path.basename(dir);
 
@@ -80,14 +71,12 @@ export class Context {
 
         debug.debug(`subPackages: ${file}`);
 
-        const uri = parseUri(file, this.cfg.root, dir);
+        let pagePath = parsePagePath(path.resolve(this.cfg.root, dir), file);
+        pagePath = this.cfg.parsePagePath({ filePath: file, pagePath });
 
-        const page = this.subPackages.get(root)?.get(file) || new PageFile(file, uri);
-        subPages.set(file, page);
+        const page = this.files.get(file) || new PageFile(file, pagePath, root);
         files.set(file, page);
       }
-
-      subPackages.set(root, subPages);
     }
 
     // pages
@@ -98,16 +87,36 @@ export class Context {
 
       debug.debug(`pages: ${file}`);
 
-      const uri = parseUri(file, this.cfg.root, this.cfg.src);
+      let pagePath = parsePagePath(this.cfg.src, file);
+      pagePath = this.cfg.parsePagePath({ filePath: file, pagePath });
 
-      const page = this.pages.get(file) || new PageFile(file, uri);
-      pages.set(file, page);
+      const page = this.files.get(file) || new PageFile(file, pagePath);
       files.set(file, page);
     }
 
-    this.pages = pages;
-    this.subPackages = subPackages;
     this.files = files;
+  }
+
+  public pages({ platform = currentPlatform }: { platform?: BuiltInPlatform } = {}): PageFile[] {
+    const files: PageFile[] = [];
+    for (const [, file] of this.files) {
+      if (!file.root) { // root 为空，则为 pages
+        files.push(file);
+      }
+    }
+
+    return files.filter(file => this.cfg.filterPages({ filePath: file.file, platform }));
+  }
+
+  public subPackages({ platform = currentPlatform }: { platform?: BuiltInPlatform } = {}): PageFile[] {
+    const files: PageFile[] = [];
+    for (const [, file] of this.files) {
+      if (file.root) { // root 不为空，则为 subPackages
+        files.push(file);
+      }
+    }
+
+    return files.filter(file => this.cfg.filterPages({ filePath: file.file, platform }));
   }
 
   /**
@@ -383,21 +392,29 @@ export class Context {
    */
   public async generatePages(pagesJson: PagesJSON.PagesJson, platforms: Set<BuiltInPlatform> = new Set()): Promise<void> {
 
-    if (this.pages.size === 0) {
-      return;
-    }
+    // 根据平台生成页面
+    const genPages = async (platform: BuiltInPlatform) => {
+      const pageFiles = this.pages({ platform });
+
+      const pages: PagesJSON.Page[] = [];
+      for (const pf of pageFiles) {
+        const page = await pf.getPage({ platform });
+        pages.push(page);
+      }
+      return pages;
+    };
 
     pagesJson.pages = pagesJson.pages || [];
 
     const [firstPlatform = currentPlatform, ...restPlatforms] = [...platforms].sort();
 
-    for (const [_, pf] of this.pages) {
-      const page = await pf.getPage({ platform: firstPlatform });
-      for (const platform of restPlatforms) {
-        const platformPage = await pf.getPage({ platform });
-        mergePlatformObject(firstPlatform, page, platform, platformPage);
-      }
+    const first = await genPages(firstPlatform);
+    for (const platform of restPlatforms) {
+      const pages = await genPages(platform);
+      mergePlatformArray(firstPlatform, first, platform, pages, v => v.path);
+    }
 
+    for (const page of first) {
       const idx = pagesJson.pages.findIndex(p => p.path === page.path);
       if (idx !== -1) {
         deepAssign(pagesJson.pages[idx], page);
@@ -427,22 +444,51 @@ export class Context {
    */
   public async generateSubPackages(pagesJson: PagesJSON.PagesJson, platforms: Set<BuiltInPlatform> = new Set()): Promise<void> {
 
-    if (this.subPackages.size === 0) {
-      return;
-    }
+    // 根据平台生成页面
+    const genSubPackages = async (platform: BuiltInPlatform) => {
+      const pageFiles = this.subPackages({ platform });
+
+      const subPackages: Record<string, PagesJSON.SubPackage> = {};
+      for (const pf of pageFiles) {
+        if (!pf.root) {
+          continue;
+        }
+        subPackages[pf.root] = subPackages[pf.root] || { root: pf.root, pages: [] };
+
+        const page = await pf.getPage({ platform });
+        subPackages[pf.root].pages.push(page);
+      }
+      return subPackages;
+    };
 
     const [firstPlatform = currentPlatform, ...restPlatforms] = [...platforms].sort();
 
-    // subPackages 大于 0 才进行，避免错误创建空的 subPackages
-    pagesJson.subPackages = pagesJson.subPackages || [];
-    for (const [root, subPackage] of this.subPackages) {
-      for (const [_, pf] of subPackage) {
-        const page = await pf.getPage({ platform: firstPlatform });
-        for (const platform of restPlatforms) {
-          const platformPage = await pf.getPage({ platform });
-          mergePlatformObject(firstPlatform, page, platform, platformPage);
+    /** 生成多个平台的 subPackages */
+    const first = await genSubPackages(firstPlatform); // 生成第一个平台的 subPackages
+    for (const platform of restPlatforms) {
+      const subPackages = await genSubPackages(platform);
+
+      /** 合并不同平台的 subPackages */
+      for (const [root, sub] of Object.entries(subPackages)) {
+
+        const firstSub = first[root];
+        if (!firstSub) {
+          first[root] = sub;
+          continue;
         }
 
+        mergePlatformArray(firstPlatform, firstSub.pages, platform, sub.pages, v => v.path);
+      }
+    }
+
+    if (Object.keys(first).length === 0) {
+      return; // 如果 subPackages 为空，则不处理和 pagesJson.subPackages 合并，避免生成空的 subPackages
+    }
+
+    pagesJson.subPackages = pagesJson.subPackages || [];
+
+    for (const [root, sub] of Object.entries(first)) {
+      for (const page of (sub.pages || [])) {
         const idx = pagesJson.subPackages.findIndex(p => p.root === root);
         if (idx !== -1) {
           pagesJson.subPackages[idx].pages = pagesJson.subPackages[idx].pages || [];
@@ -460,6 +506,7 @@ export class Context {
           });
         }
       }
+
     }
 
   }
@@ -469,37 +516,39 @@ export class Context {
    */
   public async generateTabbar(pagesJson: PagesJSON.PagesJson, platforms: Set<BuiltInPlatform> = new Set()): Promise<void> {
 
-    const items = new Map<BuiltInPlatform, PagesJSON.TabBarItem>();
+    // 根据平台生成页面
+    const genTabbarItem = async (platform: BuiltInPlatform) => {
+      const pageFiles = this.pages({ platform });
+
+      const items: PagesJSON.TabBarItem[] = [];
+      for (const pf of pageFiles) {
+        const item = await pf.getTabbarItem({ platform });
+        if (item) {
+          items.push(item);
+        }
+      }
+      return items;
+    };
 
     const [firstPlatform = currentPlatform, ...restPlatforms] = [...platforms].sort();
 
-    for (const [_, pf] of this.pages) {
-      const tabbarItem = await pf.getTabbarItem({ platform: firstPlatform });
-      if (tabbarItem) {
-        items.set(firstPlatform, tabbarItem);
-      }
-      for (const platform of restPlatforms) {
-        const platformItem = await pf.getTabbarItem({ platform });
-        if (platformItem) {
-          items.set(platform, platformItem);
-        }
-      }
+    const first = await genTabbarItem(firstPlatform);
+    for (const platform of restPlatforms) {
+      const items = await genTabbarItem(platform);
+      mergePlatformArray(firstPlatform, first, platform, items, v => v.pagePath);
     }
 
-    if (items.size > 0) {
+    if (Object.keys(first).length > 0) {
       pagesJson.tabBar = pagesJson.tabBar || {};
       pagesJson.tabBar.list = pagesJson.tabBar.list || [];
 
-      const [[pf1, v1], ...rest] = items.entries();
-      for (const [pf2, v2] of rest) {
-        mergePlatformObject(pf1, v1, pf2, v2);
-      }
-
-      const idx = pagesJson.tabBar.list.findIndex(item => item.pagePath === v1.pagePath);
-      if (idx !== -1) {
-        deepAssign(pagesJson.tabBar.list[idx], v1);
-      } else {
-        pagesJson.tabBar.list.push(v1);
+      for (const tb of first) {
+        const idx = pagesJson.tabBar.list.findIndex(item => item.pagePath === tb.pagePath);
+        if (idx !== -1) {
+          deepAssign(pagesJson.tabBar.list[idx], tb);
+        } else {
+          pagesJson.tabBar.list.push(tb);
+        }
       }
     }
 

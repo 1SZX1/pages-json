@@ -55,8 +55,14 @@ export interface MacroInfo {
 }
 
 export class PageFile {
-  readonly file: string;
-  readonly uri: string;
+  /** 文件的绝对路径 */
+  public readonly file: string;
+
+  /** 对应 pages.json 中的 path */
+  public readonly path: string;
+
+  /** 对应 pages.json 中的 subPackages 中的 root */
+  public readonly root: string;
 
   private changed = true;
 
@@ -75,9 +81,10 @@ export class PageFile {
    */
   public static readonly exts = ['.vue', '.nvue', '.uvue'];
 
-  constructor(abspath: string, uri: string) {
-    this.file = abspath;
-    this.uri = uri.replaceAll('\\', '/');
+  constructor(filepath: string, path: string, root?: string) {
+    this.file = filepath;
+    this.path = path.replaceAll('\\', '/');
+    this.root = root || '';
   }
 
   public async getPage({ platform = currentPlatform, forceRead = false }: { platform?: BuiltInPlatform; forceRead?: boolean } = {}): Promise<PagesJSON.Page> {
@@ -92,7 +99,7 @@ export class PageFile {
     const { tabbar: _, path, type, ...others } = deepCopy(this.metas.get(platform) || {});
 
     return {
-      path: path || this.uri,
+      path: path || this.path,
       ...others,
       [PAGE_TYPE_KEY]: type || 'page',
     } as PagesJSON.Page;
@@ -114,7 +121,7 @@ export class PageFile {
     const { index, pagePath, ...others } = deepCopy(tabbar);
 
     return {
-      pagePath: pagePath || this.uri,
+      pagePath: pagePath || this.path,
       ...others,
       [TABBAR_INDEX_KEY]: index,
     };

@@ -15,7 +15,7 @@ const ctx = new Context(cfg);
 describe('get files', () => {
   it('pages files', async () => {
     await ctx.scanFiles();
-    const files = [...ctx.pages.keys()].map(f => normalizePath(path.relative(cfg.root, f))).sort();
+    const files = [...ctx.pages()].map(page => normalizePath(path.relative(cfg.root, page.file))).sort();
     expect(files).toMatchInlineSnapshot(`
       [
         "src/pages/define-page/async-function.vue",
@@ -34,10 +34,8 @@ describe('get files', () => {
 
     const files: string[] = [];
 
-    for (const [, sub] of ctx.subPackages) {
-      for (const [file] of sub) {
-        files.push(normalizePath(path.relative(cfg.root, file)));
-      }
+    for (const page of ctx.subPackages()) {
+      files.push(normalizePath(path.relative(cfg.root, page.file)));
     }
 
     files.sort();
