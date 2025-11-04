@@ -4,7 +4,7 @@ export default definePagesJson(({ platform }) => {
   return {
     globalStyle: {
       navigationBarTextStyle: 'black',
-      navigationBarTitleText: platform === 'h5' ? 'uni-app H5' : 'uni-app',
+      navigationBarTitleText: platform === 'h5' ? 'uni-app H5' : 'uni-app 111',
       navigationBarBackgroundColor: '#F8F8F8',
       backgroundColor: '#F8F8F8',
     },

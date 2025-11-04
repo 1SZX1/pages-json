@@ -5,11 +5,25 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch via NPM",
+      "name": "dev:h5",
       "request": "launch",
       "runtimeArgs": [
         "run-script",
         "dev:h5"
+      ],
+      "runtimeExecutable": "npm",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "node",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "dev:mp-weixin",
+      "request": "launch",
+      "runtimeArgs": [
+        "run-script",
+        "dev:mp-weixin"
       ],
       "runtimeExecutable": "npm",
       "skipFiles": [
