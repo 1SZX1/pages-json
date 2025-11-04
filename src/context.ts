@@ -245,7 +245,7 @@ export class Context {
     return paths;
   }
 
-  public checkStaticJsonFile():Promise<boolean>{
+  public checkStaticJsonFile(): Promise<boolean> {
     return checkFile({
       path: this.staticJsonFilePath,
       newContent: JSON.stringify({ pages: [{ path: '' }] }, null, 4),

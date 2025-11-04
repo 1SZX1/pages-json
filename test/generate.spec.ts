@@ -24,43 +24,43 @@ describe('generate', () => {
     expect(raw).toMatchInlineSnapshot(`
       "[
         {
-          "path": "src/pages/define-page/async-function",
+          "path": "pages/define-page/async-function",
           "style": {
             "navigationBarTitleText": "hello world from async"
           }
         },
         {
-          "path": "src/pages/define-page/function",
+          "path": "pages/define-page/function",
           "style": {
             "navigationBarTitleText": "hello from undefined"
           }
         },
         {
-          "path": "src/pages/define-page/nested-function",
+          "path": "pages/define-page/nested-function",
           "style": {
             "navigationBarTitleText": "hello world"
           }
         },
         {
-          "path": "src/pages/define-page/object",
+          "path": "pages/define-page/object",
           "style": {
             "navigationBarTitleText": "hello world"
           }
         },
         {
-          "path": "src/pages/define-page/option-api",
+          "path": "pages/define-page/option-api",
           "style": {
             "navigationBarTitleText": "Option API 内使用 definePage"
           }
         },
         {
-          "path": "src/pages/define-page/yaml",
+          "path": "pages/define-page/yaml",
           "style": {
             "navigationBarTitleText": "yaml test"
           }
         },
         {
-          "path": "src/pages/index/index",
+          "path": "pages/index/index",
           "style": {
             "animationType": "pop-in"
           }
@@ -81,13 +81,13 @@ describe('generate', () => {
           "root": "pages-sub",
           "pages": [
             {
-              "path": "src/pages-sub/index"
+              "path": "index"
             },
             {
-              "path": "src/pages-sub/about/index"
+              "path": "about/index"
             },
             {
-              "path": "src/pages-sub/about/your"
+              "path": "about/your/aaa"
             }
           ]
         }
@@ -105,7 +105,7 @@ describe('generate', () => {
       "{
         "list": [
           {
-            "pagePath": "src/pages/define-page/object"
+            "pagePath": "pages/define-page/object"
           }
         ]
       }"
