@@ -87,7 +87,7 @@ describe('generate', () => {
               "path": "about/index"
             },
             {
-              "path": "about/your/aaa"
+              "path": "about/your"
             }
           ]
         }
