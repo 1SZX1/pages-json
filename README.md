@@ -61,14 +61,6 @@ export interface UserConfig {
   src?: string;
 
   /**
-   * 为页面路径生成 TypeScript 声明
-   * 接受相对项目根目录的路径
-   * false 则取消生成
-   * @default "pages.d.ts"
-   */
-  dts?: string | boolean;
-
-  /**
    * pages的相对路径
    * @default 'src/pages'
    */
@@ -85,6 +77,14 @@ export interface UserConfig {
    * @default ['node_modules', '.git', '** /__*__/ **']
    */
   excludes?: string[];
+
+  /**
+   * 为页面路径生成 TypeScript 声明
+   * 接受相对项目根目录的路径
+   * false 则取消生成
+   * @default "src/pages.d.ts"
+   */
+  dts?: string | boolean;
 
   /**
    * 显示调试
