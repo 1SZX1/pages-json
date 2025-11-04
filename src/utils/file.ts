@@ -77,7 +77,7 @@ export async function checkFile(opt: { path: fs.PathLike; newContent?: string; m
         // 创建文件
         const mode = opt.modeFlag === undefined
           ? undefined
-          : opt.modeFlag << 6 | opt.modeFlag << 3 | 0;
+          : opt.modeFlag << 6 | opt.modeFlag << 3 | opt.modeFlag;
         await fs.promises.writeFile(opt.path, opt.newContent, { encoding: 'utf-8', mode });
         return true;
       } catch {
@@ -138,7 +138,7 @@ export function checkFileSync(opt: { path: fs.PathLike; newContent?: string; mod
         // 创建文件
         const mode = opt.modeFlag === undefined
           ? undefined
-          : opt.modeFlag << 6 | opt.modeFlag << 3 | 0;
+          : opt.modeFlag << 6 | opt.modeFlag << 3 | opt.modeFlag;
         fs.writeFileSync(opt.path, opt.newContent, { encoding: 'utf-8', mode });
         return true;
       } catch {
