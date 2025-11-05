@@ -10,21 +10,21 @@ interface DefinePageFuncArgs {
 
 function definePage(arg: UserPageMeta | ((arg: DefinePageFuncArgs) => UserPageMeta | Promise<UserPageMeta>)) { }
 
-interface DefinePagesJsonFuncArgs {
+interface DefineConfigFuncArgs {
   t: (p: DeepPartial<PagesJSON.PagesJson>) => DeepPartial<PagesJSON.PagesJson>;
   platform: BuiltInPlatform;
 }
 
- type DefinePagesJsonArg = DeepPartial<PagesJSON.PagesJson> | ((a: DefinePagesJsonFuncArgs) => DeepPartial<PagesJSON.PagesJson> | Promise<DeepPartial<PagesJSON.PagesJson>>);
+ type DefineConfigArg = DeepPartial<PagesJSON.PagesJson> | ((a: DefineConfigFuncArgs) => DeepPartial<PagesJSON.PagesJson> | Promise<DeepPartial<PagesJSON.PagesJson>>);
 
-function defineConfig(userConfig: DefinePagesJsonArg): DefinePagesJsonArg {
+function defineConfig(userConfig: DefineConfigArg): DefineConfigArg {
   return userConfig;
 }
 
 export type {
+  DefineConfigArg,
+  DefineConfigFuncArgs,
   DefinePageFuncArgs,
-  DefinePagesJsonArg,
-  DefinePagesJsonFuncArgs,
   UserPageMeta,
   UserTabBarItem,
 };
