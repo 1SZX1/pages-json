@@ -86,11 +86,6 @@ export default function pagesJson(userConfig: UserConfig = {}): PluginOption {
     async load(id) {
       if (id === RESOLVED_MODULE_ID_VIRTUAL) {
         const pagesJson = await ctx.generatePagesJson();
-
-        await ctx.generatePages(pagesJson);
-        await ctx.generateSubPackages(pagesJson);
-        await ctx.generateTabbar(pagesJson);
-
         return `export default ${JSON.stringify(pagesJson, null, 2)};`;
       }
     },

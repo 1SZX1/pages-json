@@ -1,4 +1,3 @@
-import type { PagesJson } from '@uni-ku/pages-json/types';
 import path from 'node:path';
 import { stringify as cjStringify } from 'comment-json';
 import { describe, expect, it } from 'vitest';
@@ -16,10 +15,9 @@ const ctx = new Context(cfg);
 describe('generate', () => {
   it('pages snapshot', async () => {
     await ctx.scanFiles();
-    const json = {} as PagesJson;
-    await ctx.generatePages(json);
+    const pages = await ctx.generatePages();
 
-    const raw = cjStringify(json.pages, null, 2);
+    const raw = cjStringify(pages, null, 2);
 
     expect(raw).toMatchInlineSnapshot(`
       "[
@@ -71,10 +69,9 @@ describe('generate', () => {
 
   it('subPackages snapshot', async () => {
     await ctx.scanFiles();
-    const json = {} as PagesJson;
-    await ctx.generateSubPackages(json);
+    const subPackages = await ctx.generateSubPackages();
 
-    const raw = cjStringify(json.subPackages, null, 2);
+    const raw = cjStringify(subPackages, null, 2);
     expect(raw).toMatchInlineSnapshot(`
       "[
         {
@@ -97,18 +94,15 @@ describe('generate', () => {
 
   it('tabBar snapshot', async () => {
     await ctx.scanFiles();
-    const json = {} as PagesJson;
-    await ctx.generateTabbar(json);
+    const tabbarItems = await ctx.generateTabbarItems();
 
-    const raw = cjStringify(json.tabBar, null, 2);
+    const raw = cjStringify(tabbarItems, null, 2);
     expect(raw).toMatchInlineSnapshot(`
-      "{
-        "list": [
-          {
-            "pagePath": "pages/define-page/object"
-          }
-        ]
-      }"
+      "[
+        {
+          "pagePath": "pages/define-page/object"
+        }
+      ]"
     `);
   });
 });
