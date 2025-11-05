@@ -101,9 +101,9 @@ export interface UserConfig {
 将与 `definePage` 宏生成的内容合并，生成最终的 `pages.json`
 
 ```ts
-import { definePagesJson } from '@uni-ku/pages-json';
+import { defineConfig } from '@uni-ku/pages-json';
 
-export default definePagesJson({
+export default defineConfig({
   globalStyle: {
     navigationBarTextStyle: 'black',
     navigationBarTitleText: 'uni-app',

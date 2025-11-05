@@ -17,7 +17,7 @@ interface DefinePagesJsonFuncArgs {
 
  type DefinePagesJsonArg = DeepPartial<PagesJSON.PagesJson> | ((a: DefinePagesJsonFuncArgs) => DeepPartial<PagesJSON.PagesJson> | Promise<DeepPartial<PagesJSON.PagesJson>>);
 
-function definePagesJson(userConfig: DefinePagesJsonArg): DefinePagesJsonArg {
+function defineConfig(userConfig: DefinePagesJsonArg): DefinePagesJsonArg {
   return userConfig;
 }
 
@@ -30,6 +30,6 @@ export type {
 };
 
 export {
+  defineConfig,
   definePage,
-  definePagesJson,
 };

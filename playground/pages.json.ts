@@ -1,6 +1,6 @@
-import { definePagesJson } from '@uni-ku/pages-json';
+import { defineConfig } from '@uni-ku/pages-json';
 
-export default definePagesJson(({ platform }) => {
+export default defineConfig(({ platform }) => {
   return {
     globalStyle: {
       navigationBarTextStyle: 'black',
