@@ -1,7 +1,7 @@
 {
   "name": "@uni-ku/pages-json",
   "type": "module",
-  "version": "0.2.14",
+  "version": "0.2.15",
   "packageManager": "pnpm@10.18.0",
   "description": "Define uniapp pages.json dynamically.",
   "author": "Edwin Xu <edwinhuish@gmail.com>",
@@ -69,7 +69,6 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@antfu/utils": "^0.7.10",
     "@babel/generator": "^7.28.3",
     "@babel/types": "^7.28.2",
     "@uni-helper/uni-env": "^0.2.0",
@@ -86,7 +85,6 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.16.0",
-    "@antfu/utils": "^0.7.7",
     "@babel/generator": "^7.23.6",
     "@babel/traverse": "^7.28.3",
     "@dcloudio/types": "^3.4.19",

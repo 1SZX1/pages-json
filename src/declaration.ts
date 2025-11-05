@@ -1,12 +1,11 @@
 import type { PagesJson } from '@uni-ku/pages-json/types';
 import fs from 'node:fs';
 import { join } from 'node:path';
-import { slash } from '@antfu/utils';
 import { checkFile } from './utils/file';
 
 function generateDeclaration(pagesJson: PagesJson) {
   const subPagesPaths = (pagesJson.subPackages || []).map((sub) => {
-    return (sub.pages || []).map(v => (`"/${slash(join(sub.root!, v.path))}"`));
+    return (sub.pages || []).map(v => (`"/${join(sub.root!, v.path).replaceAll('\\', '/')}"`));
   }).flat();
   const tabPaths = (pagesJson.tabBar?.list || []).map((v) => {
     return `"/${v!.pagePath}"`;

@@ -55,7 +55,7 @@ export class Context {
 
     const parsePagePath = (baseDir: string, filepath: string): string => {
       const rel = path.relative(baseDir, filepath);
-      return rel.replace(path.extname(rel), '').replace('\\', '/');
+      return rel.replace(path.extname(rel), '').replaceAll('\\', '/');
     };
 
     // subPackages, 先处理 subPackages 避免重复出现在 pages 里

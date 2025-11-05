@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@antfu/utils':
-        specifier: ^0.7.10
-        version: 0.7.10
       '@babel/generator':
         specifier: ^7.28.3
         version: 7.28.3
