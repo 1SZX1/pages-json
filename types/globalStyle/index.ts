@@ -1,7 +1,7 @@
 import type { AnimationType, HEXColor, ThemeVar } from '../common';
 import type { AppPlus } from './app-plus';
 import type { H5 } from './h5';
-import type { MpAlipay } from './mp-aliipay';
+import type { MpAlipay } from './mp-alipay';
 import type { MpBaidu } from './mp-baidu';
 import type { MpJd } from './mp-jd';
 import type { MpKuaishou } from './mp-kuaishou';
