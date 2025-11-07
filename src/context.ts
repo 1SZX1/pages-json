@@ -63,7 +63,7 @@ export class Context {
 
       const root = path.basename(dir);
 
-      for (const file of listFiles(dir, { cwd: this.cfg.root, ignore: this.cfg.excludes })) {
+      for (const file of listFiles(dir, { cwd: this.cfg.root, ignore: this.cfg.exclude })) {
         if (files.has(file)) {
           continue; // 跳过重复文件
         }
@@ -79,7 +79,7 @@ export class Context {
     }
 
     // pages
-    for (const file of listFiles(this.cfg.pageDir, { cwd: this.cfg.root, ignore: this.cfg.excludes })) {
+    for (const file of listFiles(this.cfg.pageDir, { cwd: this.cfg.root, ignore: this.cfg.exclude })) {
       if (files.has(file)) {
         continue; // 跳过重复文件
       }

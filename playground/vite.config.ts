@@ -6,8 +6,8 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [
     pagesJson({
-      pageDir: 'src/pages',
-      subPackageDirs: ['src/pages-sub'],
+      pageDir: 'pages',
+      subPackageDirs: ['pages-sub'],
       debug: true,
 
       // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ 支持 vite-plugin-uni-platform 示例 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓

@@ -110,7 +110,7 @@ function isWatchFile(ctx: Context, file: string) {
   ];
 
   const excludes: AnymatchMatcher = [
-    ...ctx.cfg.excludes,
+    ...ctx.cfg.exclude,
     file => !ctx.isValidFile(file),
   ];
 

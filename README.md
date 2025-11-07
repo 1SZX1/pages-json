@@ -47,27 +47,26 @@ export default defineConfig({
 
 ```ts
 export interface UserConfig {
-
   /**
    * 项目根目录
-   * @default vite 的 `root` 属性
+   * @default process.env.UNI_CLI_CONTEXT || process.cwd()
    */
   root?: string;
 
   /**
    * 源码目录，pages.json 放置的目录
-   * @default "src"
+   * @default process.env.UNI_INPUT_DIR || path.resolve(root, 'src') || root
    */
   src?: string;
 
   /**
-   * pages的相对路径
-   * @default 'src/pages'
+   * pages 绝对路径或基于 UNI_INPUT_DIR 的相对路径
+   * @default 'pages'
    */
   pageDir?: string;
 
   /**
-   * subPackages的相对路径
+   * subPackages 绝对路径或基于 UNI_INPUT_DIR 的相对路径
    * @default []
    */
   subPackageDirs?: string[];
@@ -76,13 +75,13 @@ export interface UserConfig {
    * 排除条件，应用于 pages 和 subPackages 的文件
    * @default ['node_modules', '.git', '** /__*__/ **']
    */
-  excludes?: string[];
+  exclude?: string[];
 
   /**
    * 为页面路径生成 TypeScript 声明
-   * 接受相对项目根目录的路径
+   * 绝对路径或基于 UNI_INPUT_DIR 的相对路径
    * false 则取消生成
-   * @default "src/pages.d.ts"
+   * @default "pages.d.ts"
    */
   dts?: string | boolean;
 
@@ -91,6 +90,16 @@ export interface UserConfig {
    * @default false
    */
   debug?: boolean | 'info' | 'error' | 'debug' | 'warn';
+  /**
+   * 对页面路径的再处理
+   * @returns page path 页面路径
+   */
+  parsePagePath?: (opt: { filePath: string; pagePath: string }) => string;
+
+  /**
+   * 过滤、修改 pages 的页面文件信息
+   */
+  filterPages?: (opt: { filePath: string; platform: BuiltInPlatform }) => boolean;
 }
 ```
 
