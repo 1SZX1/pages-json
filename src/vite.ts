@@ -1,5 +1,5 @@
 import type { Matcher as AnymatchMatcher } from 'anymatch';
-import type { FSWatcher, PluginOption, ViteDevServer } from 'vite';
+import type { FSWatcher, PluginOption } from 'vite';
 import type { UserConfig } from './config';
 import path from 'node:path';
 import anymatch from 'anymatch';
@@ -14,8 +14,6 @@ const RESOLVED_MODULE_ID_VIRTUAL = `\0${MODULE_ID_VIRTUAL}` as const;
 export type { UserConfig };
 
 export default function pagesJson(userConfig: UserConfig = {}): PluginOption {
-
-  let _server: ViteDevServer | undefined;
 
   const ctx = new Context(userConfig);
 
@@ -68,12 +66,6 @@ export default function pagesJson(userConfig: UserConfig = {}): PluginOption {
     },
 
     configureServer(server) {
-      if (_server === server) {
-        return;
-      }
-
-      _server = server;
-
       setupWatcher(ctx, server.watcher);
     },
 
