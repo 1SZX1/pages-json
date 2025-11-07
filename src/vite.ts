@@ -90,30 +90,13 @@ export default function pagesJson(userConfig: UserConfig = {}): PluginOption {
       }
     },
 
-    handleHotUpdate: ({ modules, file, server }) => {
-
-      const hasVirual = modules.some(m => m.id === RESOLVED_MODULE_ID_VIRTUAL);
-      if (hasVirual) {
-        return modules; // 已有 virtual module，无须重新增加
-      }
-
+    handleHotUpdate: ({ file, server }) => {
       if (file && isWatchFile(ctx, file)) {
-        // ! 无法通过 getModuleById 获取 module
-        // const mod = server.moduleGraph.getModuleById(RESOLVED_MODULE_ID_VIRTUAL);
-        // if (mod) {
-        //   return [
-        //     ...modules,
-        //     mod,
-        //   ];
-        // }
-
-        // TODO: 优化仅增加更新虚拟模块
-        server.ws.send({
-          type: 'full-reload',
-        });
+        const mod = server.moduleGraph.getModuleById(RESOLVED_MODULE_ID_VIRTUAL); // 获取虚拟模块
+        if (mod) {
+          server.moduleGraph.invalidateModule(mod); // 如果模块存在，将其标记为失效，使其触发更新
+        }
       }
-
-      return modules;
     },
   };
 }
