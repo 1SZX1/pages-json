@@ -21,6 +21,8 @@ function defineConfig(userConfig: DefineConfigArg): DefineConfigArg {
   return userConfig;
 }
 
+export * from './types';
+
 export type {
   DefineConfigArg,
   DefineConfigFuncArgs,
