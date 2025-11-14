@@ -6,8 +6,8 @@ import { Context } from '../src/context';
 
 const cfg = resolveConfig({
   root: path.resolve(__dirname, '../playground'),
-  pageDir: 'src/pages',
-  subPackageDirs: ['src/pages-sub'],
+  pageDir: 'pages',
+  subPackageDirs: ['pages-sub'],
 });
 
 const ctx = new Context(cfg);
