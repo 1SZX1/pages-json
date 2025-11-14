@@ -189,9 +189,18 @@ export class Context {
       jsons[platform] = await this.generatePagesJson(platform);
     }
 
-    const ok = await this.writePagesJson(jsons, indent, eof);
+    const rawJson = this.stringifyPagesJson(jsons, indent, eof);
 
-    if (ok && this.cfg.dts) {
+    if (this.lastPagesJson === rawJson) {
+      debug.info('pages.json 无改动，跳过更新。');
+      return false;
+    }
+
+    await writeFileWithLock(this.staticJsonFilePath, rawJson);
+
+    this.lastPagesJson = rawJson;
+
+    if (this.cfg.dts) {
       await writeDeclaration(jsons, this.cfg.dts as string);
     }
 
@@ -343,7 +352,7 @@ export class Context {
   /**
    * 将多个平台的 pages.json 合并成一个静态 pages.json
    */
-  public async writePagesJson(jsons: Record<BuiltInPlatform, PagesJSON.PagesJson>, indent = ' '.repeat(4), eof = '\n'): Promise<boolean> {
+  public stringifyPagesJson(jsons: Record<BuiltInPlatform, PagesJSON.PagesJson>, indent = ' '.repeat(4), eof = '\n'): string {
     const [p1 = currentPlatform, ...p2s] = Object.keys(jsons).sort() as BuiltInPlatform[];
 
     const pagesJson = jsons[p1] || {};
@@ -409,16 +418,7 @@ export class Context {
     // 清除多余的换行
     rawJson = rawJson.replace(/\n\s*\n/g, '\n');
 
-    if (this.lastPagesJson === rawJson) {
-      debug.info('pages.json 无改动，跳过更新。');
-      return false;
-    }
-
-    await writeFileWithLock(this.staticJsonFilePath, rawJson);
-
-    this.lastPagesJson = rawJson;
-
-    return true;
+    return rawJson;
   }
 
   /**
