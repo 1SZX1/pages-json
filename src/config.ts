@@ -82,9 +82,9 @@ export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
 
   enableDebug(debug);
 
-  const absPageDir = path.isAbsolute(pageDir) ? pageDir : path.resolve(root, pageDir);
+  const absPageDir = path.isAbsolute(pageDir) ? pageDir : path.resolve(src, pageDir);
   const absSubPackageDirs = subPackageDirs.map((dir) => {
-    return path.isAbsolute(dir) ? dir : path.resolve(root, dir);
+    return path.isAbsolute(dir) ? dir : path.resolve(src, dir);
   });
 
   return {
