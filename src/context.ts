@@ -602,9 +602,10 @@ function mergePlatformArray<T extends object>(pf1: BuiltInPlatform, v1: T[], pf2
 function mergePlatformObject<T extends object>(pf1: BuiltInPlatform, v1: T, pf2: BuiltInPlatform, v2: T, ignoreKeys: string[] = []) {
 
   const v1keys = new Set(Object.keys(v1));
+  const ignores = new Set(ignoreKeys);
 
   for (const key in v2) {
-    if (ignoreKeys.includes(key)) {
+    if (ignores.has(key)) {
       continue;
     }
     const v1Child = v1[key] ?? undefined;
@@ -645,7 +646,7 @@ function mergePlatformObject<T extends object>(pf1: BuiltInPlatform, v1: T, pf2:
 
   for (const key of v1keys) { // 处理 v2 不存在的 key
 
-    if (ignoreKeys.includes(key)) {
+    if (ignores.has(key)) {
       continue;
     }
 
