@@ -1,6 +1,7 @@
 import type { BuiltInPlatform } from '@uni-helper/uni-env';
 import type * as PagesJSON from '@uni-ku/pages-json/types';
-import type { UserPageMeta, UserTabBarItem } from './pageFile';
+import type { ConfigHook, UserConfig } from './config';
+import type { PageFileOption, UserPageMeta, UserTabBarItem } from './pageFile';
 import type { DeepPartial } from './types';
 
 interface DefinePageFuncArgs {
@@ -24,9 +25,12 @@ function defineConfig(userConfig: DefineConfigArg): DefineConfigArg {
 export * from './types';
 
 export type {
+  ConfigHook,
   DefineConfigArg,
   DefineConfigFuncArgs,
   DefinePageFuncArgs,
+  PageFileOption,
+  UserConfig,
   UserPageMeta,
   UserTabBarItem,
 };

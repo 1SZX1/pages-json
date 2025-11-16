@@ -11,8 +11,6 @@ import { debug } from './utils/debug';
 const MODULE_ID_VIRTUAL = 'virtual:pages-json' as const;
 const RESOLVED_MODULE_ID_VIRTUAL = `\0${MODULE_ID_VIRTUAL}` as const;
 
-export type { UserConfig };
-
 export default function pagesJson(userConfig: UserConfig = {}): PluginOption {
 
   const ctx = new Context(userConfig);

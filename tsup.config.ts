@@ -9,6 +9,7 @@ export default defineConfig((opt) => {
       entry: {
         index: 'src/index.ts',
         vite: 'src/vite.ts',
+        hooks: 'src/hooks.ts',
       },
       format: ['cjs', 'esm'],
       dts: true,

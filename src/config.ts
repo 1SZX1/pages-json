@@ -1,8 +1,24 @@
 import type { BuiltInPlatform } from '@uni-helper/uni-env';
+import type { PageFileOption } from './pageFile';
+import type { MaybePromise } from './types';
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { enableDebug } from './utils/debug';
+
+export interface ConfigHook {
+  /**
+   * 获取页面路径
+   * @param filePath - 文件路径
+   * @param pagePath - 页面路径
+   * @returns page path 页面路径
+   */
+  parsePageOption?: (opt: PageFileOption) => MaybePromise<PageFileOption>;
+  /**
+   * 过滤、修改 pages 的页面文件信息
+   */
+  filterPages?: (platform: BuiltInPlatform, opts: PageFileOption[]) => MaybePromise<PageFileOption[]>;
+}
 
 export interface UserConfig {
   /**
@@ -48,19 +64,27 @@ export interface UserConfig {
    * @default false
    */
   debug?: boolean | 'info' | 'error' | 'debug' | 'warn';
+
   /**
    * 对页面路径的再处理
    * @returns page path 页面路径
+   * @deprecated 使用 hooks.parsePageOption
    */
   parsePagePath?: (opt: { filePath: string; pagePath: string }) => string;
 
   /**
    * 过滤、修改 pages 的页面文件信息
+   * @deprecated 使用 hooks.filterPages
    */
   filterPages?: (opt: { filePath: string; platform: BuiltInPlatform }) => boolean;
+
+  /**
+   * 钩子
+   */
+  hooks?: ConfigHook[];
 }
 
-export interface ResolvedConfig extends Required<UserConfig> {}
+export interface ResolvedConfig extends Required<Omit<UserConfig, 'parsePagePath' | 'filterPages'>> {}
 
 export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
   let {
@@ -71,8 +95,9 @@ export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
     subPackageDirs = [],
     exclude = ['node_modules', '.git', '**/__*__/**'],
     debug = false,
-    parsePagePath = ({ pagePath }) => pagePath,
-    filterPages = () => true,
+    // parsePagePath = ({ pagePath }) => pagePath,
+    // filterPages = () => true,
+    hooks = [],
   } = useConfig;
 
   if (!src) {
@@ -95,7 +120,6 @@ export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
     exclude,
     dts: dts === true ? path.join(src, 'pages.d.ts') : dts,
     debug,
-    parsePagePath,
-    filterPages,
+    hooks,
   };
 }

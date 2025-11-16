@@ -90,16 +90,11 @@ export interface UserConfig {
    * @default false
    */
   debug?: boolean | 'info' | 'error' | 'debug' | 'warn';
-  /**
-   * 对页面路径的再处理
-   * @returns page path 页面路径
-   */
-  parsePagePath?: (opt: { filePath: string; pagePath: string }) => string;
 
   /**
-   * 过滤、修改 pages 的页面文件信息
+   * 钩子
    */
-  filterPages?: (opt: { filePath: string; platform: BuiltInPlatform }) => boolean;
+  hooks?: ConfigHook[];
 }
 ```
 

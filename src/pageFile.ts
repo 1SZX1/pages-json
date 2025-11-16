@@ -54,6 +54,15 @@ export interface MacroInfo {
   preparedCode: string; // 预处理后的代码，可直接用于解析。
 }
 
+export interface PageFileOption {
+  /** 文件路径 */
+  filePath: string;
+  /** 页面路径，对应 pages.json 中的 path */
+  pagePath: string;
+  /** subPackages 中的 root，为空则非subPackage */
+  root?: string;
+}
+
 export class PageFile {
   /** 文件的绝对路径 */
   public readonly file: string;
@@ -81,9 +90,9 @@ export class PageFile {
    */
   public static readonly exts = ['.vue', '.nvue', '.uvue'];
 
-  constructor(filepath: string, path: string, root?: string) {
-    this.file = filepath;
-    this.path = path.replaceAll('\\', '/');
+  constructor({ filePath, pagePath, root }: PageFileOption) {
+    this.file = filePath;
+    this.path = pagePath.replaceAll('\\', '/');
     this.root = root || '';
   }
 

@@ -1,6 +1,7 @@
 import type { BuiltInPlatform } from '@uni-helper/uni-env';
 import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { CommentToken } from 'comment-json';
+import type { PageFileOption } from './pageFile';
 import fs from 'node:fs';
 import path from 'node:path';
 import { platform as currentPlatform } from '@uni-helper/uni-env';
@@ -49,7 +50,7 @@ export class Context {
   /**
    * 扫描文件
    */
-  public scanFiles(): void {
+  public async scanFiles(): Promise<void> {
 
     const files = new Map<string, PageFile>();
 
@@ -70,10 +71,15 @@ export class Context {
 
         debug.debug(`subPackages: ${file}`);
 
-        let pagePath = parsePagePath(path.resolve(this.cfg.root, dir), file);
-        pagePath = this.cfg.parsePagePath({ filePath: file, pagePath });
+        const pagePath = parsePagePath(path.resolve(this.cfg.root, dir), file);
+        let opt: PageFileOption = { filePath: file, pagePath, root };
+        for (const hook of this.cfg.hooks) {
+          if (hook.parsePageOption) {
+            opt = await Promise.resolve(hook.parsePageOption(opt));
+          }
+        }
 
-        const page = this.files.get(file) || new PageFile(file, pagePath, root);
+        const page = this.files.get(file) || new PageFile(opt);
         files.set(file, page);
       }
     }
@@ -86,36 +92,73 @@ export class Context {
 
       debug.debug(`pages: ${file}`);
 
-      let pagePath = parsePagePath(this.cfg.src, file);
-      pagePath = this.cfg.parsePagePath({ filePath: file, pagePath });
+      const pagePath = parsePagePath(this.cfg.src, file);
+      let opt: PageFileOption = { filePath: file, pagePath };
+      for (const hook of this.cfg.hooks) {
+        if (hook.parsePageOption) {
+          opt = await Promise.resolve(hook.parsePageOption(opt));
+        }
+      }
 
-      const page = this.files.get(file) || new PageFile(file, pagePath);
+      const page = this.files.get(file) || new PageFile(opt);
       files.set(file, page);
     }
 
     this.files = files;
   }
 
-  public pages(platform = currentPlatform): PageFile[] {
-    const files: PageFile[] = [];
-    for (const [, file] of this.files) {
-      if (!file.root) { // root 为空，则为 pages
-        files.push(file);
+  public async getPageFileOfPages(platform = currentPlatform): Promise<PageFile[]> {
+    let opts: PageFileOption[] = [];
+    for (const [, p] of this.files) {
+      if (!p.root) { // root 为空，则为 pages
+        opts.push({
+          filePath: p.file,
+          pagePath: p.path,
+          root: p.root,
+        });
       }
     }
 
-    return files.filter(file => this.cfg.filterPages({ filePath: file.file, platform }));
+    for (const hook of this.cfg.hooks) {
+      if (hook.filterPages) {
+        opts = await Promise.resolve(hook.filterPages(platform, opts));
+      }
+    }
+
+    const files: PageFile[] = [];
+    for (const opt of opts) {
+      const file = this.files.get(opt.filePath) || new PageFile(opt);
+      files.push(file);
+    }
+
+    return files;
   }
 
-  public subPackages(platform = currentPlatform): PageFile[] {
-    const files: PageFile[] = [];
-    for (const [, file] of this.files) {
-      if (file.root) { // root 不为空，则为 subPackages
-        files.push(file);
+  public async getPageFileOfSubPackages(platform = currentPlatform): Promise<PageFile[]> {
+    let opts: PageFileOption[] = [];
+    for (const [, p] of this.files) {
+      if (p.root) { // root 不为空，则为 subPackages
+        opts.push({
+          filePath: p.file,
+          pagePath: p.path,
+          root: p.root,
+        });
       }
     }
 
-    return files.filter(file => this.cfg.filterPages({ filePath: file.file, platform }));
+    for (const hook of this.cfg.hooks) {
+      if (hook.filterPages) {
+        opts = await Promise.resolve(hook.filterPages(platform, opts));
+      }
+    }
+
+    const files: PageFile[] = [];
+    for (const opt of opts) {
+      const file = this.files.get(opt.filePath) || new PageFile(opt);
+      files.push(file);
+    }
+
+    return files;
   }
 
   /**
@@ -485,14 +528,15 @@ export class Context {
    * 根据 platform 生成 pages
    */
   public async generatePages(platform = currentPlatform): Promise<PagesJSON.Page[]> {
-    return Promise.all(this.pages(platform).map(async pf => pf.getPage({ platform })));
+    const pages = await this.getPageFileOfPages(platform);
+    return Promise.all(pages.map(async pf => pf.getPage({ platform })));
   }
 
   /**
    * 根据 platform 生成 subPackages
    */
   public async generateSubPackages(platform = currentPlatform): Promise<PagesJSON.SubPackage[]> {
-    const pageFiles = this.subPackages(platform);
+    const pageFiles = await this.getPageFileOfSubPackages(platform);
 
     const subPackages: Record<string, PagesJSON.SubPackage> = {};
     for (const pf of pageFiles) {
@@ -511,7 +555,7 @@ export class Context {
    * 根据 platform 获取 tabbar items
    */
   public async generateTabbarItems(platform = currentPlatform): Promise<PagesJSON.TabBarItem[]> {
-    const pageFiles = this.pages(platform);
+    const pageFiles = await this.getPageFileOfPages(platform);
 
     const items: PagesJSON.TabBarItem[] = [];
     for (const pf of pageFiles) {
