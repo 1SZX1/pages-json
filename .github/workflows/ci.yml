@@ -46,8 +46,15 @@ jobs:
       - name: Install
         run: nci
 
-      - name: Build
+      - name: Build - Windows
         run: nr build
+        if: matrix.os == 'windows-latest'
+        env:
+          PARALLEL_WORKER_BACKEND: process
+
+      - name: Build - Non-Windows
+        run: nr build
+        if: matrix.os != 'windows-latest'
 
       - name: Test
         run: nr test
