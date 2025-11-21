@@ -415,9 +415,9 @@ export class Context {
           const idx = pagesJson.subPackages.findIndex(s => s.root === j2Sub.root);
           if (idx > -1) {
             mergePlatformObject(p1, pagesJson.subPackages[idx], p2, j2Sub, ['pages']);
-            if (j2.pages && j2.pages.length > 0) {
+            if (j2Sub.pages && j2Sub.pages.length > 0) {
               pagesJson.subPackages[idx].pages = pagesJson.subPackages[idx].pages || [];
-              mergePlatformArray(p1, pagesJson.subPackages[idx].pages, p2, j2.pages, v => v.path);
+              mergePlatformArray(p1, pagesJson.subPackages[idx].pages, p2, j2Sub.pages, v => v.path);
             }
           } else {
             pagesJson.subPackages.push(j2Sub);
