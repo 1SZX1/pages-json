@@ -2,27 +2,31 @@ import Debug from 'debug';
 
 const PREFIX = 'pages-json:';
 
-const DEBUG_TYPES = [
-  'info',
-  'error',
-  'debug',
-  'warn',
-] as const;
+const DebugLevel = {
+  error: 0,
+  info: 1,
+  warn: 2,
+  debug: 3,
+};
 
-export type DebugType = typeof DEBUG_TYPES[number];
+export type DebugLevelType = keyof typeof DebugLevel;
 
 export const debug = generateDebug();
 
 function generateDebug() {
-  return Object.fromEntries(DEBUG_TYPES.map(t => ([t, Debug(PREFIX + t)]))) as Record<DebugType, Debug.Debugger>;
+  return Object.fromEntries(Object.keys(DebugLevel).map(t => ([t, Debug(PREFIX + t)]))) as Record<DebugLevelType, Debug.Debugger>;
 }
 
-export function enableDebug(enable: boolean | DebugType) {
-  if (!enable) {
+export function enableDebug(enable: boolean | DebugLevelType) {
+  if (enable === false) {
     return;
   }
 
-  const suffix = typeof enable === 'boolean' ? '*' : enable;
+  const level = (enable === true) ? DebugLevel.info : (DebugLevel[enable] || DebugLevel.info);
 
-  Debug.enable(`${PREFIX}${suffix}`);
+  for (const [key, val] of Object.entries(DebugLevel)) {
+    if (level >= val) {
+      Debug.enable(`${PREFIX}${key}`);
+    }
+  }
 }

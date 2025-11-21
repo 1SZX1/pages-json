@@ -9,7 +9,7 @@ export default defineConfig({
     pagesJson({
       pageDir: 'pages',
       subPackageDirs: ['pages-sub'],
-      debug: true,
+      debug: 'debug',
       hooks: [hookUniPlatform],
     }),
     uni(),
