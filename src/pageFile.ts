@@ -99,7 +99,7 @@ export class PageFile {
   public async getPage({ platform = currentPlatform, forceRead = false }: { platform?: BuiltInPlatform; forceRead?: boolean } = {}): Promise<PagesJSON.Page> {
 
     if (forceRead || !this.content) {
-      await this.read();
+      await this.parse();
     }
     if (!this.metas.has(platform)) {
       await this.parsePageMeta({ platform });
@@ -116,7 +116,7 @@ export class PageFile {
 
   public async getTabbarItem({ platform = currentPlatform, forceRead = false }: { platform?: BuiltInPlatform; forceRead?: boolean } = {}): Promise<PagesJSON.TabBarItem | undefined> {
     if (forceRead || !this.content) {
-      await this.read();
+      await this.parse();
     }
     if (!this.metas.has(platform)) {
       await this.parsePageMeta({ platform });
@@ -141,11 +141,16 @@ export class PageFile {
   }
 
   /**
-   * 读取文件，并解析数据
+   * 解析文件内容
+   * @param content 指定文件内容，为空则读取文件
    */
-  public async read(): Promise<void> {
+  public async parse(content?: string): Promise<void> {
     // content
-    this.content = await fs.readFile(this.file, { encoding: 'utf-8' }).catch(() => '');
+    if (content !== undefined) {
+      this.content = content;
+    } else {
+      this.content = await fs.readFile(this.file, { encoding: 'utf-8' }).catch(() => '');
+    }
 
     // sfc
     this.sfc = (
@@ -274,7 +279,7 @@ export class PageFile {
 
   public async getMacroInfo(forceRead = false): Promise<MacroInfo | undefined> {
     if (forceRead || !this.content) {
-      await this.read();
+      await this.parse();
     }
 
     return this.macro;

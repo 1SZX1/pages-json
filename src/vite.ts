@@ -41,6 +41,7 @@ export default function pagesJson(userConfig: UserConfig = {}): PluginOption {
         return;
       }
 
+      await file.parse(code);
       const macro = await file.getMacroInfo();
 
       if (!macro) {

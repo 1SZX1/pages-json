@@ -198,7 +198,7 @@ export class Context {
       if (this.isValidPageFile(abspath)) {
         const pageFile = this.files.get(abspath);
         if (pageFile) { // 文件存在
-          await pageFile.read();
+          await pageFile.parse();
           if (!pageFile.hasChanged()) {
             debug.info(`文件 ${filepath} 的 page meta 无改动，跳过更新。`);
             return false;
