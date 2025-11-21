@@ -610,7 +610,9 @@ function listFiles(dir: string, options: fg.Options = {}) {
   });
 
   return files;
-};
+}
+
+const PF_ARR_ITEM_KEY = Symbol.for('platform-array-item');
 
 /**
  * 合并两个不同平台的数组
@@ -624,12 +626,22 @@ function listFiles(dir: string, options: fg.Options = {}) {
 function mergePlatformArray<T extends object>(pf1: BuiltInPlatform, v1: T[], pf2: BuiltInPlatform, v2: T[], getKey: (v: T) => string) {
   for (const v2item of v2) {
     const v2key = getKey(v2item);
-    const v1idx = v1.findIndex(v => getKey(v) === v2key);
+    const v1idx = v1.findIndex((v) => {
+      if (getKey(v) !== v2key) {
+        return false;
+      }
+      const pf = (v as any)[PF_ARR_ITEM_KEY] as BuiltInPlatform | undefined;
+      return pf === undefined || pf === pf2;
+    });
     if (v1idx > -1) {
       mergePlatformObject(pf1, v1[v1idx], pf2, v2item);
-    } else {
-      v1.push(v2item);
+      continue;
     }
+
+    const idx = v1.length;
+    (v2item as any)[PF_ARR_ITEM_KEY] = pf2;
+    v1.push(v2item);
+    wrapIfdef(v1, idx, pf2);
   }
 }
 
@@ -708,7 +720,7 @@ function mergePlatformObject<T extends object>(pf1: BuiltInPlatform, v1: T, pf2:
   }
 }
 
-function wrapIfdef(obj: any, key: string, platform: string): void {
+function wrapIfdef(obj: any, key: string | number, platform: string): void {
 
   const upperPlatform = platform.toUpperCase();
 
