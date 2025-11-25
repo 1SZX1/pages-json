@@ -24,9 +24,13 @@ export function enableDebug(enable: boolean | DebugLevelType) {
 
   const level = (enable === true) ? DebugLevel.info : (DebugLevel[enable] || DebugLevel.info);
 
+  const ns: string[] = [];
+
   for (const [key, val] of Object.entries(DebugLevel)) {
     if (level >= val) {
-      Debug.enable(`${PREFIX}${key}`);
+      ns.push(`${PREFIX}${key}`);
     }
   }
+
+  Debug.enable(ns.join(','));
 }
