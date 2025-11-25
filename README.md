@@ -19,12 +19,15 @@ pnpm i -D @uni-ku/pages-json
 ### vite 配置
 ```ts
 import uni from '@dcloudio/vite-plugin-uni';
+import { hookUniPlatform } from '@uni-ku/pages-json/hooks';
 import pagesJson from '@uni-ku/pages-json/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [
-    pagesJson(), // 详细配置请看下面的详细描述
+    pagesJson({ // 详细配置请看下面的详细描述
+      hooks: [hookUniPlatform], // 支持 vite-plugin-uni-platform
+    }), 
     uni(), // 添加在 pagesJson() 之后
     // 其他plugins
   ],
@@ -272,4 +275,19 @@ console.log(pagesJson);
 ## 获取 uniapp pages.json 的类型提示
 ```ts
 import type { Page, SubPackage } from '@uni-ku/pages-json/types';
+```
+
+## vite-plugin-uni-platform 支持
+```ts
+import { hookUniPlatform } from '@uni-ku/pages-json/hooks';
+import pagesJson from '@uni-ku/pages-json/vite';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  plugins: [
+    pagesJson({
+      hooks: [hookUniPlatform], // 支持 vite-plugin-uni-platform
+    }),
+  ],
+});
 ```
