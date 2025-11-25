@@ -3,6 +3,7 @@ import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { ConfigHook, UserConfig } from './config';
 import type { PageFileOption, UserPageMeta, UserTabBarItem } from './pageFile';
 import type { DeepPartial } from './types';
+import { Context } from './context';
 
 interface DefinePageFuncArgs {
   t: (meta: UserPageMeta) => UserPageMeta;
@@ -22,6 +23,11 @@ function defineConfig(userConfig: DefineConfigArg): DefineConfigArg {
   return userConfig;
 }
 
+async function updatePagesJSON(userConfig: UserConfig = {}): Promise<boolean> {
+  const ctx = new Context(userConfig);
+  return await ctx.updatePagesJSON();
+}
+
 export * from './types';
 
 export type {
@@ -38,4 +44,5 @@ export type {
 export {
   defineConfig,
   definePage,
+  updatePagesJSON,
 };

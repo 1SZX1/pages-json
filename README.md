@@ -27,7 +27,7 @@ export default defineConfig({
   plugins: [
     pagesJson({ // 详细配置请看下面的详细描述
       hooks: [hookUniPlatform], // 支持 vite-plugin-uni-platform
-    }), 
+    }),
     uni(), // 添加在 pagesJson() 之后
     // 其他plugins
   ],
