@@ -28,19 +28,20 @@ export interface UserConfig {
   root?: string;
 
   /**
-   * 源码目录，pages.json 放置的目录
+   * 源码目录
+   * pages.json 放置的目录
    * @default process.env.UNI_INPUT_DIR || path.resolve(root, 'src') || root
    */
   src?: string;
 
   /**
-   * pages 绝对路径或基于 UNI_INPUT_DIR 的相对路径
+   * pages 绝对路径或基于源码目录的相对路径
    * @default 'pages'
    */
   pageDir?: string;
 
   /**
-   * subPackages 绝对路径或基于 UNI_INPUT_DIR 的相对路径
+   * subPackages 绝对路径或基于源码目录的相对路径
    * @default []
    */
   subPackageDirs?: string[];
@@ -53,7 +54,7 @@ export interface UserConfig {
 
   /**
    * 为页面路径生成 TypeScript 声明
-   * 绝对路径或基于 UNI_INPUT_DIR 的相对路径
+   * 绝对路径或基于源码目录的相对路径
    * false 则取消生成
    * @default "pages.d.ts"
    */
@@ -66,25 +67,12 @@ export interface UserConfig {
   debug?: boolean | 'info' | 'error' | 'debug' | 'warn';
 
   /**
-   * 对页面路径的再处理
-   * @returns page path 页面路径
-   * @deprecated 使用 hooks.parsePageOption
-   */
-  parsePagePath?: (opt: { filePath: string; pagePath: string }) => string;
-
-  /**
-   * 过滤、修改 pages 的页面文件信息
-   * @deprecated 使用 hooks.filterPages
-   */
-  filterPages?: (opt: { filePath: string; platform: BuiltInPlatform }) => boolean;
-
-  /**
    * 钩子
    */
   hooks?: ConfigHook[];
 }
 
-export interface ResolvedConfig extends Required<Omit<UserConfig, 'parsePagePath' | 'filterPages'>> {}
+export interface ResolvedConfig extends Required<UserConfig> {}
 
 export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
   let {
@@ -95,8 +83,6 @@ export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
     subPackageDirs = [],
     exclude = ['node_modules', '.git', '**/__*__/**'],
     debug = false,
-    // parsePagePath = ({ pagePath }) => pagePath,
-    // filterPages = () => true,
     hooks = [],
   } = useConfig;
 

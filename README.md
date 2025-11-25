@@ -54,19 +54,20 @@ export interface UserConfig {
   root?: string;
 
   /**
-   * 源码目录，pages.json 放置的目录
+   * 源码目录
+   * pages.json 放置的目录
    * @default process.env.UNI_INPUT_DIR || path.resolve(root, 'src') || root
    */
   src?: string;
 
   /**
-   * pages 绝对路径或基于 UNI_INPUT_DIR 的相对路径
+   * pages 绝对路径或基于源码目录的相对路径
    * @default 'pages'
    */
   pageDir?: string;
 
   /**
-   * subPackages 绝对路径或基于 UNI_INPUT_DIR 的相对路径
+   * subPackages 绝对路径或基于源码目录的相对路径
    * @default []
    */
   subPackageDirs?: string[];
@@ -79,7 +80,7 @@ export interface UserConfig {
 
   /**
    * 为页面路径生成 TypeScript 声明
-   * 绝对路径或基于 UNI_INPUT_DIR 的相对路径
+   * 绝对路径或基于源码目录的相对路径
    * false 则取消生成
    * @default "pages.d.ts"
    */
