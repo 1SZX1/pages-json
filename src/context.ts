@@ -19,6 +19,7 @@ interface StaticJsonFileInfo {
   platforms: Set<BuiltInPlatform>;
   indent: string;
   eof: string;
+  content: string;
 }
 
 export class Context {
@@ -37,8 +38,6 @@ export class Context {
    * 全局动态 pages.json 可用的文件后缀
    */
   public dynamicPagesJson: DynamicPagesJson;
-
-  private lastPagesJson = '';
 
   constructor(config: UserConfig) {
     this.cfg = resolveConfig(config);
@@ -224,7 +223,7 @@ export class Context {
     }
 
     await this.checkStaticJsonFile();
-    const { platforms, indent, eof } = await this.detectStaticJsonFile(true);
+    const { platforms, indent, eof, content } = await this.detectStaticJsonFile(true);
 
     const jsons = {} as Record<BuiltInPlatform, PagesJSON.PagesJson>;
 
@@ -234,14 +233,12 @@ export class Context {
 
     const rawJson = this.stringifyPagesJson(jsons, indent, eof);
 
-    if (this.lastPagesJson === rawJson) {
+    if (content === rawJson) {
       debug.info('pages.json 无改动，跳过更新。');
       return false;
     }
 
     await writeFileWithLock(this.staticJsonFilePath, rawJson);
-
-    this.lastPagesJson = rawJson;
 
     if (this.cfg.dts) {
       await writeDeclaration(jsons, this.cfg.dts as string);
@@ -348,12 +345,15 @@ export class Context {
         platforms: new Set<BuiltInPlatform>([currentPlatform]),
         indent: ' '.repeat(4),
         eof: '\n',
+        content: '',
       };
 
       const content = await fs.promises.readFile(this.staticJsonFilePath, { encoding: 'utf-8' }).catch(() => '');
       if (!content) {
         return res;
       }
+
+      res.content = content;
 
       try {
         const json = cjParse(content) as PagesJSON.PagesJson;
