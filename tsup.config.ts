@@ -27,7 +27,6 @@ export default defineConfig((opt) => {
         resolve: true,
         only: true,
       },
-      clean: true,
     },
   ];
 });
