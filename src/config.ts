@@ -70,6 +70,12 @@ export interface UserConfig {
    * 钩子
    */
   hooks?: ConfigHook[];
+
+  /**
+   * 缓存目录
+   * @default 'node_modules/.cache/@uni-ku/pages-json'
+   */
+  cacheDir?: string;
 }
 
 export interface ResolvedConfig extends Required<UserConfig> {}
@@ -84,11 +90,16 @@ export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
     exclude = ['node_modules', '.git', '**/__*__/**'],
     debug = false,
     hooks = [],
+    cacheDir = path.join('node_modules', '.cache', '@uni-ku', 'pages-json'),
   } = useConfig;
 
   if (!src) {
     const maybe = path.resolve(root, 'src');
     src = fs.existsSync(maybe) ? maybe : root;
+  }
+
+  if (!path.isAbsolute(cacheDir)) {
+    cacheDir = path.resolve(root, cacheDir);
   }
 
   enableDebug(debug);
@@ -107,5 +118,6 @@ export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
     dts: dts === true ? path.join(src, 'pages.d.ts') : dts,
     debug,
     hooks,
+    cacheDir,
   };
 }
