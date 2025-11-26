@@ -17,16 +17,5 @@ export default defineConfig((opt) => {
       sourcemap: opt.sourcemap || isDev,
       external: ['vite', '@uni-ku/pages-json/types'],
     },
-    {
-      entry: [
-        'types/**/*.ts',
-      ],
-      outDir: 'dist/types',
-      format: ['esm'],
-      dts: {
-        resolve: true,
-        only: true,
-      },
-    },
   ];
 });

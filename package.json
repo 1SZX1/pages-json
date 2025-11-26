@@ -1,7 +1,7 @@
 {
   "name": "@uni-ku/pages-json",
   "type": "module",
-  "version": "0.2.30",
+  "version": "0.2.31",
   "packageManager": "pnpm@10.18.0",
   "description": "Define uniapp pages.json dynamically.",
   "author": "Edwin Xu <edwinhuish@gmail.com>",
@@ -31,7 +31,8 @@
         "default": "./dist/index.cjs"
       }
     },
-    "./types": "./dist/types/index.d.ts",
+    "./types": "./types/index.d.ts",
+    "./types/*": "./types/*.d.ts",
     "./global": "./global.d.ts",
     "./client": "./client.d.ts",
     "./*": {
@@ -50,7 +51,8 @@
   "types": "./dist/index.d.ts",
   "files": [
     "*.d.ts",
-    "dist"
+    "dist",
+    "types"
   ],
   "scripts": {
     "stub": "tsup --watch",
@@ -61,7 +63,7 @@
     "build:h5": "pnpm build && pnpm --filter=./playground build:h5",
     "build:mp-weixin": "pnpm build && pnpm --filter=./playground build:mp-weixin",
     "prepublishOnly": "pnpm build",
-    "typecheck": "tsc -p . --noEmit",
+    "typecheck": "tsc -p . --noEmit --skipLibCheck",
     "lint": "eslint .",
     "lint:fix": "pnpm lint --fix",
     "test": "vitest",
