@@ -16,7 +16,7 @@ import { checkFile, checkFileSync, writeFileWithLock } from './utils/file';
 import { deepAssign } from './utils/object';
 
 interface StaticJsonFileInfo {
-  indent: string;
+  indent: number;
   eof: string;
   content: string;
 }
@@ -37,6 +37,8 @@ export class Context {
    * 全局动态 pages.json 可用的文件后缀
    */
   public dynamicPagesJson: DynamicPagesJson;
+
+  public platforms = new Set<BuiltInPlatform>();
 
   constructor(config: UserConfig) {
     this.cfg = resolveConfig(config);
@@ -223,7 +225,7 @@ export class Context {
 
     await this.checkStaticJsonFile();
     const { indent, eof, content } = await this.detectStaticJsonFile(true);
-    const platforms = this.getRunningPlatforms();
+    const platforms = await this.getPlatforms();
 
     const jsons = {} as Record<BuiltInPlatform, PagesJSON.PagesJson>;
 
@@ -231,7 +233,7 @@ export class Context {
       jsons[platform] = await this.generatePagesJson(platform);
     }
 
-    const rawJson = this.stringifyPagesJson(jsons, indent, eof);
+    const rawJson = this.stringifyPagesJson(jsons, indent) + eof;
 
     if (content === rawJson) {
       debug.info('pages.json 无改动，跳过更新。');
@@ -343,7 +345,7 @@ export class Context {
     const detect = async () => {
       const res = {
         platforms: new Set<BuiltInPlatform>([currentPlatform]),
-        indent: ' '.repeat(4),
+        indent: 4,
         eof: '\n',
         content: '',
       };
@@ -356,7 +358,7 @@ export class Context {
       res.content = content;
 
       try {
-        res.indent = ' '.repeat(detectIndent(content));
+        res.indent = detectIndent(content);
 
         const lastChar = content[content.length - 1];
         if (lastChar === '\n') {
@@ -380,7 +382,7 @@ export class Context {
   /**
    * 将多个平台的 pages.json 合并成一个静态 pages.json
    */
-  public stringifyPagesJson(jsons: Record<BuiltInPlatform, PagesJSON.PagesJson>, indent = ' '.repeat(4), eof = '\n'): string {
+  public stringifyPagesJson(jsons: Record<BuiltInPlatform, PagesJSON.PagesJson>, indent = 4): string {
     const [p1 = currentPlatform, ...p2s] = Object.keys(jsons).sort() as BuiltInPlatform[];
 
     const pagesJson = jsons[p1] || {};
@@ -425,14 +427,14 @@ export class Context {
 
     this.sortPagesJson(pagesJson);
 
-    let rawJson = cjStringify(pagesJson, null, indent) + eof;
+    let rawJson = cjStringify(pagesJson, null, indent);
 
     // 清理 key 后缀
     rawJson = rawJson.replace(/"([^"]+)#ifdef_.*?"/g, '"$1"');
 
     // 修复 #ifdef 行注释位置。（comment-json 将此行注释放在上一个行的末尾，而不是同等缩进的新行）
     // eslint-disable-next-line regexp/no-super-linear-backtracking
-    rawJson = rawJson.replace(/\n(\s*.+)\s*(\/\/ #ifdef .*)\n(\s*)/g, '\n$1\n$3$2\n$3');
+    rawJson = rawJson.replace(/\n(\s*.+?)\s*(\/\/ #ifdef .*)\n(\s*)/g, '\n$1\n$3$2\n$3');
 
     // 修复 #endif 行注释位置。（comment-json 将此行注释行末尾，而不是同等缩进的新行）
     // eslint-disable-next-line regexp/no-super-linear-backtracking
@@ -579,28 +581,37 @@ export class Context {
 
   private getRunningPlatforms(): BuiltInPlatform[] {
 
-    const readCacheFile = (file: string): Partial<Record<BuiltInPlatform, number>> => {
+    const readCacheFile = (file: string): Partial<Record<BuiltInPlatform, number>>[] => {
       try {
         const exist = fs.existsSync(file);
         if (!exist) {
           fs.mkdirSync(path.dirname(file), { recursive: true });
-          return {};
+          return [];
         }
 
         const json = fs.readFileSync(file, 'utf-8');
 
         return JSON.parse(json);
       } catch {
-        return {};
+        return [];
       }
     };
 
     const cacheFile = path.join(this.cfg.cacheDir, 'running-platforms.json');
-    const res = readCacheFile(cacheFile);
+    const list = readCacheFile(cacheFile);
 
-    for (const [platform, time] of Object.entries(res)) {
-      if (Date.now() - Number(time) > 1000 * 60 * 10) { // 超过 10 分钟的平台，删除
-        delete res[platform as BuiltInPlatform];
+    let res: Partial< Record<BuiltInPlatform, number>> = {};
+
+    if (list.length > 0) {
+      res = { ...list[0] };
+    }
+
+    if (list.length >= 2) {
+      for (const [oldKey, oldVal] of Object.entries(list[1])) {
+        const newVal = res[oldKey as BuiltInPlatform];
+        if (newVal && newVal === oldVal) {
+          delete res[oldKey as BuiltInPlatform]; // 如果旧的缓存时间和新的缓存时间一致，则删除旧的缓存
+        }
       }
     }
 
@@ -609,9 +620,28 @@ export class Context {
 
     res[currentPlatform] = now.getTime(); // 更新当前平台运行时间
 
-    fs.writeFileSync(cacheFile, JSON.stringify(res, null, 2));
+    list.unshift(res);
 
-    return Object.keys(res) as BuiltInPlatform[];
+    fs.writeFileSync(cacheFile, JSON.stringify(list.slice(0, 3), null, 2));
+
+    return [...Object.keys(res)].filter(Boolean) as BuiltInPlatform[];
+  }
+
+  public async getPlatforms(): Promise<BuiltInPlatform[]> {
+    const platforms = new Set<BuiltInPlatform>(this.cfg.platform);
+
+    const jsonPlatforms = await this.dynamicPagesJson.getPlatforms();
+    jsonPlatforms.forEach(platform => platforms.add(platform));
+
+    for (const [,file] of this.files) {
+      const fp = await file.getPlatforms();
+      fp.forEach(platform => platforms.add(platform));
+    }
+
+    const runningPlatforms = this.getRunningPlatforms();
+    runningPlatforms.forEach(platform => platforms.add(platform));
+
+    return Array.from(platforms);
   }
 
 }

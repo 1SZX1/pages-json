@@ -1,16 +1,29 @@
 import type { BuiltInPlatform } from '@uni-helper/uni-env';
 import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { SFCDescriptor, SFCScriptBlock } from '@vue/compiler-sfc';
-import type { DeepPartial } from './types';
+import type { DeepPartial, MaybePromise } from './types';
 import fs from 'node:fs/promises';
 import * as t from '@babel/types';
 import { platform as currentPlatform } from '@uni-helper/uni-env';
 import { parse as VueParser } from '@vue/compiler-sfc';
 import { babelParse, isCallOf } from 'ast-kit';
+import * as condition from './condition';
+import { Condition } from './condition';
 import { generate as babelGenerate } from './utils/babel';
 import { debug } from './utils/debug';
 import { deepCopy } from './utils/object';
 import { parseCode } from './utils/parser';
+
+export interface DefinePageFuncArgs {
+  define: (meta: UserPageMeta) => Condition<UserPageMeta>;
+  platform: BuiltInPlatform;
+}
+
+export function definePage(arg: UserPageMeta | ((arg: DefinePageFuncArgs) => MaybePromise<UserPageMeta | Condition<UserPageMeta>>)) { }
+
+function define(meta: UserPageMeta): Condition<UserPageMeta> {
+  return new Condition(meta);
+}
 
 export interface UserTabBarItem extends DeepPartial<PagesJSON.TabBarItem> {
   /**
@@ -79,7 +92,9 @@ export class PageFile {
   private lastCode: string = '';
 
   /** platform => page meta */
-  private metas: Map<BuiltInPlatform, UserPageMeta> = new Map();
+  private metas = new Map<BuiltInPlatform, UserPageMeta>();
+
+  private condition: Condition<UserPageMeta> | undefined;
 
   private content: string = '';
   private sfc?: SFCDescriptor;
@@ -102,7 +117,7 @@ export class PageFile {
       await this.parse();
     }
     if (!this.metas.has(platform)) {
-      await this.parsePageMeta({ platform });
+      await this.parsePageMeta(platform);
     }
 
     const { tabbar: _, path, type, ...others } = deepCopy(this.metas.get(platform) || {});
@@ -119,7 +134,7 @@ export class PageFile {
       await this.parse();
     }
     if (!this.metas.has(platform)) {
-      await this.parsePageMeta({ platform });
+      await this.parsePageMeta(platform);
     }
 
     const { tabbar } = this.metas.get(platform) || {};
@@ -249,28 +264,45 @@ export class PageFile {
     this.lastCode = code;
   }
 
-  public async parsePageMeta({ platform = currentPlatform }: { platform?: BuiltInPlatform } = {}): Promise<UserPageMeta | undefined> {
+  private async parsePageMeta(platform: BuiltInPlatform = currentPlatform): Promise<UserPageMeta | undefined> {
 
-    if (!this.macro) {
+    let meta: UserPageMeta | undefined;
+
+    if (this.condition !== undefined) {
+
+      meta = condition.get(this.condition, platform);
+      this.metas.set(platform, meta);
+
+    } else if (!this.macro) {
+
       this.metas.delete(platform);
-      return undefined;
+
+    } else {
+
+      const env: Record<string, any> = {
+        UNI_PLATFORM: platform,
+      };
+
+      const parsed = await parseCode({
+        code: this.macro.preparedCode,
+        filename: this.file,
+        env,
+      });
+
+      const res: UserPageMeta | Condition<UserPageMeta> = typeof parsed === 'function'
+        ? await Promise.resolve(parsed({ define, platform } as DefinePageFuncArgs))
+        : await Promise.resolve(parsed);
+
+      if (condition.is(res)) {
+        this.condition = res;
+        meta = condition.get(res, platform);
+      } else {
+        this.condition = undefined;
+        meta = res;
+      }
+
+      this.metas.set(platform, meta);
     }
-
-    const env: Record<string, any> = {
-      UNI_PLATFORM: platform,
-    };
-
-    const parsed = await parseCode({
-      code: this.macro.preparedCode,
-      filename: this.file,
-      env,
-    });
-
-    const meta = typeof parsed === 'function'
-      ? await Promise.resolve(parsed({ t: (meta: UserPageMeta) => meta, platform }))
-      : await Promise.resolve(parsed);
-
-    this.metas.set(platform, meta);
 
     this.changed = false; // 已经更新过 page meta, 可以将 changed 标记置为 false
 
@@ -285,8 +317,14 @@ export class PageFile {
     return this.macro;
   }
 
+  public async getPlatforms(): Promise<BuiltInPlatform[]> {
+    await this.getPage(); // 保证读取了文件
+    if (this.condition) {
+      return condition.getPlatforms(this.condition);
+    }
+    return [];
+  }
 }
-
 export function getPageType(page: PagesJSON.Page): 'page' | 'home' {
   return page[PAGE_TYPE_KEY as any] || 'page';
 }

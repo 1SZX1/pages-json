@@ -1,10 +1,28 @@
 import type { BuiltInPlatform } from '@uni-helper/uni-env';
 import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { Context } from './context';
+import type { DeepPartial, MaybePromise } from './types';
 import fs from 'node:fs';
 import { platform as currentPlatform } from '@uni-helper/uni-env';
+import { Condition } from './condition';
+import * as condition from './condition';
 import { deepCopy } from './utils/object';
 import { parseCode } from './utils/parser';
+
+export interface DefineConfigFuncArgs {
+  define: (p: DeepPartial<PagesJSON.PagesJson>) => Condition<DeepPartial<PagesJSON.PagesJson>>;
+  platform: BuiltInPlatform;
+}
+
+export type DefineConfigArg = DeepPartial<PagesJSON.PagesJson> | ((a: DefineConfigFuncArgs) => MaybePromise<DeepPartial<PagesJSON.PagesJson>>);
+
+export function defineConfig(userConfig: DefineConfigArg): DefineConfigArg {
+  return userConfig;
+}
+
+function define(userConfig: DefineConfigArg): Condition<DeepPartial<PagesJSON.PagesJson>> {
+  return new Condition(userConfig);
+}
 
 export class DynamicPagesJson {
 
@@ -30,7 +48,9 @@ export class DynamicPagesJson {
   /**
    * json 内容
    */
-  private jsons: Map<BuiltInPlatform, PagesJSON.PagesJson> = new Map();
+  private jsons = new Map<BuiltInPlatform, PagesJSON.PagesJson>();
+
+  private condition: Condition<DeepPartial<PagesJSON.PagesJson>> | undefined;
 
   static readonly basename = 'pages.json';
   static readonly exts = ['.ts', '.mts', '.cts', '.js', '.cjs', '.mjs'];
@@ -80,30 +100,54 @@ export class DynamicPagesJson {
       return;
     }
 
-    const json = deepCopy(this.jsons.get(platform));
-    if (json) {
-      return deepCopy(json);
-    }
+    // 使用闭包，如果闭包内有错误，会直接往上抛错误，不会执行后面的代码
+    const res = await (async () => {
+      const json = deepCopy(this.jsons.get(platform));
+      if (json) {
+        return json;
+      }
 
-    const env: Record<string, any> = {
-      UNI_PLATFORM: platform,
-    };
+      if (this.condition !== undefined) {
+        const json = condition.get(this.condition, platform);
+        if (json) {
+          this.jsons.set(platform, json as PagesJSON.PagesJson);
+          return deepCopy(json) as PagesJSON.PagesJson;
+        }
+      }
 
-    const parsed = await parseCode({
-      code: this.code,
-      filename: this.path,
-      env,
-    });
+      const env: Record<string, any> = {
+        UNI_PLATFORM: platform,
+      };
 
-    const res = typeof parsed === 'function'
-      ? await Promise.resolve(parsed({ t: (json: PagesJSON.PagesJson) => json, platform }))
-      : await Promise.resolve(parsed);
+      const parsed = await parseCode({
+        code: this.code,
+        filename: this.path,
+        env,
+      });
 
-    this.jsons.set(platform, res);
+      const res = typeof parsed === 'function'
+        ? await Promise.resolve(parsed({ define, platform } as DefineConfigFuncArgs))
+        : await Promise.resolve(parsed);
+
+      let obj: PagesJSON.PagesJson;
+      if (condition.is(res)) {
+        this.condition = res;
+
+        obj = condition.get(res, platform);
+      } else {
+        this.condition = undefined;
+        obj = res;
+      }
+
+      this.jsons.set(platform, obj);
+      return obj;
+    })();
+
+    // 上面执行无错误才会到这里
 
     this.changed = false; // 已经更新过 page meta, 可以将 changed 标记置为 false
 
-    return deepCopy(res);
+    return res;
   }
 
   /**
@@ -124,4 +168,11 @@ export class DynamicPagesJson {
     }
   }
 
+  public async getPlatforms(): Promise<BuiltInPlatform[]> {
+    await this.getJson();
+    if (this.condition) {
+      return condition.getPlatforms(this.condition);
+    }
+    return [];
+  }
 }

@@ -99,6 +99,18 @@ export interface UserConfig {
    * 钩子
    */
   hooks?: ConfigHook[];
+
+  /**
+   * 缓存目录
+   * @default 'node_modules/.cache/@uni-ku/pages-json'
+   */
+  cacheDir?: string;
+
+  /**
+   * 手动指定运行平台
+   * 可避免使用条件编译方式一而导致 pages.json 在不同运行环境下生成不一致的问题。
+   */
+  platform?: BuiltInPlatform | BuiltInPlatform[];
 }
 ```
 
@@ -223,6 +235,10 @@ style:
 ### 条件编译
 > **注意：使用第三方库判断环境可能会判断错误。**
 > **因为部分第三方库初始化时，变量值已经固定，后期环境变量修改无法跟着变更**
+
+#### 方式一：
+直接根据环境变量返回不同的对象。
+需要在配置里手动指定全部平台，否则每次运行会根据运行环境进行判断。
 ```vue
 <script setup lang="ts">
 definePage(({ platform }) => {
@@ -237,6 +253,25 @@ definePage(({ platform }) => {
     },
   };
 });
+</script>
+```
+
+#### 方式二：
+使用注入的 `define` 函数，无须在配置里手动指定平台
+```vue
+<script lang="ts" setup>
+// define 函数可对页面配置条件编译
+// 函数参数 platform 会被自动注入，表示当前页面所属平台。
+definePage(({ define, platform }) => define({
+  style: {
+    navigationBarTitleText: `hello from ${platform}`,
+  },
+}).ifdef('mp-alipay', {
+  // ifdef 内可写入需要条件编译的片段
+  style: {
+    backgroundColor: '#fff',
+  },
+}));
 </script>
 ```
 

@@ -76,9 +76,19 @@ export interface UserConfig {
    * @default 'node_modules/.cache/@uni-ku/pages-json'
    */
   cacheDir?: string;
+
+  /**
+   * 运行平台
+   */
+  platform?: BuiltInPlatform | BuiltInPlatform[];
 }
 
-export interface ResolvedConfig extends Required<UserConfig> {}
+export interface ResolvedConfig extends Required<Omit<UserConfig, 'platform'>> {
+  /**
+   * 运行平台
+   */
+  platform: BuiltInPlatform[];
+}
 
 export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
   let {
@@ -91,6 +101,7 @@ export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
     debug = false,
     hooks = [],
     cacheDir = path.join('node_modules', '.cache', '@uni-ku', 'pages-json'),
+    platform = [],
   } = useConfig;
 
   if (!src) {
@@ -119,5 +130,6 @@ export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
     debug,
     hooks,
     cacheDir,
+    platform: Array.isArray(platform) ? platform : [platform],
   };
 }
