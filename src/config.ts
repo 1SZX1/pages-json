@@ -1,6 +1,6 @@
-import type { BuiltInPlatform } from '@uni-helper/uni-env';
 import type { PageFileOption } from './pageFile';
 import type { MaybePromise } from './types';
+import type { UniPlatform } from './utils/uni-env';
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
@@ -17,7 +17,7 @@ export interface ConfigHook {
   /**
    * 过滤、修改 pages 的页面文件信息
    */
-  filterPages?: (platform: BuiltInPlatform, opts: PageFileOption[]) => MaybePromise<PageFileOption[]>;
+  filterPages?: (platform: UniPlatform, opts: PageFileOption[]) => MaybePromise<PageFileOption[]>;
 }
 
 export interface UserConfig {
@@ -80,14 +80,14 @@ export interface UserConfig {
   /**
    * 运行平台
    */
-  platform?: BuiltInPlatform | BuiltInPlatform[];
+  platform?: UniPlatform | UniPlatform[];
 }
 
 export interface ResolvedConfig extends Required<Omit<UserConfig, 'platform'>> {
   /**
    * 运行平台
    */
-  platform: BuiltInPlatform[];
+  platform: UniPlatform[];
 }
 
 export function resolveConfig(useConfig: UserConfig): ResolvedConfig {

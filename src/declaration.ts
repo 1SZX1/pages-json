@@ -1,10 +1,12 @@
-import type { BuiltInPlatform } from '@uni-helper/uni-env';
 import type { PagesJson } from '@uni-ku/pages-json/types';
+import type { UniPlatform } from './utils/uni-env';
 import fs from 'node:fs';
 import { join } from 'node:path';
 import { checkFile } from './utils/file';
 
-function generateDeclaration(jsons: Record<BuiltInPlatform, PagesJson>) {
+;
+
+function generateDeclaration(jsons: Record<UniPlatform, PagesJson>) {
 
   const subPagePaths = new Set<string>();
   const tabPaths = new Set<string>();
@@ -57,7 +59,7 @@ declare interface Uni {
   return code;
 }
 
-export async function writeDeclaration(jsons: Record<BuiltInPlatform, PagesJson>, filepath: string) {
+export async function writeDeclaration(jsons: Record<UniPlatform, PagesJson>, filepath: string) {
 
   const ok = await checkFile ({ path: filepath, newContent: '', modeFlag: fs.constants.W_OK | fs.constants.R_OK });
   if (!ok) {

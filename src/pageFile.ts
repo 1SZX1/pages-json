@@ -1,10 +1,8 @@
-import type { BuiltInPlatform } from '@uni-helper/uni-env';
 import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { SFCDescriptor, SFCScriptBlock } from '@vue/compiler-sfc';
 import type { DeepPartial, MaybePromise } from './types';
 import fs from 'node:fs/promises';
 import * as t from '@babel/types';
-import { platform as currentPlatform } from '@uni-helper/uni-env';
 import { parse as VueParser } from '@vue/compiler-sfc';
 import { babelParse, isCallOf } from 'ast-kit';
 import * as condition from './condition';
@@ -13,10 +11,11 @@ import { generate as babelGenerate } from './utils/babel';
 import { debug } from './utils/debug';
 import { deepCopy } from './utils/object';
 import { parseCode } from './utils/parser';
+import { currentPlatform, type UniPlatform } from './utils/uni-env';
 
 export interface DefinePageFuncArgs {
   define: (meta: UserPageMeta) => Condition<UserPageMeta>;
-  platform: BuiltInPlatform;
+  platform: UniPlatform;
 }
 
 export function definePage(arg: UserPageMeta | ((arg: DefinePageFuncArgs) => MaybePromise<UserPageMeta | Condition<UserPageMeta>>)) { }
@@ -92,7 +91,7 @@ export class PageFile {
   private lastCode: string = '';
 
   /** platform => page meta */
-  private metas = new Map<BuiltInPlatform, UserPageMeta>();
+  private metas = new Map<UniPlatform, UserPageMeta>();
 
   private condition: Condition<UserPageMeta> | undefined;
 
@@ -111,7 +110,7 @@ export class PageFile {
     this.root = root || '';
   }
 
-  public async getPage({ platform = currentPlatform, forceRead = false }: { platform?: BuiltInPlatform; forceRead?: boolean } = {}): Promise<PagesJSON.Page> {
+  public async getPage({ platform = currentPlatform(), forceRead = false }: { platform?: UniPlatform; forceRead?: boolean } = {}): Promise<PagesJSON.Page> {
 
     if (forceRead || !this.content) {
       await this.parse();
@@ -129,7 +128,7 @@ export class PageFile {
     } as PagesJSON.Page;
   }
 
-  public async getTabbarItem({ platform = currentPlatform, forceRead = false }: { platform?: BuiltInPlatform; forceRead?: boolean } = {}): Promise<PagesJSON.TabBarItem | undefined> {
+  public async getTabbarItem({ platform = currentPlatform(), forceRead = false }: { platform?: UniPlatform; forceRead?: boolean } = {}): Promise<PagesJSON.TabBarItem | undefined> {
     if (forceRead || !this.content) {
       await this.parse();
     }
@@ -264,7 +263,7 @@ export class PageFile {
     this.lastCode = code;
   }
 
-  private async parsePageMeta(platform: BuiltInPlatform = currentPlatform): Promise<UserPageMeta | undefined> {
+  private async parsePageMeta(platform: UniPlatform = currentPlatform()): Promise<UserPageMeta | undefined> {
 
     let meta: UserPageMeta | undefined;
 
@@ -317,7 +316,7 @@ export class PageFile {
     return this.macro;
   }
 
-  public async getPlatforms(): Promise<BuiltInPlatform[]> {
+  public async getPlatforms(): Promise<UniPlatform[]> {
     await this.getPage(); // 保证读取了文件
     if (this.condition) {
       return condition.getPlatforms(this.condition);

@@ -1,8 +1,10 @@
-import type { BuiltInPlatform } from '@uni-helper/uni-env';
+import type { UniPlatform } from './utils/uni-env';
 import { deepAssign } from './utils/object';
 
+;
+
 export interface ConditionItem<T = any> {
-  platform: BuiltInPlatform;
+  platform: UniPlatform;
   condition: 'ifdef' | 'ifndef';
   value: T;
 }
@@ -22,7 +24,7 @@ export class Condition<T extends object> {
     this.orig = obj;
   }
 
-  public ifdef(platform: BuiltInPlatform | BuiltInPlatform[], obj: T) {
+  public ifdef(platform: UniPlatform | UniPlatform[], obj: T) {
     const platforms = new Set(Array.isArray(platform) ? platform : [platform]);
 
     for (const platform of platforms) {
@@ -46,7 +48,7 @@ export class Condition<T extends object> {
   }
 
   // 仅限项目内部使用的方法
-  [CONDITION_GET](platform: BuiltInPlatform): T {
+  [CONDITION_GET](platform: UniPlatform): T {
     const cond = this.conds.find(c => c.condition === 'ifdef' && c.platform === platform);
     if (cond) {
       return deepAssign<T>({} as T, { ...this.orig }, cond.value); // 解构避免拷贝 symbol 属性
@@ -55,16 +57,16 @@ export class Condition<T extends object> {
     return deepAssign<T>({} as T, { ...this.orig }); // 解构避免拷贝 symbol 属性
   }
 
-  [CONDITION_HAS](platform: BuiltInPlatform, condition: 'ifdef' | 'ifndef' = 'ifdef'): boolean {
+  [CONDITION_HAS](platform: UniPlatform, condition: 'ifdef' | 'ifndef' = 'ifdef'): boolean {
     return this.conds.some(c => c.condition === condition && c.platform === platform);
   }
 
-  [CONDITION_GET_PLATFORMS](): BuiltInPlatform[] {
+  [CONDITION_GET_PLATFORMS](): UniPlatform[] {
     return this.conds.map(c => c.platform);
   }
 }
 
-export function get<T extends object>(obj: Condition<T>, platform: BuiltInPlatform): T {
+export function get<T extends object>(obj: Condition<T>, platform: UniPlatform): T {
   return obj[CONDITION_GET](platform);
 }
 
@@ -76,7 +78,7 @@ export function is(obj: any): obj is Condition<any> {
   return obj && obj[CONDITION_GET] instanceof Function;
 }
 
-export function has<T extends object>(obj: Condition<T>, platform: BuiltInPlatform, condition: 'ifdef' | 'ifndef' = 'ifdef'): boolean {
+export function has<T extends object>(obj: Condition<T>, platform: UniPlatform, condition: 'ifdef' | 'ifndef' = 'ifdef'): boolean {
   if (is(obj)) {
     return obj[CONDITION_HAS](platform, condition);
   }
@@ -84,7 +86,7 @@ export function has<T extends object>(obj: Condition<T>, platform: BuiltInPlatfo
   return false;
 }
 
-export function getPlatforms<T extends object>(obj: Condition<T>): BuiltInPlatform[] {
+export function getPlatforms<T extends object>(obj: Condition<T>): UniPlatform[] {
   if (is(obj)) {
     return obj[CONDITION_GET_PLATFORMS]();
   }

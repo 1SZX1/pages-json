@@ -73,7 +73,6 @@
   "dependencies": {
     "@babel/generator": "^7.28.3",
     "@babel/types": "^7.28.2",
-    "@uni-helper/uni-env": "^0.2.0",
     "@vue/compiler-sfc": "3.4.21",
     "anymatch": "^3.1.3",
     "ast-kit": "^0.12.2",

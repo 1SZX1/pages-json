@@ -1,17 +1,16 @@
-import type { BuiltInPlatform } from '@uni-helper/uni-env';
 import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { Context } from './context';
 import type { DeepPartial, MaybePromise } from './types';
 import fs from 'node:fs';
-import { platform as currentPlatform } from '@uni-helper/uni-env';
 import { Condition } from './condition';
 import * as condition from './condition';
 import { deepCopy } from './utils/object';
 import { parseCode } from './utils/parser';
+import { currentPlatform, type UniPlatform } from './utils/uni-env';
 
 export interface DefineConfigFuncArgs {
   define: (p: DeepPartial<PagesJSON.PagesJson>) => Condition<DeepPartial<PagesJSON.PagesJson>>;
-  platform: BuiltInPlatform;
+  platform: UniPlatform;
 }
 
 export type DefineConfigArg = DeepPartial<PagesJSON.PagesJson> | ((a: DefineConfigFuncArgs) => MaybePromise<DeepPartial<PagesJSON.PagesJson>>);
@@ -48,7 +47,7 @@ export class DynamicPagesJson {
   /**
    * json 内容
    */
-  private jsons = new Map<BuiltInPlatform, PagesJSON.PagesJson>();
+  private jsons = new Map<UniPlatform, PagesJSON.PagesJson>();
 
   private condition: Condition<DeepPartial<PagesJSON.PagesJson>> | undefined;
 
@@ -91,7 +90,7 @@ export class DynamicPagesJson {
   /**
    * 获取动态 pages.json 解析后的 json
    */
-  public async getJson({ platform = currentPlatform, forceRead = false }: { platform?: BuiltInPlatform; forceRead?: boolean } = {}): Promise<PagesJSON.PagesJson | undefined> {
+  public async getJson({ platform = currentPlatform(), forceRead = false }: { platform?: UniPlatform; forceRead?: boolean } = {}): Promise<PagesJSON.PagesJson | undefined> {
     if (forceRead || !this.code) {
       await this.read();
     }
@@ -168,7 +167,7 @@ export class DynamicPagesJson {
     }
   }
 
-  public async getPlatforms(): Promise<BuiltInPlatform[]> {
+  public async getPlatforms(): Promise<UniPlatform[]> {
     await this.getJson();
     if (this.condition) {
       return condition.getPlatforms(this.condition);

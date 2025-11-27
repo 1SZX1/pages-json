@@ -1,10 +1,8 @@
-import type { BuiltInPlatform } from '@uni-helper/uni-env';
 import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { CommentToken } from 'comment-json';
 import type { PageFileOption } from './pageFile';
 import fs from 'node:fs';
 import path from 'node:path';
-import { platform as currentPlatform } from '@uni-helper/uni-env';
 import { stringify as cjStringify } from 'comment-json';
 import fg from 'fast-glob';
 import { resolveConfig, type ResolvedConfig, type UserConfig } from './config';
@@ -14,6 +12,9 @@ import { DynamicPagesJson } from './pagesJson';
 import { debug } from './utils/debug';
 import { checkFile, checkFileSync, writeFileWithLock } from './utils/file';
 import { deepAssign } from './utils/object';
+import { currentPlatform, type UniPlatform } from './utils/uni-env';
+
+;
 
 interface StaticJsonFileInfo {
   indent: number;
@@ -38,7 +39,7 @@ export class Context {
    */
   public dynamicPagesJson: DynamicPagesJson;
 
-  public platforms = new Set<BuiltInPlatform>();
+  public platforms = new Set<UniPlatform>();
 
   constructor(config: UserConfig) {
     this.cfg = resolveConfig(config);
@@ -107,7 +108,7 @@ export class Context {
     this.files = files;
   }
 
-  public async getPageFileOfPages(platform = currentPlatform): Promise<PageFile[]> {
+  public async getPageFileOfPages(platform = currentPlatform()): Promise<PageFile[]> {
     let opts: PageFileOption[] = [];
     for (const [, p] of this.files) {
       if (!p.root) { // root 为空，则为 pages
@@ -134,7 +135,7 @@ export class Context {
     return files;
   }
 
-  public async getPageFileOfSubPackages(platform = currentPlatform): Promise<PageFile[]> {
+  public async getPageFileOfSubPackages(platform = currentPlatform()): Promise<PageFile[]> {
     let opts: PageFileOption[] = [];
     for (const [, p] of this.files) {
       if (p.root) { // root 不为空，则为 subPackages
@@ -227,7 +228,7 @@ export class Context {
     const { indent, eof, content } = await this.detectStaticJsonFile(true);
     const platforms = await this.getPlatforms();
 
-    const jsons = {} as Record<BuiltInPlatform, PagesJSON.PagesJson>;
+    const jsons = {} as Record<UniPlatform, PagesJSON.PagesJson>;
 
     for (const platform of platforms) {
       jsons[platform] = await this.generatePagesJson(platform);
@@ -344,7 +345,7 @@ export class Context {
 
     const detect = async () => {
       const res = {
-        platforms: new Set<BuiltInPlatform>([currentPlatform]),
+        platforms: new Set<UniPlatform>([currentPlatform()]),
         indent: 4,
         eof: '\n',
         content: '',
@@ -382,8 +383,8 @@ export class Context {
   /**
    * 将多个平台的 pages.json 合并成一个静态 pages.json
    */
-  public stringifyPagesJson(jsons: Record<BuiltInPlatform, PagesJSON.PagesJson>, indent = 4): string {
-    const [p1 = currentPlatform, ...p2s] = Object.keys(jsons).sort() as BuiltInPlatform[];
+  public stringifyPagesJson(jsons: Record<UniPlatform, PagesJSON.PagesJson>, indent = 4): string {
+    const [p1 = currentPlatform(), ...p2s] = Object.keys(jsons).sort() as UniPlatform[];
 
     const pagesJson = jsons[p1] || {};
 
@@ -449,7 +450,7 @@ export class Context {
   /**
    * 根据 platform 生成完整的 pages.json
    */
-  public async generatePagesJson(platform = currentPlatform): Promise<PagesJSON.PagesJson> {
+  public async generatePagesJson(platform = currentPlatform()): Promise<PagesJSON.PagesJson> {
     const pagesJson = (await this.dynamicPagesJson.getJson({ platform }) || {});
 
     // 合并 pages
@@ -511,7 +512,7 @@ export class Context {
   /**
    * 根据 platform 生成 pages
    */
-  public async generatePages(platform = currentPlatform): Promise<PagesJSON.Page[]> {
+  public async generatePages(platform = currentPlatform()): Promise<PagesJSON.Page[]> {
     const pages = await this.getPageFileOfPages(platform);
     return Promise.all(pages.map(async pf => pf.getPage({ platform })));
   }
@@ -519,7 +520,7 @@ export class Context {
   /**
    * 根据 platform 生成 subPackages
    */
-  public async generateSubPackages(platform = currentPlatform): Promise<PagesJSON.SubPackage[]> {
+  public async generateSubPackages(platform = currentPlatform()): Promise<PagesJSON.SubPackage[]> {
     const pageFiles = await this.getPageFileOfSubPackages(platform);
 
     const subPackages: Record<string, PagesJSON.SubPackage> = {};
@@ -538,7 +539,7 @@ export class Context {
   /**
    * 根据 platform 获取 tabbar items
    */
-  public async generateTabbarItems(platform = currentPlatform): Promise<PagesJSON.TabBarItem[]> {
+  public async generateTabbarItems(platform = currentPlatform()): Promise<PagesJSON.TabBarItem[]> {
     const pageFiles = await this.getPageFileOfPages(platform);
 
     const items: PagesJSON.TabBarItem[] = [];
@@ -579,9 +580,9 @@ export class Context {
     }
   }
 
-  private getRunningPlatforms(): BuiltInPlatform[] {
+  private getRunningPlatforms(): UniPlatform[] {
 
-    const readCacheFile = (file: string): Partial<Record<BuiltInPlatform, number>>[] => {
+    const readCacheFile = (file: string): Partial<Record<UniPlatform, number>>[] => {
       try {
         const exist = fs.existsSync(file);
         if (!exist) {
@@ -600,7 +601,7 @@ export class Context {
     const cacheFile = path.join(this.cfg.cacheDir, 'running-platforms.json');
     const list = readCacheFile(cacheFile);
 
-    let res: Partial< Record<BuiltInPlatform, number>> = {};
+    let res: Partial< Record<UniPlatform, number>> = {};
 
     if (list.length > 0) {
       res = { ...list[0] };
@@ -608,27 +609,27 @@ export class Context {
 
     if (list.length >= 2) {
       for (const [oldKey, oldVal] of Object.entries(list[1])) {
-        const newVal = res[oldKey as BuiltInPlatform];
+        const newVal = res[oldKey as UniPlatform];
         if (newVal && newVal === oldVal) {
-          delete res[oldKey as BuiltInPlatform]; // 如果旧的缓存时间和新的缓存时间一致，则删除旧的缓存
+          delete res[oldKey as UniPlatform]; // 如果旧的缓存时间和新的缓存时间一致，则删除旧的缓存
         }
       }
     }
 
     const now = new Date();
-    debug.debug(`更新 running platforms [${currentPlatform}], 时间：${now.toLocaleString()}`);
+    debug.debug(`更新 running platforms [${currentPlatform()}], 时间：${now.toLocaleString()}`);
 
-    res[currentPlatform] = now.getTime(); // 更新当前平台运行时间
+    res[currentPlatform()] = now.getTime(); // 更新当前平台运行时间
 
     list.unshift(res);
 
     fs.writeFileSync(cacheFile, JSON.stringify(list.slice(0, 3), null, 2));
 
-    return [...Object.keys(res)].filter(Boolean) as BuiltInPlatform[];
+    return [...Object.keys(res)].filter(Boolean) as UniPlatform[];
   }
 
-  public async getPlatforms(): Promise<BuiltInPlatform[]> {
-    const platforms = new Set<BuiltInPlatform>(this.cfg.platform);
+  public async getPlatforms(): Promise<UniPlatform[]> {
+    const platforms = new Set<UniPlatform>(this.cfg.platform);
 
     const jsonPlatforms = await this.dynamicPagesJson.getPlatforms();
     jsonPlatforms.forEach(platform => platforms.add(platform));
@@ -673,14 +674,14 @@ const PF_ARR_ITEM_KEY = Symbol.for('platform-array-item');
  * @param v2  值 2
  * @param getKey 获取元素的 key
  */
-function mergePlatformArray<T extends object>(pf1: BuiltInPlatform, v1: T[], pf2: BuiltInPlatform, v2: T[], getKey: (v: T) => string) {
+function mergePlatformArray<T extends object>(pf1: UniPlatform, v1: T[], pf2: UniPlatform, v2: T[], getKey: (v: T) => string) {
   for (const v2item of v2) {
     const v2key = getKey(v2item);
     const v1idx = v1.findIndex((v) => {
       if (getKey(v) !== v2key) {
         return false;
       }
-      const pf = (v as any)[PF_ARR_ITEM_KEY] as BuiltInPlatform | undefined;
+      const pf = (v as any)[PF_ARR_ITEM_KEY] as UniPlatform | undefined;
       return pf === undefined || pf === pf2;
     });
     if (v1idx > -1) {
@@ -703,7 +704,7 @@ function mergePlatformArray<T extends object>(pf1: BuiltInPlatform, v1: T[], pf2
  * @param pf2 平台名称 2
  * @param v2  值 2
  */
-function mergePlatformObject<T extends object>(pf1: BuiltInPlatform, v1: T, pf2: BuiltInPlatform, v2: T, ignoreKeys: string[] = []) {
+function mergePlatformObject<T extends object>(pf1: UniPlatform, v1: T, pf2: UniPlatform, v2: T, ignoreKeys: string[] = []) {
 
   const v1keys = new Set(Object.keys(v1));
   const ignores = new Set(ignoreKeys);
