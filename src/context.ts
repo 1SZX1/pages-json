@@ -10,7 +10,7 @@ import { writeDeclaration } from './declaration';
 import { getPageType, getTabbarIndex, PageFile } from './pageFile';
 import { DynamicPagesJson } from './pagesJson';
 import { debug } from './utils/debug';
-import { checkFile, checkFileSync, writeFileWithLock } from './utils/file';
+import { checkFile, checkFileSync } from './utils/file';
 import { deepAssign } from './utils/object';
 import { currentPlatform, type UniPlatform } from './utils/uni-env';
 
@@ -241,7 +241,7 @@ export class Context {
       return false;
     }
 
-    await writeFileWithLock(this.staticJsonFilePath, rawJson);
+    await fs.promises.writeFile(this.staticJsonFilePath, rawJson);
 
     if (this.cfg.dts) {
       await writeDeclaration(jsons, this.cfg.dts as string);

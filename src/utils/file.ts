@@ -1,34 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import lockfile from 'proper-lockfile';
-import { debug } from './debug';
-import { sleep } from './utils';
-
-export async function writeFileWithLock(path: string, content: string, retry = 3) {
-  let release: () => Promise<void> | undefined;
-
-  try {
-    try {
-      release = await lockfile.lock(path, { realpath: false }); // 获取文件锁
-    } catch (err: any) { // 获取文件锁失败
-
-      const nextRetry = retry - 1;
-      if (nextRetry <= 0) {
-        debug.error(`${path} 获取文件锁失败，写入失败: ${err.message}`);
-        throw err;
-      }
-      await sleep(500);
-      return writeFileWithLock(path, content, nextRetry);
-    }
-    await fs.promises.writeFile(path, content, { encoding: 'utf-8' }); // 执行写入操作
-  } finally {
-    // eslint-disable-next-line ts/ban-ts-comment
-    // @ts-expect-error'
-    if (release) {
-      await release(); // 释放文件锁
-    }
-  }
-}
 
 /**
  * 检查指定路径的文件，如果文件不存在或不是有效文件则根据是否指定新文件内容创建新的文件
