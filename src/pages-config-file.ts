@@ -1,7 +1,9 @@
 import type * as PagesJSON from '@uni-ku/pages-json/types';
-import type { Context } from './context';
+import type { ConditionObject } from './condition';
+import type { ResolvedConfig } from './config';
 import type { DeepPartial, MaybePromise } from './types';
 import fs from 'node:fs';
+import path from 'node:path';
 import { Condition } from './condition';
 import * as condition from './condition';
 import { deepCopy } from './utils/object';
@@ -23,39 +25,48 @@ function define(userConfig: DefineConfigArg): Condition<DeepPartial<PagesJSON.Pa
   return new Condition(userConfig);
 }
 
-export class DynamicPagesJson {
+export class PagesConfigFile {
 
-  private ctx: Context;
+  private cfg: ResolvedConfig;
 
   /**
-   * 动态 pages.json 文件路径
+   * 文件路径
    */
   public path = '';
+
   /**
-   * 动态 pages.json 文件内容
+   * 文件内容
    */
   private code = '';
+
   /**
-   * 上次动态 pages.json 文件内容
+   * 上次文件内容
    */
   private lastCode = '';
+
   /**
    * 文件是否有改动
    * @default true
    */
   private changed = true;
+
   /**
    * json 内容
    */
   private jsons = new Map<UniPlatform, PagesJSON.PagesJson>();
 
-  private condition: Condition<DeepPartial<PagesJSON.PagesJson>> | undefined;
+  /**
+   * 条件编译内容
+   */
+  private condition: ConditionObject<DeepPartial<PagesJSON.PagesJson>> | undefined;
 
   static readonly basename = 'pages.json';
   static readonly exts = ['.ts', '.mts', '.cts', '.js', '.cjs', '.mjs'];
 
-  public constructor(ctx: Context) {
-    this.ctx = ctx;
+  public constructor(config: ResolvedConfig) {
+    this.cfg = config;
+
+    this.detectFilePath();
   }
 
   /**
@@ -69,12 +80,9 @@ export class DynamicPagesJson {
    * 读取动态 pages.json 文件
    */
   public async read(): Promise<void> {
+
     if (!this.path) {
-      const filepath = this.detectFilePath();
-      if (!filepath) {
-        return;
-      }
-      this.path = filepath;
+      return;
     }
 
     this.code = await fs.promises.readFile(this.path, { encoding: 'utf-8' }).catch(() => '');
@@ -88,9 +96,9 @@ export class DynamicPagesJson {
   }
 
   /**
-   * 获取动态 pages.json 解析后的 json
+   * 获取解析后的 json
    */
-  public async getJson({ platform = currentPlatform(), forceRead = false }: { platform?: UniPlatform; forceRead?: boolean } = {}): Promise<PagesJSON.PagesJson | undefined> {
+  public async getJson(platform = currentPlatform(), forceRead = false): Promise<PagesJSON.PagesJson | undefined> {
     if (forceRead || !this.code) {
       await this.read();
     }
@@ -107,7 +115,7 @@ export class DynamicPagesJson {
       }
 
       if (this.condition !== undefined) {
-        const json = condition.get(this.condition, platform);
+        const json = this.condition.get(platform);
         if (json) {
           this.jsons.set(platform, json as PagesJSON.PagesJson);
           return deepCopy(json) as PagesJSON.PagesJson;
@@ -130,9 +138,8 @@ export class DynamicPagesJson {
 
       let obj: PagesJSON.PagesJson;
       if (condition.is(res)) {
-        this.condition = res;
-
-        obj = condition.get(res, platform);
+        this.condition = condition.unwrap(res);
+        obj = this.condition.get(platform) as PagesJSON.PagesJson;
       } else {
         this.condition = undefined;
         obj = res;
@@ -150,28 +157,46 @@ export class DynamicPagesJson {
   }
 
   /**
-   * 检查动态 pages.json 文件的位置
-   *
-   * @returns 绝对路径 | undefined
+   * 获取运行平台
    */
-  public detectFilePath(): string | undefined {
-    for (const filepath of this.ctx.possibleDynamicJsonFilePaths()) {
-      try {
-        const stat = fs.statSync(filepath);
-        if (stat && stat.isFile()) {
-          return filepath;
-        }
-      } catch {
-        continue;
-      }
-    }
-  }
-
   public async getPlatforms(): Promise<UniPlatform[]> {
-    await this.getJson();
+    await this.getJson(); // 保证读取了文件
     if (this.condition) {
-      return condition.getPlatforms(this.condition);
+      return this.condition.getPlatforms();
     }
     return [];
   }
+
+  /**
+   * 检查是否合格的文件路径
+   */
+  public isValid(filepath: string): boolean {
+    const abspath = path.isAbsolute(filepath)
+      ? filepath
+      : path.resolve(this.cfg.root, filepath);
+
+    return this.cfg.pagesJsonFilePaths.includes(abspath);
+  }
+
+  /**
+   * 检测文件位置
+   *
+   */
+  private detectFilePath() {
+    const detect = () => {
+      for (const filepath of this.cfg.pagesJsonFilePaths) {
+        try {
+          const stat = fs.statSync(filepath);
+          if (stat && stat.isFile()) {
+            return filepath;
+          }
+        } catch {
+          continue;
+        }
+      }
+    };
+
+    this.path = detect() || '';
+  }
+
 }

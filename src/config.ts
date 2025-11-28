@@ -1,9 +1,10 @@
-import type { PageFileOption } from './pageFile';
+import type { PageFileOption } from './page-file';
 import type { MaybePromise } from './types';
 import type { UniPlatform } from './utils/uni-env';
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import { PagesConfigFile } from './pages-config-file';
 import { enableDebug } from './utils/debug';
 
 export interface ConfigHook {
@@ -88,6 +89,11 @@ export interface ResolvedConfig extends Required<Omit<UserConfig, 'platform'>> {
    * 运行平台
    */
   platform: UniPlatform[];
+
+  /**
+   * pages.json.ts 文件的可用路径
+   */
+  pagesJsonFilePaths: string[];
 }
 
 export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
@@ -120,6 +126,13 @@ export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
     return path.isAbsolute(dir) ? dir : path.resolve(src, dir);
   });
 
+  const pagesJsonFilePaths: string[] = [];
+  for (const dir of [root, src]) {
+    for (const ext of PagesConfigFile.exts) {
+      pagesJsonFilePaths.push(path.join(dir, PagesConfigFile.basename + ext));
+    }
+  }
+
   return {
     root,
     src,
@@ -131,5 +144,6 @@ export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
     hooks,
     cacheDir,
     platform: Array.isArray(platform) ? platform : [platform],
+    pagesJsonFilePaths,
   };
 }

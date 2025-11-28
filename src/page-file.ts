@@ -1,5 +1,6 @@
 import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { SFCDescriptor, SFCScriptBlock } from '@vue/compiler-sfc';
+import type { ConditionObject } from './condition';
 import type { DeepPartial, MaybePromise } from './types';
 import fs from 'node:fs/promises';
 import * as t from '@babel/types';
@@ -93,7 +94,7 @@ export class PageFile {
   /** platform => page meta */
   private metas = new Map<UniPlatform, UserPageMeta>();
 
-  private condition: Condition<UserPageMeta> | undefined;
+  private condition: ConditionObject<UserPageMeta> | undefined;
 
   private content: string = '';
   private sfc?: SFCDescriptor;
@@ -103,6 +104,13 @@ export class PageFile {
    * 页面文件的扩展名
    */
   public static readonly exts = ['.vue', '.nvue', '.uvue'];
+
+  public static isValid(filepath: string): boolean {
+    if (!PageFile.exts.some(ext => filepath.endsWith(ext))) {
+      return false;
+    }
+    return true;
+  }
 
   constructor({ filePath, pagePath, root }: PageFileOption) {
     this.file = filePath;
@@ -258,6 +266,7 @@ export class PageFile {
     if (this.changed) {
       // 如果有更改，则清空 metas
       this.metas.clear();
+      this.condition = undefined;
     }
 
     this.lastCode = code;
@@ -269,7 +278,7 @@ export class PageFile {
 
     if (this.condition !== undefined) {
 
-      meta = condition.get(this.condition, platform);
+      meta = this.condition.get(platform);
       this.metas.set(platform, meta);
 
     } else if (!this.macro) {
@@ -278,14 +287,12 @@ export class PageFile {
 
     } else {
 
-      const env: Record<string, any> = {
-        UNI_PLATFORM: platform,
-      };
-
       const parsed = await parseCode({
         code: this.macro.preparedCode,
         filename: this.file,
-        env,
+        env: {
+          UNI_PLATFORM: platform,
+        },
       });
 
       const res: UserPageMeta | Condition<UserPageMeta> = typeof parsed === 'function'
@@ -293,8 +300,8 @@ export class PageFile {
         : await Promise.resolve(parsed);
 
       if (condition.is(res)) {
-        this.condition = res;
-        meta = condition.get(res, platform);
+        this.condition = condition.unwrap(res);
+        meta = this.condition.get(platform);
       } else {
         this.condition = undefined;
         meta = res;
@@ -319,11 +326,13 @@ export class PageFile {
   public async getPlatforms(): Promise<UniPlatform[]> {
     await this.getPage(); // 保证读取了文件
     if (this.condition) {
-      return condition.getPlatforms(this.condition);
+      return this.condition.getPlatforms();
     }
     return [];
   }
+
 }
+
 export function getPageType(page: PagesJSON.Page): 'page' | 'home' {
   return page[PAGE_TYPE_KEY as any] || 'page';
 }

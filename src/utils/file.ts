@@ -120,3 +120,57 @@ export function checkFileSync(opt: { path: fs.PathLike; newContent?: string; mod
     }
   }
 }
+
+/**
+ * 检测缩进
+ */
+export function detectIndent(code: string): number {
+  const lines = (code || '').split(/\r?\n/);
+  const indentSizes: number[] = [];
+
+  // 收集所有非空行的缩进大小
+  for (const line of lines) {
+    if (line.trim().length === 0) {
+      continue;
+    }
+
+    const match = line.match(/^(\s*)/);
+    const spaces = match ? match[1].length : 0;
+
+    if (spaces > 0) {
+      indentSizes.push(spaces);
+    }
+  }
+
+  if (indentSizes.length === 0) {
+    return 2; // 默认返回2个空格
+  }
+
+  // 去重并排序
+  const uniqueIndents = [...new Set(indentSizes)].sort((a, b) => a - b);
+
+  // 如果只有一个缩进值，直接返回
+  if (uniqueIndents.length === 1) {
+    return uniqueIndents[0];
+  }
+
+  // 计算所有缩进值的最大公约数作为基础缩进
+  const gcd = (a: number, b: number): number => b === 0 ? a : gcd(b, a % b);
+  let baseIndent = uniqueIndents[0];
+
+  for (let i = 1; i < uniqueIndents.length; i++) {
+    baseIndent = gcd(baseIndent, uniqueIndents[i]);
+    // 如果最大公约数为1，说明可能不是规则缩进
+    if (baseIndent === 1) {
+      break;
+    }
+  }
+
+  // 验证基础缩进是否合理（通常是2-8之间的常见值）
+  if (baseIndent >= 2 && baseIndent <= 8) {
+    return baseIndent;
+  }
+
+  // 如果计算出的基础缩进不合理，回退到使用最小缩进值
+  return uniqueIndents[0];
+}

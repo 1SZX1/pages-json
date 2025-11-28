@@ -37,7 +37,7 @@ describe('generate', async () => {
           "navigationBarTitleText": "uni-app H5",
           // #endif
           // #ifdef MP-ALIPAY
-          "navigationBarTitleText": "uni-app 111"
+          "navigationBarTitleText": "uni-app other"
           // #endif
         },
         "pages": [

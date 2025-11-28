@@ -4,7 +4,7 @@ export default defineConfig(({ platform }) => {
   return {
     globalStyle: {
       navigationBarTextStyle: 'black',
-      navigationBarTitleText: platform === 'h5' ? 'uni-app H5' : 'uni-app 111',
+      navigationBarTitleText: platform === 'h5' ? 'uni-app H5' : 'uni-app other',
       navigationBarBackgroundColor: '#F8F8F8',
       backgroundColor: '#F8F8F8',
     },

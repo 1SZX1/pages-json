@@ -15,7 +15,7 @@ const ctx = new Context(cfg);
 describe('get files', () => {
   it('pages files', async () => {
     await ctx.scanFiles();
-    const pages = await ctx.getPageFileOfPages();
+    const pages = await ctx.getMainPageFiles();
     const files = pages.map(page => normalizePath(path.relative(cfg.root, page.file))).sort();
     expect(files).toMatchInlineSnapshot(`
       [
@@ -34,7 +34,7 @@ describe('get files', () => {
     await ctx.scanFiles();
 
     const files: string[] = [];
-    const subPackages = await ctx.getPageFileOfSubPackages();
+    const subPackages = await ctx.getSubPageFiles();
 
     for (const page of subPackages) {
       files.push(normalizePath(path.relative(cfg.root, page.file)));
