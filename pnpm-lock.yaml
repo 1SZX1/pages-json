@@ -42,21 +42,9 @@ importers:
       '@antfu/eslint-config':
         specifier: ^3.16.0
         version: 3.16.0(@typescript-eslint/utils@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.4.21)(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)(vitest@1.6.1(@types/node@20.19.23)(jsdom@16.7.0)(terser@5.44.0))
-      '@babel/traverse':
-        specifier: ^7.28.3
-        version: 7.28.4
-      '@dcloudio/types':
-        specifier: ^3.4.19
-        version: 3.4.25
-      '@types/babel__core':
-        specifier: ^7.20.5
-        version: 7.20.5
       '@types/babel__generator':
         specifier: ^7.27.0
         version: 7.27.0
-      '@types/babel__traverse':
-        specifier: ^7.28.0
-        version: 7.28.0
       '@types/debug':
         specifier: ^4.1.12
         version: 4.1.12
@@ -90,9 +78,6 @@ importers:
       tsup:
         specifier: ^8.5.0
         version: 8.5.0(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)(yaml@2.8.1)
-      unplugin:
-        specifier: ^1.16.1
-        version: 1.16.1
       vite:
         specifier: ^5.4.19
         version: 5.4.21(@types/node@20.19.23)(terser@5.44.0)
@@ -5197,10 +5182,6 @@ packages:
   unplugin-utils@0.2.5:
     resolution: {integrity: sha512-gwXJnPRewT4rT7sBi/IvxKTjsms7jX7QIDLOClApuZwR49SXbrB1z2NLUZ+vDHyqCj/n58OzRRqaW+B8OZi8vg==}
     engines: {node: '>=18.12.0'}
-
-  unplugin@1.16.1:
-    resolution: {integrity: sha512-4/u/j4FrCKdi17jaxuJA0jClGxB1AvU2hw/IuayPc4ay1XGaJs/rbb4v5WKwAjNifjmXK9PIFyuPiaK8azyR9w==}
-    engines: {node: '>=14.0.0'}
 
   unplugin@2.3.10:
     resolution: {integrity: sha512-6NCPkv1ClwH+/BGE9QeoTIl09nuiAt0gS28nn1PvYXsGKRwM2TCbFA2QiilmehPDTXIe684k4rZI1yl3A1PCUw==}
@@ -11764,11 +11745,6 @@ snapshots:
     dependencies:
       pathe: 2.0.3
       picomatch: 4.0.3
-
-  unplugin@1.16.1:
-    dependencies:
-      acorn: 8.15.0
-      webpack-virtual-modules: 0.6.2
 
   unplugin@2.3.10:
     dependencies:
