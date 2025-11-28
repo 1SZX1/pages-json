@@ -179,6 +179,16 @@ export class PagesConfigFile {
   }
 
   /**
+   * 清除缓存
+   */
+  public fresh() {
+    this.code = '';
+    this.changed = true;
+    this.condition = undefined;
+    this.jsons.clear();
+  }
+
+  /**
    * 检测文件位置
    *
    */

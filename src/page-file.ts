@@ -331,6 +331,16 @@ export class PageFile {
     return [];
   }
 
+  /**
+   * 清除缓存
+   */
+  public fresh() {
+    this.content = '';
+    this.changed = true;
+    this.condition = undefined;
+    this.metas.clear();
+  }
+
 }
 
 export function getPageType(page: PagesJSON.Page): 'page' | 'home' {

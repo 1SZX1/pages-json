@@ -14,6 +14,7 @@ import { debug } from './utils/debug';
 import { checkFileSync, detectIndent } from './utils/file';
 import { deepAssign } from './utils/object';
 import { currentPlatform, type UniPlatform } from './utils/uni-env';
+import { sleep } from './utils/utils';
 
 interface JsonFileInfo {
   indent: number;
@@ -47,6 +48,11 @@ export class Context {
    * json 文件信息
    */
   private jsonFileInfo?: JsonFileInfo;
+
+  /**
+   * 更新状态
+   */
+  private updating: Promise<boolean> | null = null;
 
   constructor(config: ResolvedConfig) {
     this.cfg = config;
@@ -131,6 +137,9 @@ export class Context {
     this.files = files;
   }
 
+  /**
+   * 获取主包页面文件
+   */
   public async getMainPageFiles(platform = currentPlatform()): Promise<PageFile[]> {
     let opts: PageFileOption[] = [];
     for (const [, p] of this.files) {
@@ -158,6 +167,9 @@ export class Context {
     return files;
   }
 
+  /**
+   * 获取分包页面文件
+   */
   public async getSubPageFiles(platform = currentPlatform()): Promise<PageFile[]> {
     let opts: PageFileOption[] = [];
     for (const [, p] of this.files) {
@@ -186,7 +198,7 @@ export class Context {
   }
 
   /**
-   * 更新pages.json
+   * 更新 pages.json
    *
    * @param filepath 指定更新的文件，空则更新所有文件
    */
@@ -196,34 +208,18 @@ export class Context {
       return false;
     }
 
-    if (this.files.size === 0) {
-      await this.scanFiles(); // 避免每次都扫描全局
+    if (this.updating) {
+      return await this.updating;
     }
 
-    this.checkJsonFileSync();
-    const { indent, eof, content } = await this.detectJsonFile(true);
-    const platforms = await this.getPlatforms();
+    // 控制更新频率
+    this.updating = this.doUpdate(100).finally(() => {
+      setTimeout(() => {
+        this.updating = null;
+      }, 0);
+    });
 
-    const jsons = {} as Record<UniPlatform, PagesJSON.PagesJson>;
-
-    for (const platform of platforms) {
-      jsons[platform] = await this.generatePagesJson(platform);
-    }
-
-    const rawJson = this.stringifyPagesJson(jsons, indent) + eof;
-
-    if (content === rawJson) {
-      debug.info('pages.json 无改动，跳过更新。');
-      return false;
-    }
-
-    await fs.promises.writeFile(this.jsonFilePath, rawJson);
-
-    if (this.cfg.dts) {
-      await writeDeclaration(jsons, this.cfg.dts as string);
-    }
-
-    return true;
+    return await this.updating;
   }
 
   /**
@@ -442,25 +438,15 @@ export class Context {
       if (abspath !== this.pagesConfigFile.path) {
         this.pagesConfigFile.path = abspath;
       }
-      await this.pagesConfigFile.read();
-
-      if (!this.pagesConfigFile.hasChanged()) {
-        debug.info(`文件 ${filepath} 的 pages json 无改动，跳过更新。`);
-        return false;
-      } else {
-        return true;
-      }
+      this.pagesConfigFile.fresh();
+      return true;
     }
 
     // 检测是否合格的 page 文件
     if (PageFile.isValid(abspath)) {
       const pageFile = this.files.get(abspath);
       if (pageFile) { // 文件存在
-        await pageFile.parse();
-        if (!pageFile.hasChanged()) {
-          debug.info(`文件 ${filepath} 的 page meta 无改动，跳过更新。`);
-          return false;
-        }
+        pageFile.fresh();
         return true;
       } else { // 文件不存在，扫描全局文件
         await this.scanFiles();
@@ -471,7 +457,43 @@ export class Context {
     // 既不是 page config 文件 又不是 page 文件
     debug.info(`文件 ${filepath} 不是 pages.json 相关文件，跳过更新。`);
     return false;
-  };
+  }
+
+  private async doUpdate(delay = 100) {
+
+    await sleep(delay); // 控制更新频率
+
+    if (this.files.size === 0) {
+      await this.scanFiles(); // 避免每次都扫描全局
+    }
+
+    this.checkJsonFileSync();
+    const { indent, eof, content } = await this.detectJsonFile(true);
+    const platforms = await this.getPlatforms();
+
+    const jsons = {} as Record<UniPlatform, PagesJSON.PagesJson>;
+
+    for (const platform of platforms) {
+      jsons[platform] = await this.generatePagesJson(platform);
+    }
+
+    const rawJson = this.stringifyPagesJson(jsons, indent) + eof;
+
+    if (content === rawJson) {
+      debug.info('pages.json 无改动，跳过更新。');
+      return false;
+    }
+
+    await fs.promises.writeFile(this.jsonFilePath, rawJson);
+
+    if (this.cfg.dts) {
+      await writeDeclaration(jsons, this.cfg.dts as string);
+    }
+
+    debug.info('pages.json 更新成功。');
+
+    return true;
+  }
 
   private getRunningPlatforms(): UniPlatform[] {
 
@@ -629,7 +651,7 @@ export class Context {
         debug.debug(`删除文件: ${file}`);
         await this.updatePagesJSON();
       });
-    }, 500); // 延迟 500ms，避免第一次扫描时触发更新
+    }, 100); // 延迟 100ms，避免第一次扫描时触发更新
   }
 
 }
