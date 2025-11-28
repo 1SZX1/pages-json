@@ -57,7 +57,7 @@ describe('generate', async () => {
           {
             "path": "pages/define-page/function",
             "style": {
-              "navigationBarTitleText": "hello from h5",
+              "navigationBarTitleText": "hello world",
               // #ifdef MP-ALIPAY
               "backgroundColor": "#fff"
               // #endif
