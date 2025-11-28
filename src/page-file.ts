@@ -1,13 +1,13 @@
 import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { SFCDescriptor, SFCScriptBlock } from '@vue/compiler-sfc';
-import type { ConditionObject } from './condition';
+import type { Condition } from './condition';
 import type { DeepPartial, MaybePromise } from './types';
 import fs from 'node:fs/promises';
 import * as t from '@babel/types';
 import { parse as VueParser } from '@vue/compiler-sfc';
 import { babelParse, isCallOf } from 'ast-kit';
 import * as condition from './condition';
-import { Condition } from './condition';
+import { Cond } from './condition';
 import { generate as babelGenerate } from './utils/babel';
 import { debug } from './utils/debug';
 import { deepCopy } from './utils/object';
@@ -15,14 +15,14 @@ import { parseCode } from './utils/parser';
 import { currentPlatform, type UniPlatform } from './utils/uni-env';
 
 export interface DefinePageFuncArgs {
-  define: (meta: UserPageMeta) => Condition<UserPageMeta>;
+  define: (meta: UserPageMeta) => Cond<UserPageMeta>;
   platform: UniPlatform;
 }
 
-export function definePage(arg: UserPageMeta | ((arg: DefinePageFuncArgs) => MaybePromise<UserPageMeta | Condition<UserPageMeta>>)) { }
+export function definePage(arg: UserPageMeta | ((arg: DefinePageFuncArgs) => MaybePromise<UserPageMeta | Cond<UserPageMeta>>)) { }
 
-function define(meta: UserPageMeta): Condition<UserPageMeta> {
-  return new Condition(meta);
+function define(meta: UserPageMeta): Cond<UserPageMeta> {
+  return new Cond(meta);
 }
 
 export interface UserTabBarItem extends DeepPartial<PagesJSON.TabBarItem> {
@@ -94,7 +94,7 @@ export class PageFile {
   /** platform => page meta */
   private metas = new Map<UniPlatform, UserPageMeta>();
 
-  private condition: ConditionObject<UserPageMeta> | undefined;
+  private condition: Condition<UserPageMeta> | undefined;
 
   private content: string = '';
   private sfc?: SFCDescriptor;
@@ -295,7 +295,7 @@ export class PageFile {
         },
       });
 
-      const res: UserPageMeta | Condition<UserPageMeta> = typeof parsed === 'function'
+      const res: UserPageMeta | Cond<UserPageMeta> = typeof parsed === 'function'
         ? await Promise.resolve(parsed({ define, platform } as DefinePageFuncArgs))
         : await Promise.resolve(parsed);
 

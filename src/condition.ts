@@ -9,7 +9,7 @@ export interface ConditionItem<T = any> {
   value: T;
 }
 
-export class ConditionObject<T extends object> {
+export class Condition<T extends object> {
 
   private orig: T;
 
@@ -63,12 +63,12 @@ export class ConditionObject<T extends object> {
 
 const INNER = Symbol('INNER_CONDITION');
 
-export class Condition<T extends object> {
+export class Cond<T extends object> {
 
-  public [INNER]: ConditionObject<T>;
+  public [INNER]: Condition<T>;
 
   constructor(obj: T) {
-    this[INNER] = new ConditionObject<T>(obj);
+    this[INNER] = new Condition<T>(obj);
   }
 
   public ifdef(platform: UniPlatform | UniPlatform[], obj: T) {
@@ -77,12 +77,12 @@ export class Condition<T extends object> {
   }
 }
 
-export function unwrap<T extends object>(cond: Condition<T>): ConditionObject<T> {
+export function unwrap<T extends object>(cond: Cond<T>): Condition<T> {
   return cond[INNER] || cond;
 }
 
-export function is(obj: any): obj is Condition<any> {
-  if (obj instanceof Condition) {
+export function is(obj: any): obj is Cond<any> {
+  if (obj instanceof Cond) {
     return true;
   }
 

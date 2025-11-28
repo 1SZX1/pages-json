@@ -1,17 +1,17 @@
 import type * as PagesJSON from '@uni-ku/pages-json/types';
-import type { ConditionObject } from './condition';
+import type { Condition } from './condition';
 import type { ResolvedConfig } from './config';
 import type { DeepPartial, MaybePromise } from './types';
 import fs from 'node:fs';
 import path from 'node:path';
-import { Condition } from './condition';
+import { Cond } from './condition';
 import * as condition from './condition';
 import { deepCopy } from './utils/object';
 import { parseCode } from './utils/parser';
 import { currentPlatform, type UniPlatform } from './utils/uni-env';
 
 export interface DefineConfigFuncArgs {
-  define: (p: DeepPartial<PagesJSON.PagesJson>) => Condition<DeepPartial<PagesJSON.PagesJson>>;
+  define: (p: DeepPartial<PagesJSON.PagesJson>) => Cond<DeepPartial<PagesJSON.PagesJson>>;
   platform: UniPlatform;
 }
 
@@ -21,8 +21,8 @@ export function defineConfig(userConfig: DefineConfigArg): DefineConfigArg {
   return userConfig;
 }
 
-function define(userConfig: DefineConfigArg): Condition<DeepPartial<PagesJSON.PagesJson>> {
-  return new Condition(userConfig);
+function define(userConfig: DefineConfigArg): Cond<DeepPartial<PagesJSON.PagesJson>> {
+  return new Cond(userConfig);
 }
 
 export class PagesConfigFile {
@@ -58,7 +58,7 @@ export class PagesConfigFile {
   /**
    * 条件编译内容
    */
-  private condition: ConditionObject<DeepPartial<PagesJSON.PagesJson>> | undefined;
+  private condition: Condition<DeepPartial<PagesJSON.PagesJson>> | undefined;
 
   static readonly basename = 'pages.json';
   static readonly exts = ['.ts', '.mts', '.cts', '.js', '.cjs', '.mjs'];
