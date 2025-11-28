@@ -557,7 +557,7 @@ export class Context {
     const runningPlatforms = this.getRunningPlatforms();
     runningPlatforms.forEach(platform => platforms.add(platform));
 
-    return Array.from(platforms);
+    return Array.from(platforms).sort();
   }
 
   /**
