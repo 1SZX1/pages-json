@@ -87,7 +87,6 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.16.0",
-    "@babel/generator": "^7.23.6",
     "@types/babel__generator": "^7.27.0",
     "@types/debug": "^4.1.12",
     "@types/node": "^20.19.11",
