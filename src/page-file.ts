@@ -1,12 +1,12 @@
 import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { SFCDescriptor, SFCScriptBlock } from '@vue/compiler-sfc';
-import type { CObject } from './condition';
+import type { ConditionalObject } from './condition';
 import type { DeepPartial, MaybePromise } from './types';
 import fs from 'node:fs/promises';
 import * as t from '@babel/types';
 import { parse as VueParser } from '@vue/compiler-sfc';
 import { babelParse, isCallOf } from 'ast-kit';
-import { Cond, getPlatforms, isCond, toObject, unwrap } from './condition';
+import { Conditional, getSupportedPlatforms, isConditional, resolveToObject, unwrapConditional } from './condition';
 import { generate as babelGenerate } from './utils/babel';
 import { debug } from './utils/debug';
 import { deepCopy } from './utils/object';
@@ -14,14 +14,14 @@ import { parseCode } from './utils/parser';
 import { currentPlatform, type UniPlatform } from './utils/uni-env';
 
 export interface DefinePageFuncArgs {
-  define: (meta: UserPageMeta) => Cond<UserPageMeta>;
+  define: (meta: UserPageMeta) => Conditional<UserPageMeta>;
   platform: UniPlatform;
 }
 
-export function definePage(arg: UserPageMeta | ((arg: DefinePageFuncArgs) => MaybePromise<UserPageMeta | Cond<UserPageMeta>>)) { }
+export function definePage(arg: UserPageMeta | ((arg: DefinePageFuncArgs) => MaybePromise<UserPageMeta | Conditional<UserPageMeta>>)) { }
 
-function define(meta: UserPageMeta): Cond<UserPageMeta> {
-  return new Cond(meta);
+function define(meta: UserPageMeta): Conditional<UserPageMeta> {
+  return new Conditional(meta);
 }
 
 export interface UserTabBarItem extends DeepPartial<PagesJSON.TabBarItem> {
@@ -93,7 +93,7 @@ export class PageFile {
   /** platform => page meta */
   private metas = new Map<UniPlatform, UserPageMeta>();
 
-  private condition: CObject<UserPageMeta> | undefined;
+  private condition: ConditionalObject<UserPageMeta> | undefined;
 
   private content: string = '';
   private sfc?: SFCDescriptor;
@@ -273,12 +273,12 @@ export class PageFile {
       },
     });
 
-    const res: UserPageMeta | Cond<UserPageMeta> = typeof parsed === 'function'
+    const res: UserPageMeta | Conditional<UserPageMeta> = typeof parsed === 'function'
       ? await Promise.resolve(parsed({ define, platform } as DefinePageFuncArgs))
       : await Promise.resolve(parsed);
 
-    if (isCond(res)) {
-      this.condition = unwrap(res);
+    if (isConditional(res)) {
+      this.condition = unwrapConditional(res);
       this.metas.clear();
     } else {
       this.condition = undefined;
@@ -298,7 +298,7 @@ export class PageFile {
     }
 
     if (this.condition !== undefined) {
-      return toObject(this.condition, platform);
+      return resolveToObject(this.condition, platform);
     }
 
     return this.metas.get(platform);
@@ -315,7 +315,7 @@ export class PageFile {
   public async getPlatforms(): Promise<UniPlatform[]> {
     await this.getPage(); // 保证读取了文件
     if (this.condition) {
-      return getPlatforms(this.condition);
+      return getSupportedPlatforms(this.condition);
     }
     return [];
   }

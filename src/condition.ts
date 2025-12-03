@@ -6,83 +6,98 @@ import { getPageType, getTabbarIndex } from './page-file';
 import { deepAssign } from './utils/object';
 import { currentPlatform, type UniPlatform } from './utils/uni-env';
 
-const DEFINES = Symbol('DEFINES_KEY');
-const COBJECT = Symbol('COBJECT');
+const CONDITION_DEFINES_KEY = Symbol('CONDITION_DEFINES_KEY');
+const CONDITIONAL_OBJECT_KEY = Symbol('CONDITIONAL_OBJECT_KEY');
+const CONDITIONAL_VALUES_KEY = Symbol('CONDITIONAL_VALUES_KEY');
+const PLATFORM_ARRAY_ITEM_KEY = Symbol('PLATFORM_ARRAY_ITEM_KEY');
 
-export interface Define<T = any> {
+export interface ConditionDefine<T = any> {
   platforms: UniPlatform[];
   condition: 'ifdef' | 'ifndef';
   value: DeepPartial<T>;
 }
 
-export type CObject<T extends object> = T & {
-  [DEFINES]: Define<T>[];
+export type ConditionalObject<T extends object> = T & {
+  [CONDITION_DEFINES_KEY]: ConditionDefine<T>[];
 };
 
-export class Cond<T extends object> {
+export class Conditional<T extends object> {
 
-  public [COBJECT]: CObject<T>;
+  public [CONDITIONAL_OBJECT_KEY]: ConditionalObject<T>;
 
   constructor(obj: T) {
-    this[COBJECT] = obj as CObject<T>;
-    this[COBJECT][DEFINES] ??= [];
+    this[CONDITIONAL_OBJECT_KEY] = obj as ConditionalObject<T>;
+    this[CONDITIONAL_OBJECT_KEY][CONDITION_DEFINES_KEY] ??= [];
   }
 
   public ifdef(platform: UniPlatform | UniPlatform[], obj: DeepPartial<T>) {
-    this[COBJECT] = ifdef(this[COBJECT], platform, obj);
+    this[CONDITIONAL_OBJECT_KEY] = addIfdef(this[CONDITIONAL_OBJECT_KEY], platform, obj);
     return this;
   }
 }
 
-export function isCond<T extends object>(obj: any): obj is Cond<T> {
-  return !!(obj && obj[COBJECT]);
+export function isConditional<T extends object>(obj: any): obj is Conditional<T> {
+  return !!(obj && obj[CONDITIONAL_OBJECT_KEY]);
 }
 
-export function ifdef<T extends object>(target: CObject<T>, platform: UniPlatform | UniPlatform[], obj: DeepPartial<T>): CObject<T> {
+export function addIfdef<T extends object>(target: ConditionalObject<T>, platform: UniPlatform | UniPlatform[], obj: DeepPartial<T>): ConditionalObject<T>;
+export function addIfdef<T extends object>(target: T, platform: UniPlatform | UniPlatform[], obj: DeepPartial<T>): ConditionalObject<T>;
+export function addIfdef<T extends object>(target: T, platform: UniPlatform | UniPlatform[], obj: DeepPartial<T>): ConditionalObject<T> {
   const platforms = Array.isArray(platform) ? new Set(platform) : new Set([platform]);
 
-  const define: Define<T> = {
+  const conditionDefine: ConditionDefine<T> = {
     platforms: [...platforms].sort(),
     condition: 'ifdef',
     value: obj,
   };
 
-  return mergeDefine(target, [define]);
+  return mergeConditionDefines(target, [conditionDefine]);
 }
 
-export function ifndef<T extends object>(target: CObject<T>, platform: UniPlatform | UniPlatform[], obj: DeepPartial<T>): CObject<T> {
+export function addIfndef<T extends object>(target: ConditionalObject<T>, platform: UniPlatform | UniPlatform[], obj: DeepPartial<T>): ConditionalObject<T>;
+export function addIfndef<T extends object>(target: T, platform: UniPlatform | UniPlatform[], obj: DeepPartial<T>): ConditionalObject<T>;
+export function addIfndef<T extends object>(target: T, platform: UniPlatform | UniPlatform[], obj: DeepPartial<T>): ConditionalObject<T> {
   const platforms = Array.isArray(platform) ? new Set(platform) : new Set([platform]);
 
-  const define: Define<T> = {
+  const conditionDefine: ConditionDefine<T> = {
     platforms: [...platforms].sort(),
     condition: 'ifndef',
     value: obj,
   };
 
-  return mergeDefine(target, [define]);
+  return mergeConditionDefines(target, [conditionDefine]);
 }
 
-export function getDefine<T extends object>(obj: CObject<T>): Define<T>[];
-export function getDefine<T extends object>(obj: T): Define<T>[];
-export function getDefine(obj: any): Define<object>[] {
-  return obj[DEFINES] || [];
+export function getConditionDefines<T extends object>(obj: ConditionalObject<T>): ConditionDefine<T>[];
+export function getConditionDefines<T extends object>(obj: T): ConditionDefine<T>[];
+export function getConditionDefines(obj: any): ConditionDefine<object>[] {
+  return obj[CONDITION_DEFINES_KEY] || [];
 }
 
-export function setDefine<T extends object>(obj: T, defines: Define<T>[]): CObject<T> {
-  const res = obj as CObject<T>;
-  res[DEFINES] = defines;
+export function setConditionDefines<T extends object>(obj: ConditionalObject<T>, defines: ConditionDefine<T>[]): ConditionalObject<T>;
+export function setConditionDefines<T extends object>(obj: T, defines: ConditionDefine<T>[]): ConditionalObject<T>;
+export function setConditionDefines<T extends object>(obj: T, defines: ConditionDefine<T>[]): ConditionalObject<T> {
+  const res = obj as ConditionalObject<T>;
+  res[CONDITION_DEFINES_KEY] = defines;
   return res;
 }
 
-export function mergeDefine<T extends object>(obj: T, defines: Define<T>[]): CObject<T> {
-  const res = obj as CObject<T>;
-  res[DEFINES] ??= [];
+export function mergeConditionDefines<T extends object>(obj: ConditionalObject<T>, defines: ConditionDefine<T>[]): ConditionalObject<T>;
+export function mergeConditionDefines<T extends object>(obj: T, defines: ConditionDefine<T>[]): ConditionalObject<T>;
+export function mergeConditionDefines<T extends object>(obj: T, defines: ConditionDefine<T>[]): ConditionalObject<T> {
+  const result = obj as ConditionalObject<T>;
+  result[CONDITION_DEFINES_KEY] ??= [];
 
   for (const define of defines) {
 
-    const platforms = new Set(define.platforms);
+    const platformsSet = new Set(define.platforms);
 
-    const def = res[DEFINES].find(d => d.condition === define.condition && d.platforms.length === platforms.size && d.platforms.every(p => platforms.has(p)));
+    const def = result[CONDITION_DEFINES_KEY].find(d =>
+      d.condition === define.condition
+      && d.platforms.length === platformsSet.size
+      && platformsSet.size > 0 // 避免空集合的无效比较
+      && d.platforms.every(p => platformsSet.has(p)),
+    );
 
     if (def) {
       def.value = {
@@ -91,19 +106,19 @@ export function mergeDefine<T extends object>(obj: T, defines: Define<T>[]): COb
       };
     } else {
       define.platforms.sort();
-      res[DEFINES].push(define);
+      result[CONDITION_DEFINES_KEY].push(define);
     }
   }
 
-  return res;
+  return result;
 }
 
-export function getPlatforms(obj: any): UniPlatform[] {
+export function getSupportedPlatforms(obj: any): UniPlatform[] {
 
-  const val = isCond(obj) ? obj[COBJECT] : obj;
+  const val = isConditional(obj) ? obj[CONDITIONAL_OBJECT_KEY] : obj;
 
   const platforms = new Set<UniPlatform>();
-  for (const define of val[DEFINES] || []) {
+  for (const define of val[CONDITION_DEFINES_KEY] || []) {
     for (const p of define.platforms) {
       platforms.add(p);
     }
@@ -111,153 +126,154 @@ export function getPlatforms(obj: any): UniPlatform[] {
   return [...platforms].sort();
 }
 
-export function unwrap<T extends object>(cond: Cond<T>): CObject<T> {
-  return cond[COBJECT];
+export function unwrapConditional<T extends object>(cond: Conditional<T>): ConditionalObject<T> {
+  return cond[CONDITIONAL_OBJECT_KEY];
 }
 
-function _getByPlatform<T extends object>(obj: T, result: any, platform = currentPlatform()) {
+function _resolveByPlatform<T extends object>(obj: T, result: any, platform = currentPlatform()) {
+  for (const key in obj) {
+    const value = obj[key];
 
-  for (const k in obj) {
-    const v = obj[k];
-
-    // 数组
-    if (Array.isArray(v)) {
-      result[k] ??= [];
-      _getByPlatform(v, result[k], platform);
+    // 处理数组
+    if (Array.isArray(value)) {
+      result[key] ??= [];
+      _resolveByPlatform(value, result[key], platform);
       continue;
     }
 
-    // 对象
-    if (typeof v === 'object' && v != null) {
-      result[k] ??= {};
-      _getByPlatform(v, result[k], platform);
+    // 处理对象
+    if (typeof value === 'object' && value != null) {
+      result[key] ??= {};
+      _resolveByPlatform(value, result[key], platform);
       continue;
     }
 
-    result[k] = v;
+    result[key] = value;
   }
 
-  const defines = getDefine(obj);
-  for (const def of defines) {
-    if (def.condition === 'ifdef' && def.platforms.includes(platform)) {
-      deepAssign(result, def.value);
-      continue;
-    }
+  const conditionDefines = getConditionDefines(obj).filter(define =>
+    (define.condition === 'ifdef' && define.platforms.includes(platform))
+    || (define.condition === 'ifndef' && !define.platforms.includes(platform)),
+  );
 
-    if (def.condition === 'ifndef' && !def.platforms.includes(platform)) {
-      deepAssign(result, def.value);
-      continue;
-    }
+  for (const define of conditionDefines) {
+    deepAssign(result, define.value);
   }
 }
 
-export function toObject<T extends object>(obj: CObject<T>, platform?: UniPlatform): T;
-export function toObject<T extends object>(obj: T, platform?: UniPlatform): T;
-export function toObject<T extends object>(obj: T, platform = currentPlatform()): T {
+export function resolveToObject<T extends object>(obj: ConditionalObject<T>, platform?: UniPlatform): T;
+export function resolveToObject<T extends object>(obj: T, platform?: UniPlatform): T;
+export function resolveToObject<T extends object>(obj: T, platform = currentPlatform()): T {
   const res = {} as any;
-  _getByPlatform(obj, res, platform);
+  _resolveByPlatform(obj, res, platform);
   return res;
 }
 
-function mergeObject<T extends object>(pf1: UniPlatform, val1: T, pf2: UniPlatform, val2: T, ignoreKeys: string[] = []) {
+function mergeObjectsByPlatform<T extends object>(
+  platform1: UniPlatform,
+  value1: T,
+  platform2: UniPlatform,
+  value2: T,
+  ignoreKeys: string[] = [],
+) {
+  const object1 = value1 as any;
+  const object2 = value2 as any;
 
-  const v1 = val1 as any;
-  const v2 = val2 as any;
+  const object1Keys = new Set(Object.keys(object1));
+  const ignoredKeys = new Set(ignoreKeys);
 
-  const v1keys = new Set(Object.keys(v1));
-  const ignores = new Set(ignoreKeys); // TODO: 支持点符号
-
-  for (const v2k in v2) {
-    if (ignores.has(v2k)) {
+  for (const key2 in object2) {
+    if (ignoredKeys.has(key2)) {
       continue;
     }
 
-    v1keys.delete(v2k); // 删除已对比的 key
+    object1Keys.delete(key2);
 
-    if (v1[v2k] === v2[v2k]) {
-      continue; // 值相同，跳过
+    if (object1[key2] === object2[key2]) {
+      continue;
     }
 
-    if (v1[v2k] !== undefined && v2[v2k] !== undefined) {
-      if (Array.isArray(v2[v2k])) {
-        const s1 = JSON.stringify(v1[v2k]);
-        const s2 = JSON.stringify(v2[v2k]);
-        if (s1 === s2) {
+    if (object1[key2] !== undefined && object2[key2] !== undefined) {
+      if (Array.isArray(object2[key2])) {
+        const string1 = JSON.stringify(object1[key2]);
+        const string2 = JSON.stringify(object2[key2]);
+        if (string1 === string2) {
           continue;
         }
-      } else if (typeof v2[v2k] === 'object' && v2[v2k] !== null && v1[v2k] !== null) {
-        mergeObject(pf1, v1[v2k], pf2, v2[v2k]); // 递归合并
-        continue; // 下一个循环
+      } else if (typeof object2[key2] === 'object' && object2[key2] !== null && object1[key2] !== null) {
+        mergeObjectsByPlatform(platform1, object1[key2], platform2, object2[key2]);
+        continue;
       }
     }
 
-    // 下面为不相等的处理
-
-    if (v1[v2k] !== undefined) {
-      const val = v1[v2k];
-      v1[v2k] = undefined; // 将其标识为 undefined，避免 stringify 时显示
-      markIfdef(v1, pf1, v2k, val);
+    // 处理不相等的值
+    if (object1[key2] !== undefined) {
+      const value = object1[key2];
+      object1[key2] = undefined;
+      markIfdef(object1, platform1, key2, value);
     }
 
-    if (v2[v2k] !== undefined) {
-      markIfdef(v1, pf2, v2k, v2[v2k]);
+    if (object2[key2] !== undefined) {
+      markIfdef(object1, platform2, key2, object2[key2]);
     }
   }
 
-  // 处理 v2 不存在的 key
-  for (const v1k of v1keys) {
-    if (ignores.has(v1k)) {
+  // 处理 object2 中不存在的键
+  for (const key1 of object1Keys) {
+    if (ignoredKeys.has(key1)) {
       continue;
     }
 
-    if (v1[v1k] !== undefined) {
-      const val = v1[v1k];
-      v1[v1k] = undefined; // 将其标识为 undefined，避免 stringify 时显示
-      markIfdef(v1, pf1, v1k, val);
+    if (object1[key1] !== undefined) {
+      const value = object1[key1];
+      object1[key1] = undefined;
+      markIfdef(object1, platform1, key1, value);
     }
   }
 }
 
-const PF_ARR_ITEM_KEY = Symbol.for('platform-array-item');
-
-function mergeArray<T extends object>(pf1: UniPlatform, arr1: T[], pf2: UniPlatform, arr2: T[], getUniqueKey: (v: T) => string) {
-
-  const v1s = arr1 as any[];
-  const v2s = arr2 as any[];
-
+function mergeArraysByPlatform<T extends object>(
+  platform1: UniPlatform,
+  array1: T[],
+  platform2: UniPlatform,
+  array2: T[],
+  getUniqueKey: (v: T) => string,
+) {
+  const items1 = array1 as any[];
+  const items2 = array2 as any[];
   let offset = 0;
 
-  for (const v2 of v2s) {
-    const v2id = getUniqueKey(v2);
-    const v1 = v1s.find((v) => {
-      if (getUniqueKey(v) !== v2id) {
-        return false;
-      }
-      const pf = v[PF_ARR_ITEM_KEY] as UniPlatform | undefined;
-      return pf === undefined || pf === pf2;
-    });
+  // 优化：使用 Map 提高查找效率
+  const items1Map = new Map(items1.map(item => [getUniqueKey(item), item]));
 
-    if (v1 !== undefined) {
-      mergeObject(pf1, v1, pf2, v2);
+  for (const item2 of items2) {
+    const item2Id = getUniqueKey(item2);
+    const item1 = items1Map.get(item2Id);
+
+    if (item1 && canMergeItems(item1, platform2)) {
+      mergeObjectsByPlatform(platform1, item1, platform2, item2);
       continue;
     }
 
-    markIfdef(v1s, pf2, v1s.length + offset, v2);
+    markIfdef(items1, platform2, items1.length + offset, item2);
     offset++;
   }
 }
 
-interface PValue {
+function canMergeItems(item: any, targetPlatform: UniPlatform): boolean {
+  const platform = item[PLATFORM_ARRAY_ITEM_KEY] as UniPlatform | undefined;
+  return platform === undefined || platform === targetPlatform;
+};
+
+interface IfdefValue {
   platforms: UniPlatform[];
   key: string | number;
   value: any;
 }
 
-const CONDITIONAL_KEY = Symbol.for('CONDITIONAL_KEY');
-
 function markIfdef(obj: object, platform: UniPlatform, key: string | number, val: any) {
   const target = obj as any;
-  const pvalues = (target[CONDITIONAL_KEY] || []) as PValue[];
+  const pvalues = (target[CONDITIONAL_VALUES_KEY] || []) as IfdefValue[];
 
   const pval = pvalues.find(p => p.key === key && p.value === val);
   if (pval) {
@@ -270,49 +286,49 @@ function markIfdef(obj: object, platform: UniPlatform, key: string | number, val
     });
   }
 
-  target[CONDITIONAL_KEY] = pvalues;
+  target[CONDITIONAL_VALUES_KEY] = pvalues;
 }
 
-function aliasIfdef(obj: object) {
+function convertIfdefToAlias(obj: object) {
   const target = obj as any;
-  for (const [k, v] of Object.entries(target)) {
-    if (k.includes('#ifdef')) {
+  for (const [key, value] of Object.entries(target)) {
+    if (key.includes('#ifdef')) {
       continue;
     }
 
-    if (Array.isArray(v)) {
-      for (const item of v) {
-        aliasIfdef(item);
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        convertIfdefToAlias(item);
       }
       continue;
     }
 
-    if (typeof v === 'object' && v != null) {
-      aliasIfdef(v);
+    if (typeof value === 'object' && value != null) {
+      convertIfdefToAlias(value);
     }
   }
 
-  const pvalues = (target[CONDITIONAL_KEY] || []) as PValue[];
-  for (const pval of pvalues) {
+  const conditionalValues = (target[CONDITIONAL_VALUES_KEY] || []) as IfdefValue[];
+  for (const conditionalValue of conditionalValues) {
     if (Array.isArray(target)) {
-      let idx = Number(pval.key);
-      if (idx < target.length) {
-        idx = target.length;
+      let index = Number(conditionalValue.key);
+      if (index < target.length) {
+        index = target.length;
       }
-      target[idx] = pval.value;
-      wrapIfdef(target, idx, pval.platforms);
+      target[index] = conditionalValue.value;
+      wrapIfdefComment(target, index, conditionalValue.platforms);
       continue;
     }
 
-    const alias = `${pval.key}#ifdef_${pval.platforms.join('_')}`;
-    target[alias] = pval.value;
-    wrapIfdef(target, alias, pval.platforms);
+    const aliasKey = `${conditionalValue.key}#ifdef_${conditionalValue.platforms.join('_')}`;
+    target[aliasKey] = conditionalValue.value;
+    wrapIfdefComment(target, aliasKey, conditionalValue.platforms);
   }
 
-  delete target[CONDITIONAL_KEY];
+  delete target[CONDITIONAL_VALUES_KEY];
 }
 
-function wrapIfdef(obj: any, key: string | number, platforms: string[]): void {
+function wrapIfdefComment(obj: any, key: string | number, platforms: string[]): void {
 
   const upperPlatforms = platforms.map(p => p.toUpperCase());
 
@@ -385,7 +401,7 @@ export function stringify(jsons: Record<UniPlatform, PagesJSON.PagesJson>, inden
     // 合并不同平台的 pages
     if (j2.pages) {
       pagesJson.pages ??= [];
-      mergeArray(p1, pagesJson.pages, p2, j2.pages, v => v.path);
+      mergeArraysByPlatform(p1, pagesJson.pages, p2, j2.pages, v => v.path);
     }
     // 合并不同平台的 subPackages
     if (j2.subPackages) {
@@ -393,10 +409,10 @@ export function stringify(jsons: Record<UniPlatform, PagesJSON.PagesJson>, inden
       for (const j2Sub of j2.subPackages) {
         const idx = pagesJson.subPackages.findIndex(s => s.root === j2Sub.root);
         if (idx > -1) {
-          mergeObject(p1, pagesJson.subPackages[idx], p2, j2Sub, ['pages']);
+          mergeObjectsByPlatform(p1, pagesJson.subPackages[idx], p2, j2Sub, ['pages']);
           if (j2Sub.pages && j2Sub.pages.length > 0) {
             pagesJson.subPackages[idx].pages = pagesJson.subPackages[idx].pages || [];
-            mergeArray(p1, pagesJson.subPackages[idx].pages, p2, j2Sub.pages, v => v.path);
+            mergeArraysByPlatform(p1, pagesJson.subPackages[idx].pages, p2, j2Sub.pages, v => v.path);
           }
         } else {
           pagesJson.subPackages.push(j2Sub);
@@ -406,18 +422,18 @@ export function stringify(jsons: Record<UniPlatform, PagesJSON.PagesJson>, inden
     // 合并不同平台的 tabBar
     if (j2.tabBar) {
       pagesJson.tabBar ??= {};
-      mergeObject(p1, pagesJson.tabBar, p2, j2.tabBar, ['list']);
+      mergeObjectsByPlatform(p1, pagesJson.tabBar, p2, j2.tabBar, ['list']);
       if (j2.tabBar.list && j2.tabBar.list.length > 0) {
         pagesJson.tabBar.list ??= [];
-        mergeArray(p1, pagesJson.tabBar.list, p2, j2.tabBar.list, v => v.pagePath);
+        mergeArraysByPlatform(p1, pagesJson.tabBar.list, p2, j2.tabBar.list, v => v.pagePath);
       }
     }
 
     // 合并除 pages、subPackages、tabBar 外的其他属性
-    mergeObject(p1, pagesJson, p2, j2, ['pages', 'subPackages', 'tabBar']);
+    mergeObjectsByPlatform(p1, pagesJson, p2, j2, ['pages', 'subPackages', 'tabBar']);
   }
 
-  aliasIfdef(pagesJson); // 将 conditional 标识转为 key 别名，方便 stringify
+  convertIfdefToAlias(pagesJson); // 将 conditional 标识转为 key 别名，方便 stringify
 
   let rawJson = cjStringify(pagesJson, null, indent);
 
