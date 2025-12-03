@@ -1,11 +1,10 @@
 import type * as PagesJSON from '@uni-ku/pages-json/types';
-import type { Condition } from './condition';
+import type { CObject } from './condition';
 import type { ResolvedConfig } from './config';
 import type { DeepPartial, MaybePromise } from './types';
 import fs from 'node:fs';
 import path from 'node:path';
-import { Cond } from './condition';
-import * as condition from './condition';
+import { Cond, getPlatforms, isCond, toObject, unwrap } from './condition';
 import { deepCopy } from './utils/object';
 import { parseCode } from './utils/parser';
 import { currentPlatform, type UniPlatform } from './utils/uni-env';
@@ -58,7 +57,7 @@ export class PagesConfigFile {
   /**
    * 条件编译内容
    */
-  private condition: Condition<DeepPartial<PagesJSON.PagesJson>> | undefined;
+  private condition: CObject<DeepPartial<PagesJSON.PagesJson>> | undefined;
 
   static readonly basename = 'pages.json';
   static readonly exts = ['.ts', '.mts', '.cts', '.js', '.cjs', '.mjs'];
@@ -107,53 +106,44 @@ export class PagesConfigFile {
       return;
     }
 
-    // 使用闭包，如果闭包内有错误，会直接往上抛错误，不会执行后面的代码
-    const res = await (async () => {
-      const json = deepCopy(this.jsons.get(platform));
-      if (json) {
-        return json;
-      }
+    if (!this.condition && !this.jsons.has(platform)) {
+      await this.parseJson(platform);
+    }
 
-      if (this.condition !== undefined) {
-        const json = this.condition.get(platform);
-        if (json) {
-          this.jsons.set(platform, json as PagesJSON.PagesJson);
-          return deepCopy(json) as PagesJSON.PagesJson;
-        }
-      }
+    if (this.condition) {
+      return toObject(this.condition, platform) as PagesJSON.PagesJson;
+    }
 
-      const env: Record<string, any> = {
+    const json = this.jsons.get(platform);
+    if (json) {
+      return deepCopy(json);
+    }
+
+    return undefined;
+  }
+
+  private async parseJson(platform = currentPlatform()): Promise<void> {
+    const parsed = await parseCode({
+      code: this.code,
+      filename: this.path,
+      env: {
         UNI_PLATFORM: platform,
-      };
+      },
+    });
 
-      const parsed = await parseCode({
-        code: this.code,
-        filename: this.path,
-        env,
-      });
+    const res = typeof parsed === 'function'
+      ? await Promise.resolve(parsed({ define, platform } as DefineConfigFuncArgs))
+      : await Promise.resolve(parsed);
 
-      const res = typeof parsed === 'function'
-        ? await Promise.resolve(parsed({ define, platform } as DefineConfigFuncArgs))
-        : await Promise.resolve(parsed);
-
-      let obj: PagesJSON.PagesJson;
-      if (condition.is(res)) {
-        this.condition = condition.unwrap(res);
-        obj = this.condition.get(platform) as PagesJSON.PagesJson;
-      } else {
-        this.condition = undefined;
-        obj = res;
-      }
-
-      this.jsons.set(platform, obj);
-      return obj;
-    })();
-
-    // 上面执行无错误才会到这里
+    if (isCond(res)) {
+      this.condition = unwrap(res);
+      this.jsons.clear();
+    } else {
+      this.condition = undefined;
+      this.jsons.set(platform, res);
+    }
 
     this.changed = false; // 已经更新过 page meta, 可以将 changed 标记置为 false
-
-    return res;
   }
 
   /**
@@ -162,7 +152,7 @@ export class PagesConfigFile {
   public async getPlatforms(): Promise<UniPlatform[]> {
     await this.getJson(); // 保证读取了文件
     if (this.condition) {
-      return this.condition.getPlatforms();
+      return getPlatforms(this.condition);
     }
     return [];
   }

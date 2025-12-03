@@ -11,6 +11,7 @@ export default defineConfig({
       subPackageDirs: ['pages-sub'],
       debug: 'debug',
       hooks: [hookUniPlatform],
+      platform: ['mp-weixin', 'mp-360', 'h5'],
     }),
     uni(),
   ],

@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { stringify } from '../src/condition';
 import { resolveConfig } from '../src/config';
 import { Context } from '../src/context';
 
@@ -7,6 +8,7 @@ const cfg = resolveConfig({
   root: path.resolve(__dirname, '../playground'),
   pageDir: 'pages',
   subPackageDirs: ['pages-sub'],
+  platform: ['h5', 'mp-weixin', 'mp-alipay'],
 });
 
 const ctx = new Context(cfg);
@@ -25,7 +27,7 @@ describe('generate', async () => {
       jsons[platform] = await ctx.generatePagesJson(platform);
     }
 
-    const raw = ctx.stringifyPagesJson(jsons, 2);
+    const raw = stringify(jsons, 2);
 
     expect(raw).toMatchInlineSnapshot(`
       "{
@@ -36,7 +38,7 @@ describe('generate', async () => {
           // #ifdef H5
           "navigationBarTitleText": "uni-app H5",
           // #endif
-          // #ifdef MP-ALIPAY
+          // #ifdef MP-ALIPAY || MP-WEIXIN
           "navigationBarTitleText": "uni-app other"
           // #endif
         },

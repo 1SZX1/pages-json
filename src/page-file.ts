@@ -1,13 +1,12 @@
 import type * as PagesJSON from '@uni-ku/pages-json/types';
 import type { SFCDescriptor, SFCScriptBlock } from '@vue/compiler-sfc';
-import type { Condition } from './condition';
+import type { CObject } from './condition';
 import type { DeepPartial, MaybePromise } from './types';
 import fs from 'node:fs/promises';
 import * as t from '@babel/types';
 import { parse as VueParser } from '@vue/compiler-sfc';
 import { babelParse, isCallOf } from 'ast-kit';
-import * as condition from './condition';
-import { Cond } from './condition';
+import { Cond, getPlatforms, isCond, toObject, unwrap } from './condition';
 import { generate as babelGenerate } from './utils/babel';
 import { debug } from './utils/debug';
 import { deepCopy } from './utils/object';
@@ -94,7 +93,7 @@ export class PageFile {
   /** platform => page meta */
   private metas = new Map<UniPlatform, UserPageMeta>();
 
-  private condition: Condition<UserPageMeta> | undefined;
+  private condition: CObject<UserPageMeta> | undefined;
 
   private content: string = '';
   private sfc?: SFCDescriptor;
@@ -118,44 +117,31 @@ export class PageFile {
     this.root = root || '';
   }
 
-  public async getPage({ platform = currentPlatform(), forceRead = false }: { platform?: UniPlatform; forceRead?: boolean } = {}): Promise<PagesJSON.Page> {
+  public async getPage(platform = currentPlatform(), forceRead = false): Promise<PagesJSON.Page> {
 
-    if (forceRead || !this.content) {
-      await this.parse();
-    }
-    if (!this.metas.has(platform)) {
-      await this.parsePageMeta(platform);
-    }
+    const { tabbar: _, path, type, ...others } = await this.getPageMeta(platform, forceRead) || {};
 
-    const { tabbar: _, path, type, ...others } = deepCopy(this.metas.get(platform) || {});
-
-    return {
+    return deepCopy({
       path: path || this.path,
       ...others,
       [PAGE_TYPE_KEY]: type || 'page',
-    } as PagesJSON.Page;
+    }) as PagesJSON.Page;
   }
 
-  public async getTabbarItem({ platform = currentPlatform(), forceRead = false }: { platform?: UniPlatform; forceRead?: boolean } = {}): Promise<PagesJSON.TabBarItem | undefined> {
-    if (forceRead || !this.content) {
-      await this.parse();
-    }
-    if (!this.metas.has(platform)) {
-      await this.parsePageMeta(platform);
-    }
+  public async getTabbarItem(platform = currentPlatform(), forceRead = false): Promise<PagesJSON.TabBarItem | undefined> {
 
-    const { tabbar } = this.metas.get(platform) || {};
+    const { tabbar } = await this.getPageMeta(platform, forceRead) || {};
     if (tabbar === undefined) {
       return;
     }
 
-    const { index, pagePath, ...others } = deepCopy(tabbar);
+    const { index, pagePath, ...others } = tabbar;
 
-    return {
+    return deepCopy({
       pagePath: pagePath || this.path,
       ...others,
       [TABBAR_INDEX_KEY]: index,
-    };
+    });
   }
 
   public hasChanged() {
@@ -272,47 +258,50 @@ export class PageFile {
     this.lastCode = code;
   }
 
-  private async parsePageMeta(platform: UniPlatform = currentPlatform()): Promise<UserPageMeta | undefined> {
+  private async parsePageMeta(platform: UniPlatform = currentPlatform()): Promise<void> {
 
-    let meta: UserPageMeta | undefined;
-
-    if (this.condition !== undefined) {
-
-      meta = this.condition.get(platform);
-      this.metas.set(platform, meta);
-
-    } else if (!this.macro) {
-
+    if (!this.macro) {
       this.metas.delete(platform);
+      return;
+    }
 
+    const parsed = await parseCode({
+      code: this.macro.preparedCode,
+      filename: this.file,
+      env: {
+        UNI_PLATFORM: platform,
+      },
+    });
+
+    const res: UserPageMeta | Cond<UserPageMeta> = typeof parsed === 'function'
+      ? await Promise.resolve(parsed({ define, platform } as DefinePageFuncArgs))
+      : await Promise.resolve(parsed);
+
+    if (isCond(res)) {
+      this.condition = unwrap(res);
+      this.metas.clear();
     } else {
-
-      const parsed = await parseCode({
-        code: this.macro.preparedCode,
-        filename: this.file,
-        env: {
-          UNI_PLATFORM: platform,
-        },
-      });
-
-      const res: UserPageMeta | Cond<UserPageMeta> = typeof parsed === 'function'
-        ? await Promise.resolve(parsed({ define, platform } as DefinePageFuncArgs))
-        : await Promise.resolve(parsed);
-
-      if (condition.is(res)) {
-        this.condition = condition.unwrap(res);
-        meta = this.condition.get(platform);
-      } else {
-        this.condition = undefined;
-        meta = res;
-      }
-
-      this.metas.set(platform, meta);
+      this.condition = undefined;
+      this.metas.set(platform, res);
     }
 
     this.changed = false; // 已经更新过 page meta, 可以将 changed 标记置为 false
+  }
 
-    return meta;
+  private async getPageMeta(platform = currentPlatform(), forceRead = false): Promise<UserPageMeta | undefined> {
+
+    if (forceRead || !this.content) {
+      await this.parse();
+    }
+    if (!this.condition && !this.metas.has(platform)) {
+      await this.parsePageMeta(platform);
+    }
+
+    if (this.condition !== undefined) {
+      return toObject(this.condition, platform);
+    }
+
+    return this.metas.get(platform);
   }
 
   public async getMacroInfo(forceRead = false): Promise<MacroInfo | undefined> {
@@ -326,7 +315,7 @@ export class PageFile {
   public async getPlatforms(): Promise<UniPlatform[]> {
     await this.getPage(); // 保证读取了文件
     if (this.condition) {
-      return this.condition.getPlatforms();
+      return getPlatforms(this.condition);
     }
     return [];
   }

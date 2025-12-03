@@ -1,3 +1,5 @@
+import type { DeepPartial } from '../types';
+
 export function deepMerge<T extends Record<string, any> = any>(...objs: T[]): T {
   const result = Object.assign({}, ...objs);
 
@@ -14,7 +16,7 @@ export function deepMerge<T extends Record<string, any> = any>(...objs: T[]): T 
   return result;
 }
 
-export function deepAssign<T extends object = any>(target: T, ...sources: T[]) {
+export function deepAssign<T extends object = any>(target: T, ...sources: DeepPartial<T>[]) {
   const tg = target as any;
   for (const source of sources) {
     for (const key of Reflect.ownKeys(source)) {
