@@ -101,7 +101,7 @@ export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
     root = process.env.UNI_CLI_CONTEXT || process.cwd(),
     src = process.env.UNI_INPUT_DIR,
     dts = true,
-    pageDir = path.join('src', 'pages'),
+    pageDir = 'pages',
     subPackageDirs = [],
     exclude = ['node_modules', '.git', '**/__*__/**'],
     debug = false,
