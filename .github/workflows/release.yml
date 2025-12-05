@@ -149,13 +149,21 @@ jobs:
       pages: read
 
     steps:
+      # 在发布步骤前添加分支检查
+      - name: 确保在主分支
+        run: |
+          if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then
+            echo "错误：不在主分支上"
+            exit 1
+          fi
+
       - name: 检出代码
         uses: actions/checkout@v4
 
       - name: 安装 PNPM
         uses: pnpm/action-setup@v3.0.0
         with:
-          version: latest
+          version: 10
           run_install: false
 
       - name: 配置 Node.js
@@ -172,7 +180,7 @@ jobs:
         run: pnpm build
 
       - name: 发布到 NPM
-        run: pnpm publish --access=public
+        run: pnpm publish --access=public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
