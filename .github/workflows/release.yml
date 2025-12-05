@@ -1,66 +1,17 @@
 name: Release
 
-permissions:
-  contents: write
-
 on:
-  # 当对分支master进行push操作的时候,触发该条工作流
   push:
-    branches: [master]
+    tags:
+      - 'v*'
 
 jobs:
-  check:
-    name: 检查并创建版本号
-    runs-on: ubuntu-latest
-    outputs:
-      created: ${{ steps.create_tag.outputs.created }}
-    steps:
-      - name: 检出代码
-        uses: actions/checkout@v4
-
-      - name: 配置 Node.js
-        uses: actions/setup-node@v4
-
-      - name: 获取所有标签
-        run: |
-          git fetch --prune --unshallow
-
-      - name: 读取 package.json 版本号
-        id: package_json
-        run: |
-          version=$(node -p "require('./package.json').version")
-          echo "Package version is: $version"
-          echo "version=$version" >> $GITHUB_OUTPUT
-
-      - name: 检查是否有重复的版本 tag
-        id: check_version
-        run: |
-          package_version=v${{ steps.package_json.outputs.version }}
-          if git tag -l "$package_version" | grep -q "$package_version"; then
-            echo "::notice::版本 Tag '$package_version' 已存在。"
-            echo "exists=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: 创建版本tag
-        id: create_tag
-        if: steps.check_version.outputs.exists != 'true'
-        run: |
-          set -e
-          version_tag=v${{ steps.package_json.outputs.version }}
-          echo "Creating new tag: $version_tag"
-          git tag "$version_tag"
-          git push origin "$version_tag"
-          echo "created=true" >> $GITHUB_OUTPUT
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   release:
     name: 构建并发版
-    needs: check
-    if: needs.check.outputs.created == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
@@ -183,12 +134,9 @@ jobs:
         uses: ncipollo/release-action@v1.14.0
         with:
           bodyFile: changelog.md
-          tag: ${{ steps.get_tags.outputs.current_tag }}
 
   publish:
     name: 发布到 NPM
-    needs: [check, release]
-    if: needs.check.outputs.created == 'true'
     runs-on: ubuntu-latest
     permissions:
       id-token: write

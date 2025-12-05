@@ -55,20 +55,20 @@
     "types"
   ],
   "scripts": {
-    "stub": "tsup --watch",
-    "dev": "pnpm stub",
-    "dev:h5": "cross-env NODE_ENV=development pnpm build && pnpm --filter=./playground dev:h5",
-    "dev:mp-weixin": "cross-env NODE_ENV=development pnpm build && pnpm --filter=./playground dev:mp-weixin",
+    "dev": "npm run dev:h5",
+    "dev:h5": "cross-env NODE_ENV=development npm run build && npm -C playground run dev:h5",
+    "dev:mp-weixin": "cross-env NODE_ENV=development npm run build && npm -C playground run dev:mp-weixin",
     "build": "tsup",
-    "build:h5": "pnpm build && pnpm --filter=./playground build:h5",
-    "build:mp-weixin": "pnpm build && pnpm --filter=./playground build:mp-weixin",
-    "prepublishOnly": "pnpm build",
+    "build:h5": "npm run build && npm -C playground run build:h5",
+    "build:mp-weixin": "npm run build && npm -C playground run build:mp-weixin",
     "typecheck": "tsc -p . --noEmit --skipLibCheck",
-    "lint": "eslint .",
-    "lint:fix": "pnpm lint --fix",
+    "lint": "eslint . --fix --quiet --max-warnings=0",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "prepare": "husky"
+    "release": "bumpp",
+    "prepublishOnly": "npm run build",
+    "prepare": "simple-git-hooks && npm run build",
+    "commit": "git-cz"
   },
   "peerDependencies": {
     "vite": "^5.4.19"
@@ -87,19 +87,39 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.16.0",
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@types/babel__generator": "^7.27.0",
     "@types/debug": "^4.1.12",
     "@types/node": "^20.19.11",
     "@typescript-eslint/eslint-plugin": "^8.41.0",
     "@typescript-eslint/parser": "^8.41.0",
+    "bumpp": "^9.11.1",
+    "commitizen": "^4.3.1",
     "cross-env": "^7.0.3",
+    "cz-git": "^1.12.0",
     "eslint": "^9.34.0",
     "eslint-config-flat-gitignore": "^2.1.0",
-    "husky": "^9.1.7",
     "lint-staged": "^16.2.6",
-    "rimraf": "^5.0.10",
+    "simple-git-hooks": "^2.13.1",
     "tsup": "^8.5.0",
     "vite": "^5.4.19",
     "vitest": "^1.6.1"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged",
+    "commit-msg": "npx commitlint --edit ${1}"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,vue,md}": [
+      "tsc -p . --noEmit --skipLibCheck",
+      "eslint . --fix --quiet --max-warnings=0",
+      "vitest --run"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-git"
+    }
   }
 }
