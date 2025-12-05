@@ -149,14 +149,6 @@ jobs:
       pages: read
 
     steps:
-      # 在发布步骤前添加分支检查
-      - name: 确保在主分支
-        run: |
-          if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then
-            echo "错误：不在主分支上"
-            exit 1
-          fi
-
       - name: 检出代码
         uses: actions/checkout@v4
 
