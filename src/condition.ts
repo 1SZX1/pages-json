@@ -30,8 +30,19 @@ export class Conditional<T extends object> {
     this[CONDITIONAL_OBJECT_KEY][CONDITION_DEFINES_KEY] ??= [];
   }
 
+  /**
+   * 添加条件编译定义，当指定平台存在时生效
+   */
   public ifdef(platform: UniPlatform | UniPlatform[], obj: DeepPartial<T>) {
     this[CONDITIONAL_OBJECT_KEY] = addIfdef(this[CONDITIONAL_OBJECT_KEY], platform, obj);
+    return this;
+  }
+
+  /**
+   * 添加条件编译定义，当指定平台不存在时生效
+   */
+  public ifndef(platform: UniPlatform | UniPlatform[], obj: DeepPartial<T>) {
+    this[CONDITIONAL_OBJECT_KEY] = addIfndef(this[CONDITIONAL_OBJECT_KEY], platform, obj);
     return this;
   }
 }
