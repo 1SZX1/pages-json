@@ -172,7 +172,16 @@ jobs:
         run: pnpm build
 
       - name: 发布到 NPM
-        run: pnpm publish --access=public --no-git-checks
+        run: |
+          # 检测版本号是否为预发布版本
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ $VERSION == *"-"* ]]; then
+            # 预发布版本，使用 beta 标签
+            pnpm publish --access=public --no-git-checks --tag beta
+          else
+            # 正式版本，使用 latest 标签（默认）
+            pnpm publish --access=public --no-git-checks
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
