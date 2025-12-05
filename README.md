@@ -79,7 +79,7 @@ export interface UserConfig {
 
   /**
    * 排除的文件模式
-   * @default ['node_modules', '.git', '**/__*__/**']
+   * @default ['node_modules', '.git', '** /__*__/ **']
    */
   exclude?: string[];
 
@@ -159,7 +159,7 @@ definePage({
 <script setup lang="ts">
 definePage(() => {
   const title = '动态标题';
-  
+
   return {
     style: {
       navigationBarTitleText: title,
@@ -176,7 +176,7 @@ definePage(() => {
 <script setup lang="ts">
 definePage(async () => {
   const title = await fetchTitle();
-  
+
   return {
     style: {
       navigationBarTitleText: title,
@@ -200,7 +200,7 @@ middlewares:
   - auth
   - logger
 `;
-  
+
   return parseYAML(config);
 });
 </script>
@@ -242,16 +242,16 @@ definePage(({ define }) => {
       navigationBarTitleText: '基础配置',
     },
   })
-  .ifdef('mp-weixin', {
-    style: {
-      navigationBarBackgroundColor: '#07C160',
-    },
-  })
-  .ifndef('h5', {
-    style: {
-      enablePullDownRefresh: true,
-    },
-  });
+    .ifdef('mp-weixin', {
+      style: {
+        navigationBarBackgroundColor: '#07C160',
+      },
+    })
+    .ifndef('h5', {
+      style: {
+        enablePullDownRefresh: true,
+      },
+    });
 });
 </script>
 ```
@@ -270,7 +270,7 @@ console.log(pagesJson);
 ### 类型导入
 
 ```ts
-import type { Page, SubPackage, PagesJson } from '@uni-ku/pages-json/types';
+import type { Page, PagesJson, SubPackage } from '@uni-ku/pages-json/types';
 ```
 
 ### 与 vite-plugin-uni-platform 集成
