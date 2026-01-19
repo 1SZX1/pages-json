@@ -59,7 +59,7 @@ export async function parseCode({ code, filename, env = {}, timeout = 1000 }: Pa
       exports: {},
       __filename: filename,
       __dirname: dir,
-      require: createRequire(dir),
+      require: createRequire(filename),
       import: (id: string) => import(id),
       process: {
         ...process,
