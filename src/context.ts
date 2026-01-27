@@ -16,7 +16,7 @@ import { currentPlatform, type UniPlatform } from './utils/uni-env';
 import { sleep } from './utils/utils';
 
 interface JsonFileInfo {
-  indent: number;
+  indent: string | number;
   eof: string;
   content: string;
 }

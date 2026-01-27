@@ -397,7 +397,7 @@ function sortPagesJson(pagesJson: PagesJSON.PagesJson): void {
 /**
  * 将多个平台的 pages.json 合并成一个静态 pages.json
  */
-export function stringify(jsons: Record<UniPlatform, PagesJSON.PagesJson>, indent = 4): string {
+export function stringify(jsons: Record<UniPlatform, PagesJSON.PagesJson>, indent: string | number = 4): string {
   const [p1 = currentPlatform(), ...p2s] = Object.keys(jsons).sort() as UniPlatform[];
 
   const pagesJson = jsons[p1] || {};
