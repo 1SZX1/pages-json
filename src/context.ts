@@ -484,7 +484,7 @@ export class Context {
     const detect = async () => {
       const res = {
         platforms: new Set<UniPlatform>([currentPlatform()]),
-        indent: 4,
+        indent: this.cfg.indent,
         eof: '\n',
         content: '',
       };
