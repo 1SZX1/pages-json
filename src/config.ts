@@ -82,6 +82,11 @@ export interface UserConfig {
    * 运行平台
    */
   platform?: UniPlatform | UniPlatform[];
+
+  /**
+   * pages.json 格式化缩进，默认使用 4 个空格缩进
+   */
+  indent?: string | number;
 }
 
 export interface ResolvedConfig extends Required<Omit<UserConfig, 'platform'>> {
@@ -108,6 +113,7 @@ export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
     hooks = [],
     cacheDir = path.join('node_modules', '.cache', '@uni-ku', 'pages-json'),
     platform = [],
+    indent = 4,
   } = useConfig;
 
   if (!src) {
@@ -145,5 +151,6 @@ export function resolveConfig(useConfig: UserConfig): ResolvedConfig {
     cacheDir,
     platform: Array.isArray(platform) ? platform : [platform],
     pagesJsonFilePaths,
+    indent,
   };
 }

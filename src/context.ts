@@ -440,7 +440,7 @@ export class Context {
 
     list.unshift(res);
 
-    fs.writeFileSync(cacheFile, JSON.stringify(list.slice(0, 3), null, 2));
+    fs.writeFileSync(cacheFile, JSON.stringify(list.slice(0, 3), null, this.cfg.indent));
 
     return [...Object.keys(res)].filter(Boolean) as UniPlatform[];
   }
@@ -468,7 +468,7 @@ export class Context {
   public checkJsonFileSync(): boolean {
     return checkFileSync({
       path: this.jsonFilePath,
-      newContent: JSON.stringify({ pages: [{ path: '' }] }, null, 4),
+      newContent: JSON.stringify({ pages: [{ path: '' }] }, null, this.cfg.indent),
       modeFlag: fs.constants.R_OK | fs.constants.W_OK,
     });
   }

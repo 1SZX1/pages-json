@@ -111,6 +111,11 @@ export interface UserConfig {
    * 指定运行平台，用于生成对应的条件编译
    */
   platform?: BuiltInPlatform | BuiltInPlatform[];
+
+  /**
+   * pages.json 格式化缩进，默认使用 4 个空格缩进
+   */
+  indent?: string | number;
 }
 ```
 
