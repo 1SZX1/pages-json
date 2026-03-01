@@ -13,7 +13,7 @@ import { debug } from './utils/debug';
 import { checkFileSync, detectIndent } from './utils/file';
 import { deepAssign } from './utils/object';
 import { currentPlatform, type UniPlatform } from './utils/uni-env';
-import { sleep } from './utils/utils';
+import { slash, sleep } from './utils/utils';
 
 interface JsonFileInfo {
   indent: string | number;
@@ -90,8 +90,7 @@ export class Context {
 
     // subPackages, 先处理 subPackages 避免重复出现在 pages 里
     for (const dir of this.cfg.subPackageDirs) {
-
-      const root = path.basename(dir);
+      const root = slash(path.relative(this.cfg.src, dir));
 
       for (const file of listFiles(dir, { cwd: this.cfg.root, ignore: this.cfg.exclude })) {
         if (files.has(file)) {
