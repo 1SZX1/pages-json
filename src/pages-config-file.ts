@@ -1,16 +1,16 @@
 import type * as PagesJSON from '@uni-ku/pages-json/types';
-import type { ConditionalObject } from './condition';
+import type { ConditionValue } from './condition';
 import type { ResolvedConfig } from './config';
 import type { DeepPartial, MaybePromise } from './types';
 import fs from 'node:fs';
 import path from 'node:path';
-import { Conditional, getSupportedPlatforms, isConditional, resolveToObject, unwrapConditional } from './condition';
+import { Condition, conditionValue, getSupportedPlatforms, isCondition, resolveCondition } from './condition';
 import { deepCopy } from './utils/object';
 import { parseCode } from './utils/parser';
 import { currentPlatform, type UniPlatform } from './utils/uni-env';
 
 export interface DefineConfigFuncArgs {
-  define: (p: DeepPartial<PagesJSON.PagesJson>) => Conditional<DeepPartial<PagesJSON.PagesJson>>;
+  define: (p: DeepPartial<PagesJSON.PagesJson>) => Condition<DeepPartial<PagesJSON.PagesJson>>;
   platform: UniPlatform;
 }
 
@@ -20,8 +20,8 @@ export function defineConfig(userConfig: DefineConfigArg): DefineConfigArg {
   return userConfig;
 }
 
-function define(userConfig: DefineConfigArg): Conditional<DeepPartial<PagesJSON.PagesJson>> {
-  return new Conditional(userConfig);
+function define(userConfig: DefineConfigArg): Condition<DeepPartial<PagesJSON.PagesJson>> {
+  return new Condition(userConfig);
 }
 
 export class PagesConfigFile {
@@ -57,7 +57,7 @@ export class PagesConfigFile {
   /**
    * 条件编译内容
    */
-  private condition: ConditionalObject<DeepPartial<PagesJSON.PagesJson>> | undefined;
+  private condition: ConditionValue<DeepPartial<PagesJSON.PagesJson>> | undefined;
 
   static readonly basename = 'pages.json';
   static readonly exts = ['.ts', '.mts', '.cts', '.js', '.cjs', '.mjs'];
@@ -111,7 +111,7 @@ export class PagesConfigFile {
     }
 
     if (this.condition) {
-      return resolveToObject(this.condition, platform) as PagesJSON.PagesJson;
+      return resolveCondition(this.condition, platform) as PagesJSON.PagesJson;
     }
 
     const json = this.jsons.get(platform);
@@ -135,8 +135,8 @@ export class PagesConfigFile {
       ? await Promise.resolve(parsed({ define, platform } as DefineConfigFuncArgs))
       : await Promise.resolve(parsed);
 
-    if (isConditional(res)) {
-      this.condition = unwrapConditional(res);
+    if (isCondition(res)) {
+      this.condition = conditionValue<DeepPartial<PagesJSON.PagesJson>>(res);
       this.jsons.clear();
     } else {
       this.condition = undefined;

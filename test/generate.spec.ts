@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { stringify } from '../src/condition';
+import { stringifyPagesJsons } from '../src/condition';
 import { resolveConfig } from '../src/config';
 import { Context } from '../src/context';
 
@@ -27,7 +27,7 @@ describe('generate', async () => {
       jsons[platform] = await ctx.generatePagesJson(platform);
     }
 
-    const raw = stringify(jsons, 2);
+    const raw = stringifyPagesJsons(jsons, 2);
 
     expect(raw).toMatchInlineSnapshot(`
       "{

@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import chokidar from 'chokidar';
 import fg from 'fast-glob';
-import { stringify } from './condition';
+import { stringifyPagesJsons } from './condition';
 import { writeDeclaration } from './declaration';
 import { PageFile } from './page-file';
 import { PagesConfigFile } from './pages-config-file';
@@ -380,7 +380,7 @@ export class Context {
       jsons[platform] = await this.generatePagesJson(platform);
     }
 
-    const rawJson = stringify(jsons, indent) + eof;
+    const rawJson = stringifyPagesJsons(jsons, indent) + eof;
 
     if (content === rawJson) {
       debug.info('pages.json 无改动，跳过更新。');

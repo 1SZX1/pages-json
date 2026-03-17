@@ -1,9 +1,9 @@
 import type { DeepPartial } from '../types';
 
-export function deepMerge<T extends Record<string, any> = any>(...objs: T[]): T {
-  const result = Object.assign({}, ...objs);
+export function deepMerge<T extends Record<string, any> = any>(first: T, ...others: DeepPartial<T>[]): T {
+  const result: any = Object.assign({}, first);
 
-  for (const obj of objs) {
+  for (const obj of others) {
     for (const [key, val] of Object.entries(obj)) {
       if (isObject(val)) {
         result[key] = deepMerge(result[key], val);
@@ -32,7 +32,7 @@ export function deepAssign<T extends object = any>(target: T, ...sources: DeepPa
   return target;
 }
 
-export function deepCopy<T>(obj: T): T {
+export function deepCopy<T>(obj: T, copyNonEnumerable = false): T {
   // 处理原始类型
   if (obj === null || typeof obj !== 'object') {
     return obj;
@@ -43,7 +43,7 @@ export function deepCopy<T>(obj: T): T {
 
   // 处理 Array
   if (Array.isArray(obj)) {
-    return obj.map(item => deepCopy(item)) as T;
+    return obj.map(item => deepCopy(item, copyNonEnumerable)) as T;
   }
 
   // 处理 Date
@@ -55,7 +55,7 @@ export function deepCopy<T>(obj: T): T {
   if (obj instanceof Set) {
     const copy = new Set();
     obj.forEach((value) => {
-      copy.add(deepCopy(value));
+      copy.add(deepCopy(value, copyNonEnumerable));
     });
     return copy as T;
   }
@@ -64,7 +64,7 @@ export function deepCopy<T>(obj: T): T {
   if (obj instanceof Map) {
     const copy = new Map();
     obj.forEach((value, key) => {
-      copy.set(deepCopy(key), deepCopy(value));
+      copy.set(deepCopy(key, copyNonEnumerable), deepCopy(value, copyNonEnumerable));
     });
     return copy as T;
   }
@@ -78,7 +78,7 @@ export function deepCopy<T>(obj: T): T {
   if (objType === '[object Object]') {
     const copy = {} as T;
 
-    // 复制所有自有属性（包括不可枚举的，如果需要的话）
+    // 复制所有自有属性
     const allKeys = [
       ...Object.getOwnPropertyNames(obj),
       ...Object.getOwnPropertySymbols(obj),
@@ -87,11 +87,15 @@ export function deepCopy<T>(obj: T): T {
     for (const key of allKeys) {
       const descriptor = Object.getOwnPropertyDescriptor(obj, key);
       if (descriptor) {
+        // 如果不复制不可枚举属性，且当前属性不可枚举，则跳过
+        if (!copyNonEnumerable && !descriptor.enumerable) {
+          continue;
+        }
         if (descriptor.value !== undefined) {
           // 数据属性
           Object.defineProperty(copy, key, {
             ...descriptor,
-            value: deepCopy(descriptor.value),
+            value: deepCopy(descriptor.value, copyNonEnumerable),
           });
         } else {
           // 访问器属性
