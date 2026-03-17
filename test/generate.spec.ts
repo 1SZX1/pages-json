@@ -33,14 +33,14 @@ describe('generate', async () => {
       "{
         "globalStyle": {
           "navigationBarTextStyle": "black",
-          "navigationBarBackgroundColor": "#F8F8F8",
-          "backgroundColor": "#F8F8F8",
           // #ifdef H5
           "navigationBarTitleText": "uni-app H5",
           // #endif
           // #ifdef MP-ALIPAY || MP-WEIXIN
-          "navigationBarTitleText": "uni-app other"
+          "navigationBarTitleText": "uni-app other",
           // #endif
+          "navigationBarBackgroundColor": "#F8F8F8",
+          "backgroundColor": "#F8F8F8"
         },
         "pages": [
           {
@@ -50,12 +50,14 @@ describe('generate', async () => {
               "animationType": "pop-in"
             }
           },
+          // #ifdef H5 || MP-ALIPAY
           {
             "path": "pages/define-page/async-function",
             "style": {
               "navigationBarTitleText": "hello world from async"
             }
           },
+          // #endif
           {
             "path": "pages/define-page/function",
             "style": {
