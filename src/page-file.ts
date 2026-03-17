@@ -117,9 +117,15 @@ export class PageFile {
     this.root = root || '';
   }
 
-  public async getPage(platform = currentPlatform(), forceRead = false): Promise<PagesJSON.Page> {
+  public async getPage(platform = currentPlatform(), forceRead = false): Promise<PagesJSON.Page | null> {
 
-    const { tabbar: _, path, type, ...others } = await this.getPageMeta(platform, forceRead) || {};
+    const pageMeta = await this.getPageMeta(platform, forceRead);
+
+    if (pageMeta === null) {
+      return null; // 如果页面元信息为 null，表示该页面应该被排除
+    }
+
+    const { tabbar: _, path, type, ...others } = pageMeta || {};
 
     return deepCopy({
       path: path || this.path,

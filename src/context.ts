@@ -284,8 +284,8 @@ export class Context {
    * 根据 platform 生成 pages
    */
   private async generatePages(platform = currentPlatform()): Promise<PagesJSON.Page[]> {
-    const pages = await this.getMainPageFiles(platform);
-    return Promise.all(pages.map(async pf => pf.getPage(platform)));
+    const pageFiles = await this.getMainPageFiles(platform);
+    return Promise.all(pageFiles.map(async pf => pf.getPage(platform))).then(pages => pages.filter(p => !!p));
   }
 
   /**
@@ -302,7 +302,9 @@ export class Context {
       subPackages[pf.root] = subPackages[pf.root] || { root: pf.root, pages: [] };
 
       const page = await pf.getPage(platform);
-      subPackages[pf.root].pages.push(page);
+      if (page) {
+        subPackages[pf.root].pages.push(page);
+      }
     }
     return Object.values(subPackages);
   }
