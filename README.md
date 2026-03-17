@@ -108,7 +108,7 @@ export interface UserConfig {
   cacheDir?: string;
 
   /**
-   * 指定运行平台，用于生成对应的条件编译
+   * 指定需要的平台，避免动态条件编译（方式一）造成的 pages.json 变动
    */
   platform?: BuiltInPlatform | BuiltInPlatform[];
 
@@ -227,6 +227,11 @@ definePage(({ platform }) => {
   const title = platform === 'h5' ? 'H5 环境' : '非 H5 环境';
   // 使用 process.env.UNI_PLATFORM
   const bgColor = process.env.UNI_PLATFORM === 'h5' ? 'white' : 'black';
+
+  if (platform === 'mp-weixin') {
+    return null; // mp-weixin 环境下不生成该页面 json
+  }
+
   return {
     style: {
       navigationBarTitleText: title,
