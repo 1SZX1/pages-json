@@ -100,7 +100,12 @@ export async function parseCode({ code, filename, env = {}, timeout = 1000 }: Pa
     });
 
     // 获取导出的值
-    const result = (vmContext.exports as any).default || vmContext.exports;
+    let result: any;
+    if ('default' in vmContext.exports && '__esModule' in vmContext.exports && vmContext.exports.__esModule) {
+      result = vmContext.exports.default;
+    } else {
+      result = vmContext.exports;
+    }
 
     // 返回结果
     return result;

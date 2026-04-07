@@ -18,7 +18,7 @@ export interface DefinePageFuncArgs {
   platform: UniPlatform;
 }
 
-export function definePage(arg: UserPageMeta | ((arg: DefinePageFuncArgs) => MaybePromise<UserPageMeta | Condition<UserPageMeta>>)) { }
+export function definePage(arg: UserPageMeta | null | ((arg: DefinePageFuncArgs) => MaybePromise<UserPageMeta | Condition<UserPageMeta>>)) { }
 
 function define(meta: UserPageMeta): Condition<UserPageMeta> {
   return new Condition(meta);
@@ -232,11 +232,15 @@ export class PageFile {
     }
 
     // 提取 macro function 内的第一个参数
-    const [arg1] = res.macro.arguments;
+    let [arg1] = res.macro.arguments;
+
+    while (t.isTSAsExpression(arg1) || t.isTSSatisfiesExpression(arg1)) {
+      arg1 = arg1.expression;
+    }
 
     // 检查 macro 的参数是否正确
-    if (arg1 && !t.isFunctionExpression(arg1) && !t.isArrowFunctionExpression(arg1) && !t.isObjectExpression(arg1)) {
-      debug.warn(`definePage() 参数仅支持函数或对象：${this.file}`);
+    if (arg1 && !t.isFunctionExpression(arg1) && !t.isArrowFunctionExpression(arg1) && !t.isObjectExpression(arg1) && !t.isNullLiteral(arg1)) {
+      debug.error(`definePage() 参数仅支持函数或对象：${this.file}`);
       return;
     }
 
